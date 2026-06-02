@@ -1,0 +1,600 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  .cg-root {
+    font-family: 'DM Sans', sans-serif;
+    background: #1a1f0e;
+    color: #f0ead2;
+    padding: 48px 40px;
+    min-height: 100vh;
+  }
+
+  .cg-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-bottom: 0.5px solid rgba(240,234,210,0.15);
+    padding-bottom: 32px;
+    margin-bottom: 48px;
+  }
+
+  .cg-brand-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 48px;
+    color: #E8B96A;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  .cg-brand-sub {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(240,234,210,0.45);
+    margin-top: 8px;
+  }
+
+  .cg-doc-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(240,234,210,0.3);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(240,234,210,0.3);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 0.5px;
+    background: rgba(240,234,210,0.1);
+  }
+
+  .color-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+  }
+
+  .color-swatch {
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .swatch-block {
+    height: 72px;
+  }
+
+  .swatch-info {
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid rgba(255,255,255,0.07);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+  }
+
+  .swatch-name {
+    font-size: 11px;
+    font-weight: 500;
+    color: #f0ead2;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .swatch-hex {
+    font-size: 10px;
+    color: rgba(240,234,210,0.4);
+    font-family: monospace;
+    letter-spacing: 0.5px;
+  }
+
+  .swatch-role {
+    font-size: 9px;
+    color: rgba(240,234,210,0.3);
+    margin-top: 3px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .typo-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .typo-card {
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  .typo-tag {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #E8B96A;
+    margin-bottom: 16px;
+  }
+
+  .typo-display {
+    font-family: 'DM Serif Display', serif;
+    font-size: 38px;
+    color: #E8B96A;
+    line-height: 1.05;
+    margin-bottom: 8px;
+  }
+
+  .typo-body {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: rgba(240,234,210,0.55);
+    line-height: 1.7;
+  }
+
+  .typo-sans-display {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: #f0ead2;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .alphabet-row {
+    font-family: 'DM Serif Display', serif;
+    font-size: 14px;
+    color: rgba(232,185,106,0.5);
+    letter-spacing: 2px;
+    margin-top: 12px;
+  }
+
+  .logo-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  .logo-variant {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 0.5px solid rgba(255,255,255,0.07);
+  }
+
+  .logo-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 16px;
+    gap: 8px;
+  }
+
+  .logo-mark-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-chain {
+    font-size: 12px;
+    letter-spacing: 1px;
+    opacity: 0.7;
+  }
+
+  .logo-tagline {
+    font-size: 7.5px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-top: 4px;
+  }
+
+  .logo-label {
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.2);
+    border-top: 0.5px solid rgba(255,255,255,0.06);
+  }
+
+  .logo-label span {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(240,234,210,0.3);
+  }
+
+  .usage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .usage-card {
+    background: rgba(255,255,255,0.025);
+    border: 0.5px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .usage-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: #E8B96A;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .usage-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .usage-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+
+  .usage-text {
+    font-size: 12px;
+    color: rgba(240,234,210,0.55);
+    line-height: 1.5;
+  }
+
+  .spacing-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .spacing-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .spacing-bar {
+    background: rgba(232,185,106,0.2);
+    border: 0.5px solid rgba(232,185,106,0.4);
+    border-radius: 2px;
+    width: 20px;
+  }
+
+  .spacing-val {
+    font-size: 9px;
+    color: rgba(232,185,106,0.6);
+    font-family: monospace;
+  }
+
+  .chain-divider {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 16px 0;
+    opacity: 0.25;
+  }
+
+  .chain-link {
+    width: 14px;
+    height: 8px;
+    border: 1px solid #E8B96A;
+    border-radius: 4px;
+  }
+
+  .mockup-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .mockup-card {
+    background: #4a6020;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .mockup-card.light {
+    background: #f5edd8;
+  }
+
+  .mockup-card.dark-deep {
+    background: #1a1f0e;
+    border: 0.5px solid rgba(255,255,255,0.08);
+  }
+
+  .footer-line {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 0.5px solid rgba(240,234,210,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-text {
+    font-size: 10px;
+    color: rgba(240,234,210,0.2);
+    letter-spacing: 1px;
+  }
+</style>
+
+<div class="cg-root">
+
+  <div class="cg-header">
+    <div>
+      <div class="cg-brand-title">La Catena</div>
+      <div class="cg-brand-sub">Boutique Multibrand</div>
+    </div>
+    <div class="cg-doc-label">
+      Charte Graphique<br>
+      Version 1.0 — 2026
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">01 — Palette de couleurs</div>
+    <div class="color-row">
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#E8B96A;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Or Catena</span>
+          <span class="swatch-hex">#E8B96A</span>
+          <div class="swatch-role">Couleur principale</div>
+        </div>
+      </div>
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#4a6020;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Vert Olive</span>
+          <span class="swatch-hex">#4A6020</span>
+          <div class="swatch-role">Couleur signature</div>
+        </div>
+      </div>
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#2d3a0f;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Forêt</span>
+          <span class="swatch-hex">#2D3A0F</span>
+          <div class="swatch-role">Foncé / fond</div>
+        </div>
+      </div>
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#f5edd8;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Ivoire</span>
+          <span class="swatch-hex">#F5EDD8</span>
+          <div class="swatch-role">Fond clair</div>
+        </div>
+      </div>
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#1a1f0e;"></div>
+        <div class="swatch-info">
+          <span class="swatch-name">Nuit</span>
+          <span class="swatch-hex">#1A1F0E</span>
+          <div class="swatch-role">Fond premium</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">02 — Typographie</div>
+    <div class="typo-section">
+      <div class="typo-card">
+        <div class="typo-tag">Display — DM Serif Display</div>
+        <div class="typo-display">La Catena</div>
+        <div class="alphabet-row">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</div>
+        <div class="typo-body" style="margin-top:12px;">Titres, noms de marques, grandes accrocheset éléments héroïques. Caractère élégant, sensualité éditoriale.</div>
+      </div>
+      <div class="typo-card">
+        <div class="typo-tag">Corps — DM Sans Light / Regular</div>
+        <div class="typo-sans-display">Boutique Multibrand</div>
+        <div class="alphabet-row" style="font-family:'DM Sans',sans-serif; font-size:13px; letter-spacing:1px; color:rgba(240,234,210,0.35);">a b c d e f g h i j k l m n o p q r s t u v w x y z</div>
+        <div class="typo-body" style="margin-top:12px;">Corps de texte, sous-titres, étiquettes produits. Légèreté et lisibilité optimale.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px; background:rgba(255,255,255,0.025); border:0.5px solid rgba(255,255,255,0.07); border-radius:8px; padding:20px;">
+      <div style="font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color:rgba(240,234,210,0.3); margin-bottom:16px;">Hiérarchie typographique</div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:baseline; gap:16px;">
+          <span style="font-size:9px; color:rgba(240,234,210,0.3); width:60px; flex-shrink:0; letter-spacing:1px;">H1</span>
+          <span style="font-family:'DM Serif Display',serif; font-size:32px; color:#E8B96A; line-height:1;">Titre principal</span>
+          <span style="font-size:9px; color:rgba(240,234,210,0.2); margin-left:auto;">32px / Serif</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:16px;">
+          <span style="font-size:9px; color:rgba(240,234,210,0.3); width:60px; flex-shrink:0; letter-spacing:1px;">H2</span>
+          <span style="font-family:'DM Sans',sans-serif; font-size:20px; font-weight:300; color:#f0ead2;">Sous-titre de section</span>
+          <span style="font-size:9px; color:rgba(240,234,210,0.2); margin-left:auto;">20px / Sans Light</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:16px;">
+          <span style="font-size:9px; color:rgba(240,234,210,0.3); width:60px; flex-shrink:0; letter-spacing:1px;">Label</span>
+          <span style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#E8B96A;">Boutique multibrand</span>
+          <span style="font-size:9px; color:rgba(240,234,210,0.2); margin-left:auto;">10px / Uppercase +3 tracking</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:16px;">
+          <span style="font-size:9px; color:rgba(240,234,210,0.3); width:60px; flex-shrink:0; letter-spacing:1px;">Corps</span>
+          <span style="font-size:13px; color:rgba(240,234,210,0.55); line-height:1.7;">Texte courant, descriptions produits, contenu éditorial.</span>
+          <span style="font-size:9px; color:rgba(240,234,210,0.2); margin-left:auto;">13px / Sans Regular</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">03 — Variations du logo</div>
+    <div class="logo-section">
+      <div class="logo-variant">
+        <div class="logo-preview" style="background:#4a6020;">
+          <div class="logo-mark-text" style="color:#E8B96A;">La Catena</div>
+          <div class="logo-chain" style="color:#E8B96A;">⊙⊙⊙⊙⊙⊙⊙⊙⊙⊙</div>
+          <div class="logo-tagline" style="background:#E8B96A; color:#3d5018;">BOUTIQUE MULTIBRAND</div>
+        </div>
+        <div class="logo-label"><span>Version principale — fond olive</span></div>
+      </div>
+
+      <div class="logo-variant">
+        <div class="logo-preview" style="background:#f5edd8;">
+          <div class="logo-mark-text" style="color:#3d5018;">La Catena</div>
+          <div class="logo-chain" style="color:#3d5018;">⊙⊙⊙⊙⊙⊙⊙⊙⊙⊙</div>
+          <div class="logo-tagline" style="background:#3d5018; color:#f5edd8;">BOUTIQUE MULTIBRAND</div>
+        </div>
+        <div class="logo-label"><span>Version claire — fond ivoire</span></div>
+      </div>
+
+      <div class="logo-variant">
+        <div class="logo-preview" style="background:#1a1f0e;">
+          <div class="logo-mark-text" style="color:#E8B96A;">La Catena</div>
+          <div class="logo-chain" style="color:rgba(232,185,106,0.5);">⊙⊙⊙⊙⊙⊙⊙⊙⊙⊙</div>
+          <div class="logo-tagline" style="border:0.5px solid rgba(232,185,106,0.3); color:#E8B96A;">BOUTIQUE MULTIBRAND</div>
+        </div>
+        <div class="logo-label"><span>Version nuit — fond sombre</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px; background:rgba(255,255,255,0.025); border:0.5px solid rgba(255,255,255,0.07); border-radius:8px; padding:20px;">
+      <div style="font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color:rgba(240,234,210,0.3); margin-bottom:12px;">Zone d'exclusion — espace minimum autour du logo</div>
+      <div style="display:flex; align-items:center; justify-content:center; padding:24px 0; position:relative;">
+        <div style="border:0.5px dashed rgba(232,185,106,0.2); padding:20px 28px; border-radius:4px;">
+          <div style="font-family:'DM Serif Display',serif; font-size:20px; color:#E8B96A;">La Catena</div>
+        </div>
+        <div style="position:absolute; bottom:8px; right:50%; transform:translateX(50%); font-size:9px; color:rgba(232,185,106,0.3); letter-spacing:1px;">= hauteur x</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">04 — Règles d'usage</div>
+    <div class="usage-grid">
+      <div class="usage-card">
+        <div class="usage-title" style="color:#6faa30;">À faire</div>
+        <div class="usage-item">
+          <div class="usage-dot" style="background:#6faa30;"></div>
+          <div class="usage-text">Utiliser Or Catena #E8B96A sur fond Olive ou Forêt uniquement</div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-dot" style="background:#6faa30;"></div>
+          <div class="usage-text">Respecter la zone d'exclusion autour du logo</div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-dot" style="background:#6faa30;"></div>
+          <div class="usage-text">Conserver les proportions originales du logo</div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-dot" style="background:#6faa30;"></div>
+          <div class="usage-text">Utiliser DM Serif Display pour tous les titres</div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-dot" style="background:#6faa30;"></div>
+          <div class="usage-text">Laisser respirer les compositions — espaces généreux</div>
+        </div>
+      </div>
+
+      <div class="usage-card">
+        <div class="usage-title" style="color:#c9634a;">À éviter</div>
+        <div class="usage-item">
+          <div class="usage-dot" style="background:#c9634a;"></div>
+          <div class="usage-text">Ne pas étirer ou déformer le logo</div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-dot" style="background:#c9634a;"></div>
+          <div class="usage-text">Ne pas placer le logo sur fond photographique sans voile</div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-dot" style="background:#c9634a;"></div>
+          <div class="usage-text">Ne pas utiliser d'autres couleurs que la palette officielle</div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-dot" style="background:#c9634a;"></div>
+          <div class="usage-text">Ne pas ajouter d'ombres portées ou d'effets sur le logo</div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-dot" style="background:#c9634a;"></div>
+          <div class="usage-text">Ne pas mélanger les fontes avec d'autres familles typographiques</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">05 — Tone & Positionnement</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+      <div style="background:rgba(255,255,255,0.025); border:0.5px solid rgba(255,255,255,0.07); border-radius:8px; padding:20px; text-align:center;">
+        <div style="font-family:'DM Serif Display',serif; font-size:22px; color:#E8B96A; margin-bottom:8px;">Élégant</div>
+        <div style="font-size:11px; color:rgba(240,234,210,0.4); line-height:1.6;">Sophistiqué sans être distant. Accessible sans être banal.</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.025); border:0.5px solid rgba(255,255,255,0.07); border-radius:8px; padding:20px; text-align:center;">
+        <div style="font-family:'DM Serif Display',serif; font-size:22px; color:#E8B96A; margin-bottom:8px;">Curatif</div>
+        <div style="font-size:11px; color:rgba(240,234,210,0.4); line-height:1.6;">Une sélection pensée, chaque pièce choisie avec intention.</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.025); border:0.5px solid rgba(255,255,255,0.07); border-radius:8px; padding:20px; text-align:center;">
+        <div style="font-family:'DM Serif Display',serif; font-size:22px; color:#E8B96A; margin-bottom:8px;">Ancré</div>
+        <div style="font-size:11px; color:rgba(240,234,210,0.4); line-height:1.6;">Identité forte, univers cohérent, présence mémorable.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">06 — Éléments graphiques signature</div>
+    <div style="background:rgba(255,255,255,0.025); border:0.5px solid rgba(255,255,255,0.07); border-radius:8px; padding:28px;">
+      <div style="font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color:rgba(240,234,210,0.3); margin-bottom:20px;">Le motif chaîne — élément identitaire central</div>
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span style="font-size:9px; color:rgba(240,234,210,0.3); width:80px; flex-shrink:0;">Grande taille</span>
+          <div style="font-size:28px; color:#E8B96A; letter-spacing:2px; font-family:'DM Serif Display',serif;">⊙⊙⊙⊙⊙⊙⊙⊙⊙⊙⊙⊙⊙</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span style="font-size:9px; color:rgba(240,234,210,0.3); width:80px; flex-shrink:0;">Séparateur</span>
+          <div style="flex:1; height:1px; background:linear-gradient(90deg, transparent, #E8B96A 20%, #E8B96A 80%, transparent); opacity:0.4;"></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span style="font-size:9px; color:rgba(240,234,210,0.3); width:80px; flex-shrink:0;">Badge tagline</span>
+          <div style="background:#E8B96A; color:#3d5018; padding:5px 18px; border-radius:20px; font-size:10px; letter-spacing:3px; text-transform:uppercase; font-weight:500;">Boutique Multibrand</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span style="font-size:9px; color:rgba(240,234,210,0.3); width:80px; flex-shrink:0;">Badge outline</span>
+          <div style="border:1px solid rgba(232,185,106,0.5); color:#E8B96A; padding:5px 18px; border-radius:20px; font-size:10px; letter-spacing:3px; text-transform:uppercase;">Boutique Multibrand</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-line">
+    <div class="footer-text">La Catena — Boutique Multibrand</div>
+    <div class="footer-text">Charte Graphique v1.0 · 2026 · Usage interne</div>
+  </div>
+
+</div>
