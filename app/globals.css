@@ -1,26 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --gold: #E8B96A;
+  --gold-dim: rgba(232, 185, 106, 0.3);
+  --cream: #f0ead2;
+  --cream-muted: rgba(240, 234, 210, 0.45);
+  --cream-subtle: rgba(240, 234, 210, 0.15);
+  --forest: #1a1f0e;
+  --forest-dark: #3d5018;
+  --border: rgba(240, 234, 210, 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-dm-sans);
+  --font-serif: var(--font-dm-serif);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
+  background: var(--forest);
+  color: var(--cream);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* hooked-ux: Subtil keyframe pour le reward visuel */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.6s ease forwards;
+}
+
+/* refactoring-ui: chain motif */
+.chain-divider {
+  letter-spacing: 4px;
+  color: var(--gold-dim);
+  font-size: 12px;
 }
