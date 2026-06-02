@@ -202,9 +202,13 @@ border-radius: 8px;
 
 ## 09 — Skills actifs
 
-Les skills suivants sont installés dans `.claude/skills/` et doivent guider les décisions UI :
+Les 6 skills suivants sont installés dans `.claude/skills/` et doivent guider les décisions UI/copy/motion :
 
-| Skill           | Application principale |
-|-----------------|----------------------|
-| `refactoring-ui` | Hiérarchie visuelle, spacing, couleurs, système de design |
-| `hooked-ux`      | Boucles d'engagement, triggers email, wishlist, rétention |
+| Skill                | Quand l'appliquer |
+|----------------------|-------------------|
+| `refactoring-ui`     | Hiérarchie visuelle, spacing, couleurs, système de design, composants |
+| `hooked-ux`          | Boucles d'engagement, triggers email, wishlist, rétention utilisateur |
+| `top-design`         | Expérience immersive premium, scroll animations, effets cinématiques, niveau Awwwards |
+| `storybrand-messaging` | Copy de toutes les pages — hero, CTA, descriptions, emails (client = héros) |
+| `microinteractions`  | Hover states, feedback boutons, transitions, états de chargement, polish premium |
+| `web-typography`     | Implémentation DM Serif Display + DM Sans, échelle responsive, performance font loading |
