@@ -74,7 +74,7 @@ export default function MonComptePage() {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 132, minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main style={{ paddingTop: 166, minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <p style={{ color: 'var(--cream-muted)', fontSize: 13 }}>Chargement...</p>
         </main>
         <Footer />
@@ -85,7 +85,7 @@ export default function MonComptePage() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 132 }}>
+      <main style={{ paddingTop: 166 }}>
         <div style={{ padding: '40px 40px 80px', maxWidth: 1440, margin: '0 auto' }}>
 
           {/* Bandeau admin */}

@@ -70,7 +70,7 @@ export default function CommandePage() {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 132, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main style={{ paddingTop: 166, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="text-center animate-fade-up" style={{ maxWidth: 480, padding: '0 24px' }}>
             <div className="chain-divider mb-8" style={{ fontSize: 28, letterSpacing: '4px', color: 'rgba(232,185,106,0.4)' }}>âŠ™âŠ™âŠ™âŠ™âŠ™âŠ™</div>
             <h1 className="font-serif mb-4" style={{ fontSize: 40, color: 'var(--gold)' }}>Commande confirmÃ©e</h1>
@@ -93,7 +93,7 @@ export default function CommandePage() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 132 }}>
+      <main style={{ paddingTop: 166 }}>
         <div style={{ padding: '40px 40px 80px', maxWidth: 1440, margin: '0 auto' }}>
           <h1 className="font-serif mb-10" style={{ fontSize: 40, color: 'var(--gold)' }}>Finaliser la commande</h1>
 

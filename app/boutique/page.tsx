@@ -108,7 +108,7 @@ function BoutiqueContent() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 132 }}>{/* 36px annonce + 64px nav */}
+      <main style={{ paddingTop: 166 }}>{/* 36px annonce + 64px nav */}
         {/* â”€â”€ Quick filter swatches circulaires â€” African Avenue style â”€â”€ */}
         <div style={{ borderBottom: '0.5px solid var(--border)', padding: '28px 40px' }}>
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10" style={{ maxWidth: 1440, margin: '0 auto' }}>

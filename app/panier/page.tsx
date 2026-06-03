@@ -19,7 +19,7 @@ export default function PanierPage() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 132, minHeight: '80vh' }}>
+      <main style={{ paddingTop: 166, minHeight: '80vh' }}>
         <div style={{ padding: '40px 40px 80px', maxWidth: 1440, margin: '0 auto' }}>
           <Breadcrumb items={[{ label: 'Accueil', href: '/' }, { label: 'Panier' }]} />
           <h1 className="font-serif mt-4 mb-2" style={{ fontSize: 40, color: 'var(--gold)' }}>Mon panier</h1>

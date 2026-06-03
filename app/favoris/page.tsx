@@ -12,7 +12,7 @@ export default function FavorisPage() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 132 }}>
+      <main style={{ paddingTop: 166 }}>
         <div style={{ padding: '40px 40px 80px', maxWidth: 1440, margin: '0 auto' }}>
           <Breadcrumb items={[{ label: 'Accueil', href: '/' }, { label: 'Favoris' }]} />
           <h1 className="font-serif mt-4 mb-2" style={{ fontSize: 40, color: 'var(--gold)' }}>Mes favoris</h1>
