@@ -35,7 +35,7 @@ export default function PanierPage() {
               <span style={{ fontSize: 48, color: 'rgba(232,185,106,0.3)' }}>âŠ™</span>
               <p className="font-serif text-2xl" style={{ color: 'var(--cream-muted)' }}>Votre panier est vide</p>
               <p style={{ fontSize: 13, color: 'var(--cream-muted)', lineHeight: 1.7 }}>
-                DÃ©couvrez notre sÃ©lection et trouvez votre prochaine piÃ¨ce.
+                Decouvrez notre selection et trouvez votre prochaine piece.
               </p>
               <Link
                 href="/boutique"
@@ -118,7 +118,7 @@ export default function PanierPage() {
                 className="flex-shrink-0 flex flex-col gap-5"
                 style={{ width: 'min(100%, 360px)', background: 'rgba(240,234,210,0.04)', border: '0.5px solid rgba(240,234,210,0.1)', borderRadius: 4, padding: '32px', alignSelf: 'flex-start' }}
               >
-                <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)' }}>RÃ©capitulatif</p>
+                <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)' }}>Recapitulatif</p>
 
                 <div className="flex flex-col gap-3">
                   <div className="flex justify-between">
@@ -142,7 +142,7 @@ export default function PanierPage() {
 
                 {shipping > 0 && (
                   <p style={{ fontSize: 11, color: 'var(--cream-muted)', lineHeight: 1.6 }}>
-                    Livraison gratuite dÃ¨s 50 000 FCFA d&apos;achat.
+                    Livraison gratuite des 50 000 FCFA d&apos;achat.
                   </p>
                 )}
 

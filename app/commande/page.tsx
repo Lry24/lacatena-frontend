@@ -60,7 +60,7 @@ export default function CommandePage() {
       setConfirmed(order.reference);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setError(msg || 'Une erreur est survenue. Veuillez rÃ©essayer.');
+      setError(msg || 'Une erreur est survenue. Veuillez reessayer.');
     } finally {
       setLoading(false);
     }
@@ -73,12 +73,12 @@ export default function CommandePage() {
         <main style={{ paddingTop: 166, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="text-center animate-fade-up" style={{ maxWidth: 480, padding: '0 24px' }}>
             <div className="chain-divider mb-8" style={{ fontSize: 28, letterSpacing: '4px', color: 'rgba(232,185,106,0.4)' }}>âŠ™âŠ™âŠ™âŠ™âŠ™âŠ™</div>
-            <h1 className="font-serif mb-4" style={{ fontSize: 40, color: 'var(--gold)' }}>Commande confirmÃ©e</h1>
+            <h1 className="font-serif mb-4" style={{ fontSize: 40, color: 'var(--gold)' }}>Commande confirmee</h1>
             <p style={{ color: 'var(--cream-muted)', fontSize: 14, lineHeight: 1.7, marginBottom: 8 }}>
-              Merci pour votre commande. Nous l&apos;avons bien reÃ§ue et la prÃ©parons avec soin.
+              Merci pour votre commande. Nous l&apos;avons bien recue et la preparons avec soin.
             </p>
             <p style={{ fontSize: 11, letterSpacing: '2px', color: 'var(--cream-muted)', marginBottom: 40 }}>
-              RÃ©fÃ©rence : <span style={{ color: 'var(--gold)' }}>{confirmed}</span>
+              Reference : <span style={{ color: 'var(--gold)' }}>{confirmed}</span>
             </p>
             <Link href="/boutique" className="uppercase font-medium tracking-widest transition-colors hover:bg-[#f5cb85]" style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '14px 28px', borderRadius: 2, fontSize: 10, letterSpacing: '2px' }}>
               Continuer les achats
@@ -103,7 +103,7 @@ export default function CommandePage() {
               {/* Saved addresses */}
               {isAuthenticated && addresses.length > 0 && (
                 <div>
-                  <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Adresses enregistrÃ©es</p>
+                  <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Adresses enregistrees</p>
                   <div className="flex flex-col gap-3 mb-4">
                     {addresses.map((addr) => (
                       <label key={addr.uuid} className="flex items-start gap-3 cursor-pointer p-4" style={{ border: `0.5px solid ${selectedAddress === addr.uuid && !useNewAddress ? 'var(--gold)' : 'rgba(240,234,210,0.15)'}`, borderRadius: 4, background: selectedAddress === addr.uuid && !useNewAddress ? 'rgba(232,185,106,0.04)' : 'transparent' }}>
@@ -113,7 +113,7 @@ export default function CommandePage() {
                           className="mt-1 accent-[#E8B96A]"
                         />
                         <div>
-                          <p style={{ fontSize: 13, color: 'var(--cream)', fontWeight: 500 }}>{addr.label} â€” {addr.recipient_name}</p>
+                          <p style={{ fontSize: 13, color: 'var(--cream)', fontWeight: 500 }}>{addr.label} — {addr.recipient_name}</p>
                           <p style={{ fontSize: 12, color: 'var(--cream-muted)', marginTop: 4 }}>{addr.street}, {addr.city}, {addr.country}</p>
                         </div>
                       </label>
@@ -131,13 +131,13 @@ export default function CommandePage() {
                 <div>
                   <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Adresse de livraison</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input label="Nom complet" value={form.recipient_name} onChange={set('recipient_name')} required placeholder="PrÃ©nom Nom" />
-                    <Input label="TÃ©lÃ©phone" value={form.phone} onChange={set('phone')} required placeholder="+228 ..." type="tel" />
+                    <Input label="Nom complet" value={form.recipient_name} onChange={set('recipient_name')} required placeholder="Prenom Nom" />
+                    <Input label="Telephone" value={form.phone} onChange={set('phone')} required placeholder="+228 ..." type="tel" />
                     <div className="md:col-span-2">
-                      <Input label="Adresse" value={form.street} onChange={set('street')} required placeholder="Rue, numÃ©ro, quartier" />
+                      <Input label="Adresse" value={form.street} onChange={set('street')} required placeholder="Rue, numero, quartier" />
                     </div>
-                    <Input label="Ville" value={form.city} onChange={set('city')} required placeholder="LomÃ©" />
-                    <Input label="RÃ©gion / Ã‰tat" value={form.state} onChange={set('state')} required placeholder="Maritime" />
+                    <Input label="Ville" value={form.city} onChange={set('city')} required placeholder="Lome" />
+                    <Input label="Region / Etat" value={form.state} onChange={set('state')} required placeholder="Maritime" />
                     <Input label="Code postal" value={form.postal_code} onChange={set('postal_code')} placeholder="00228" />
                     <Input label="Pays" value={form.country} onChange={set('country')} required placeholder="Togo" />
                   </div>
@@ -151,7 +151,7 @@ export default function CommandePage() {
                   value={form.notes}
                   onChange={set('notes')}
                   rows={3}
-                  placeholder="Instructions particuliÃ¨res pour la livraison..."
+                  placeholder="Instructions particulieres pour la livraison..."
                   className="w-full px-4 py-3 text-sm outline-none resize-none transition-all"
                   style={{ background: 'rgba(240,234,210,0.05)', border: '0.5px solid rgba(240,234,210,0.1)', borderRadius: 4, color: 'var(--cream)', fontSize: 13 }}
                   onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--gold)'; }}
