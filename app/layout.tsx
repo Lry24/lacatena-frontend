@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, DM_Serif_Display } from "next/font/google";
+import StoreInitializer from "@/components/StoreInitializer";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -28,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${dmSans.variable} ${dmSerif.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[#1a1f0e] text-[#f0ead2]">
+        <StoreInitializer />
         {children}
       </body>
     </html>

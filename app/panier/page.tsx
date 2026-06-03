@@ -247,7 +247,7 @@ export default function PanierPage() {
 
             <div className="flex flex-col gap-3 w-full">
               <button
-                onClick={() => router.push('/connexion')}
+                onClick={() => router.push('/connexion?redirect=/commande')}
                 className="uppercase font-medium tracking-widest transition-all duration-200 hover:bg-[#f5cb85] hover:shadow-lg w-full"
                 style={{
                   background: 'var(--gold)',
@@ -262,7 +262,7 @@ export default function PanierPage() {
                 Se connecter
               </button>
               <button
-                onClick={() => router.push('/inscription')}
+                onClick={() => router.push('/inscription?redirect=/commande')}
                 className="uppercase tracking-widest transition-all duration-200 w-full"
                 style={{
                   border: '0.5px solid rgba(232,185,106,0.25)',

@@ -6,7 +6,11 @@ import Modal from '@/components/admin/Modal';
 import { ToastContainer, useToast } from '@/components/admin/Toast';
 import * as adminApi from '@/lib/adminApi';
 
-const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n);
+const fmt = (n: number | string | null | undefined) => {
+  const num = Number(n);
+  if (isNaN(num)) return '—';
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(num);
+};
 const fmtDate = (s: string) => new Date(s).toLocaleString('fr-FR');
 
 const STATUSES = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled'];
@@ -25,12 +29,12 @@ interface OrderDetail {
   customer_email: string;
   customer_phone: string;
   shipping_address?: Record<string, string>;
-  items: { product_name: string; sku: string; size: string; color: string; quantity: number; unit_price: number; subtotal: number }[];
-  subtotal_ht: number;
-  tva_amount: number;
-  shipping_cost: number;
-  discount_amount: number;
-  total_ttc: number;
+  items: { product_name: string; variant_sku: string; variant_size: string; variant_color: string; quantity: number; unit_price_ttc: number | string; subtotal_ttc: number | string }[];
+  subtotal_ht: number | string;
+  tva_amount: number | string;
+  shipping_cost: number | string;
+  discount_amount: number | string;
+  total_ttc: number | string;
   notes: string;
   internal_notes: string;
   payment_method: string;
@@ -151,12 +155,12 @@ export default function CommandeDetailPage() {
                 {(order.items ?? []).map((item, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid rgba(240,234,210,0.04)' }}>
                     <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.92)' }}>{item.product_name}</td>
-                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.65)', fontFamily: 'monospace', fontSize: 11 }}>{item.sku}</td>
-                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.75)' }}>{item.size}</td>
-                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.75)' }}>{item.color}</td>
+                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.65)', fontFamily: 'monospace', fontSize: 11 }}>{item.variant_sku}</td>
+                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.75)' }}>{item.variant_size}</td>
+                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.75)' }}>{item.variant_color}</td>
                     <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.92)', textAlign: 'center' }}>{item.quantity}</td>
-                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.92)', textAlign: 'right' }}>{fmt(item.unit_price)}</td>
-                    <td style={{ padding: '10px 8px', color: '#E8B96A', fontWeight: 500, textAlign: 'right' }}>{fmt(item.subtotal)}</td>
+                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.92)', textAlign: 'right' }}>{fmt(item.unit_price_ttc)}</td>
+                    <td style={{ padding: '10px 8px', color: '#E8B96A', fontWeight: 500, textAlign: 'right' }}>{fmt(item.subtotal_ttc)}</td>
                   </tr>
                 ))}
               </tbody>

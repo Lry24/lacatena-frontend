@@ -14,22 +14,30 @@ import type { AddressResponse } from '@/types';
 
 type Stage = 'loading' | 'gate' | 'checkout' | 'confirmed';
 type AuthTab = 'login' | 'register';
+type CheckoutStep = 'address' | 'payment';
 
 interface ShipForm {
   recipient_name: string; phone: string; street: string;
   city: string; state: string; postal_code: string; country: string; notes: string;
 }
 
-const apiErr = (err: unknown) =>
-  (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+const apiErr = (err: unknown): string | undefined => {
+  const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
+  if (!detail) return undefined;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail) && detail.length > 0)
+    return detail.map((d: { msg?: string }) => d.msg ?? String(d)).join(', ');
+  return undefined;
+};
 
 export default function CommandePage() {
-  const { items, total, fetchCart } = useCartStore();
-  const { isAuthenticated, fetchMe, login } = useAuthStore();
+  const { items, total, fetchCart, clearCart } = useCartStore();
+  const { fetchMe, login } = useAuthStore();
 
   const [stage, setStage] = useState<Stage>('loading');
   const [authTab, setAuthTab] = useState<AuthTab>('login');
   const [regStep, setRegStep] = useState<1 | 2>(1);
+  const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>('address');
 
   // Auth gate fields
   const [loginEmail, setLoginEmail] = useState('');
@@ -55,43 +63,45 @@ export default function CommandePage() {
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderError, setOrderError] = useState('');
   const [confirmed, setConfirmed] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
 
   const shipping = total >= 50000 ? 0 : 3500;
 
-  const loadAddresses = () => {
-    getUserAddresses().then((a) => {
+  const loadAddresses = async (): Promise<AddressResponse[]> => {
+    try {
+      const a = await getUserAddresses();
       setAddresses(a);
       if (a.length > 0) {
         const def = a.find((x) => x.is_default) || a[0];
         setSelectedAddr(def.uuid);
         setUseNew(false);
       }
-    }).catch(() => {});
+      return a;
+    } catch {
+      return [];
+    }
   };
 
-  // Vérification auth au montage
   useEffect(() => {
     fetchCart();
     fetchMe().then(() => {
       if (useAuthStore.getState().isAuthenticated) {
-        loadAddresses();
-        setStage('checkout');
+        loadAddresses().then(() => setStage('checkout'));
       } else {
         setStage('gate');
       }
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthLoading(true);
     setAuthError('');
     try {
       await login({ email: loginEmail, password: loginPw });
-      await fetchCart();
-      loadAddresses();
+      // login() appelle déjà syncLocalToServer → fetchCart en interne
       setStage('checkout');
+      loadAddresses(); // fire-and-forget, ne bloque pas la navigation
     } catch (err) {
       setAuthError(apiErr(err) || 'Email ou mot de passe incorrect.');
     } finally {
@@ -115,7 +125,6 @@ export default function CommandePage() {
     }
   };
 
-  // ── Register step 2 (OTP)
   const handleRegStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthLoading(true);
@@ -123,9 +132,8 @@ export default function CommandePage() {
     try {
       await apiVerifyOtp({ email: regEmail, otp: regOtp });
       await login({ email: regEmail, password: regPw });
-      await fetchCart();
-      loadAddresses();
       setStage('checkout');
+      loadAddresses();
     } catch (err) {
       setAuthError(apiErr(err) || 'Code incorrect ou expiré.');
     } finally {
@@ -136,6 +144,12 @@ export default function CommandePage() {
   const setF = (k: keyof ShipForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  // ── Étape 1 → Étape 2
+  const handleContinueToPayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCheckoutStep('payment');
+  };
+
   // ── Submit order
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,7 +157,7 @@ export default function CommandePage() {
     setOrderError('');
     try {
       const order = await createOrderFromCart({
-        payment_method: 'mobile_money',
+        payment_method: paymentMethod,
         shipping_address_uuid: (!useNew && selectedAddr) ? selectedAddr : undefined,
         shipping_address_snapshot: useNew ? {
           recipient_name: form.recipient_name, phone: form.phone,
@@ -153,6 +167,7 @@ export default function CommandePage() {
         shipping_cost: shipping,
         notes: form.notes || undefined,
       });
+      await clearCart();
       setConfirmed(order.order_number);
       setStage('confirmed');
     } catch (err) {
@@ -357,64 +372,136 @@ export default function CommandePage() {
     );
   }
 
-  // ───────────────────────────────────────── CHECKOUT
+  // ───────────────────────────────────────── CHECKOUT — résumé adresse pour l'étape paiement
+  const selectedAddrData = addresses.find((a) => a.uuid === selectedAddr);
+  const addressLine = useNew
+    ? (form.street ? `${form.recipient_name} — ${form.street}, ${form.city}` : '')
+    : selectedAddrData
+      ? `${selectedAddrData.recipient_name} — ${selectedAddrData.street}, ${selectedAddrData.city}`
+      : '';
+
+  // ───────────────────────────────────────── CHECKOUT — ÉTAPE 1 : ADRESSE
+  if (checkoutStep === 'address') {
+    return (
+      <>
+        <Header />
+        <main style={{ paddingTop: 190 }}>
+          <div style={{ padding: '40px 40px 80px', maxWidth: 1200, margin: '0 auto' }}>
+            {/* Progress */}
+            <div className="flex items-center gap-3 mb-8">
+              <StepDot n={1} active />
+              <div style={{ width: 40, height: 1, background: 'rgba(240,234,210,0.15)' }} />
+              <StepDot n={2} active={false} />
+            </div>
+            <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>
+              Étape 1 — Adresse de livraison
+            </p>
+            <h1 className="font-serif mb-10" style={{ fontSize: 40, color: 'var(--gold)' }}>Où livrer votre commande ?</h1>
+
+            <div className="flex flex-col lg:flex-row gap-12">
+              <form onSubmit={handleContinueToPayment} className="flex-1 flex flex-col gap-8">
+
+                {/* Adresses sauvegardées */}
+                {addresses.length > 0 && (
+                  <div>
+                    <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Adresses enregistrées</p>
+                    <div className="flex flex-col gap-3 mb-4">
+                      {addresses.map((addr) => (
+                        <label key={addr.uuid} className="flex items-start gap-3 cursor-pointer p-4" style={{ border: `0.5px solid ${selectedAddr === addr.uuid && !useNew ? 'var(--gold)' : 'rgba(240,234,210,0.15)'}`, borderRadius: 4, background: selectedAddr === addr.uuid && !useNew ? 'rgba(232,185,106,0.04)' : 'transparent' }}>
+                          <input type="radio" name="addr" checked={!useNew && selectedAddr === addr.uuid} onChange={() => { setSelectedAddr(addr.uuid); setUseNew(false); }} className="mt-1 accent-[#E8B96A]" />
+                          <div>
+                            <p style={{ fontSize: 13, color: 'var(--cream)', fontWeight: 500 }}>{addr.label || addr.recipient_name} — {addr.recipient_name}</p>
+                            <p style={{ fontSize: 12, color: 'var(--cream-muted)', marginTop: 4 }}>{addr.street}, {addr.city}, {addr.country}</p>
+                          </div>
+                        </label>
+                      ))}
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input type="radio" name="addr" checked={useNew} onChange={() => setUseNew(true)} className="accent-[#E8B96A]" />
+                        <span style={{ fontSize: 13, color: 'var(--cream-muted)' }}>Nouvelle adresse</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {/* Formulaire adresse */}
+                {(useNew || addresses.length === 0) && (
+                  <div>
+                    <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Nouvelle adresse</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input label="Nom complet" value={form.recipient_name} onChange={setF('recipient_name')} required placeholder="Prénom Nom" />
+                      <Input label="Téléphone" value={form.phone} onChange={setF('phone')} required placeholder="+228 ..." type="tel" />
+                      <div className="md:col-span-2"><Input label="Adresse" value={form.street} onChange={setF('street')} required placeholder="Rue, numéro, quartier" /></div>
+                      <Input label="Ville" value={form.city} onChange={setF('city')} required placeholder="Lomé" />
+                      <Input label="Région" value={form.state} onChange={setF('state')} required placeholder="Maritime" />
+                      <Input label="Code postal" value={form.postal_code} onChange={setF('postal_code')} placeholder="00228" />
+                      <Input label="Pays" value={form.country} onChange={setF('country')} required placeholder="Togo" />
+                    </div>
+                  </div>
+                )}
+
+                <button type="submit"
+                  className="uppercase font-medium tracking-widest transition-colors hover:bg-[#f5cb85]"
+                  style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '16px', borderRadius: 2, fontSize: 11, letterSpacing: '2px' }}
+                >
+                  Continuer vers le paiement →
+                </button>
+              </form>
+
+              <CartSummary items={items} total={total} shipping={shipping} />
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  // ───────────────────────────────────────── CHECKOUT — ÉTAPE 2 : PAIEMENT
   return (
     <>
       <Header />
       <main style={{ paddingTop: 190 }}>
         <div style={{ padding: '40px 40px 80px', maxWidth: 1200, margin: '0 auto' }}>
+          {/* Progress */}
+          <div className="flex items-center gap-3 mb-8">
+            <StepDot n={1} active={false} done />
+            <div style={{ width: 40, height: 1, background: 'var(--gold)', opacity: 0.4 }} />
+            <StepDot n={2} active />
+          </div>
           <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>
-            Étape 2 — Livraison & confirmation
+            Étape 2 — Paiement & confirmation
           </p>
           <h1 className="font-serif mb-10" style={{ fontSize: 40, color: 'var(--gold)' }}>Finaliser la commande</h1>
 
           <div className="flex flex-col lg:flex-row gap-12">
             <form onSubmit={handleSubmitOrder} className="flex-1 flex flex-col gap-8">
-              {/* Adresses sauvegardées */}
-              {addresses.length > 0 && (
-                <div>
-                  <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Adresses enregistrées</p>
-                  <div className="flex flex-col gap-3 mb-4">
-                    {addresses.map((addr) => (
-                      <label key={addr.uuid} className="flex items-start gap-3 cursor-pointer p-4" style={{ border: `0.5px solid ${selectedAddr === addr.uuid && !useNew ? 'var(--gold)' : 'rgba(240,234,210,0.15)'}`, borderRadius: 4, background: selectedAddr === addr.uuid && !useNew ? 'rgba(232,185,106,0.04)' : 'transparent' }}>
-                        <input type="radio" name="addr" checked={!useNew && selectedAddr === addr.uuid} onChange={() => { setSelectedAddr(addr.uuid); setUseNew(false); }} className="mt-1 accent-[#E8B96A]" />
-                        <div>
-                          <p style={{ fontSize: 13, color: 'var(--cream)', fontWeight: 500 }}>{addr.label || addr.recipient_name} — {addr.recipient_name}</p>
-                          <p style={{ fontSize: 12, color: 'var(--cream-muted)', marginTop: 4 }}>{addr.street}, {addr.city}, {addr.country}</p>
-                        </div>
-                      </label>
-                    ))}
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="radio" name="addr" checked={useNew} onChange={() => setUseNew(true)} className="accent-[#E8B96A]" />
-                      <span style={{ fontSize: 13, color: 'var(--cream-muted)' }}>Nouvelle adresse</span>
-                    </label>
+
+              {/* Résumé adresse */}
+              {addressLine && (
+                <div style={{ background: 'rgba(240,234,210,0.04)', border: '0.5px solid rgba(240,234,210,0.1)', borderRadius: 4, padding: '16px 20px' }}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 6 }}>Livraison à</p>
+                      <p style={{ fontSize: 13, color: 'var(--cream)' }}>{addressLine}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCheckoutStep('address')}
+                      style={{ fontSize: 10, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--gold)', textDecoration: 'underline', flexShrink: 0 }}
+                    >
+                      Modifier
+                    </button>
                   </div>
                 </div>
               )}
 
-              {/* Formulaire adresse */}
-              {(useNew || addresses.length === 0) && (
-                <div>
-                  <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Adresse de livraison</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input label="Nom complet" value={form.recipient_name} onChange={setF('recipient_name')} required placeholder="Prénom Nom" />
-                    <Input label="Téléphone" value={form.phone} onChange={setF('phone')} required placeholder="+228 ..." type="tel" />
-                    <div className="md:col-span-2"><Input label="Adresse" value={form.street} onChange={setF('street')} required placeholder="Rue, numéro, quartier" /></div>
-                    <Input label="Ville" value={form.city} onChange={setF('city')} required placeholder="Lomé" />
-                    <Input label="Région" value={form.state} onChange={setF('state')} required placeholder="Maritime" />
-                    <Input label="Code postal" value={form.postal_code} onChange={setF('postal_code')} placeholder="00228" />
-                    <Input label="Pays" value={form.country} onChange={setF('country')} required placeholder="Togo" />
-                  </div>
-                </div>
-              )}
-
-              {/* Payment method */}
+              {/* Mode de paiement */}
               <div>
                 <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Mode de paiement</p>
                 <div className="flex flex-col gap-3">
                   {[
                     { value: 'mobile_money', label: 'Mobile Money (Flooz / T-Money)' },
-                    { value: 'cash', label: 'Paiement a la livraison' },
+                    { value: 'cash', label: 'Paiement à la livraison' },
                     { value: 'card', label: 'Carte bancaire' },
                   ].map((opt) => (
                     <label key={opt.value} className="flex items-center gap-3 cursor-pointer p-4" style={{ border: `0.5px solid ${paymentMethod === opt.value ? 'var(--gold)' : 'rgba(240,234,210,0.15)'}`, borderRadius: 4, background: paymentMethod === opt.value ? 'rgba(232,185,106,0.04)' : 'transparent' }}>
@@ -462,7 +549,22 @@ export default function CommandePage() {
   );
 }
 
-// ── Composant récapitulatif du panier ──────────────────────────────────────────
+// ── Indicateur d'étape ─────────────────────────────────────────────────────────
+function StepDot({ n, active, done }: { n: number; active: boolean; done?: boolean }) {
+  return (
+    <div style={{
+      width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: active ? 'var(--gold)' : done ? 'rgba(232,185,106,0.15)' : 'transparent',
+      border: `0.5px solid ${active ? 'var(--gold)' : 'rgba(240,234,210,0.2)'}`,
+      color: active ? '#2D3A0F' : 'var(--cream-muted)',
+      fontSize: 11, fontWeight: 500,
+    }}>
+      {done ? '✓' : n}
+    </div>
+  );
+}
+
+// ── Récapitulatif du panier ────────────────────────────────────────────────────
 function CartSummary({ items, total, shipping }: { items: { id?: number | string; product_name?: string; quantity: number; subtotal?: number }[]; total: number; shipping: number }) {
   return (
     <div className="flex-shrink-0 flex flex-col gap-5" style={{ width: 'min(100%, 340px)', alignSelf: 'flex-start', background: 'rgba(240,234,210,0.04)', border: '0.5px solid rgba(240,234,210,0.1)', borderRadius: 4, padding: '28px' }}>

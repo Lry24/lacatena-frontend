@@ -323,7 +323,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
             {/* Tags */}
             {product.tags && (
               <div className="flex flex-wrap gap-2">
-                {product.tags.split(',').filter(Boolean).map((tag) => (
+                {(Array.isArray(product.tags) ? product.tags : product.tags.split(',')).filter(Boolean).map((tag: string) => (
                   <span key={tag.trim()} style={{ fontSize: 10, letterSpacing: '1px', padding: '3px 10px', border: '0.5px solid rgba(240,234,210,0.15)', borderRadius: 20, color: 'var(--cream-muted)' }}>
                     {tag.trim()}
                   </span>

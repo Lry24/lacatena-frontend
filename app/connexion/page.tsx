@@ -9,7 +9,7 @@ import { useAuthStore } from '@/store/authStore';
 function ConnexionForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/mon-compte';
+  const redirectTo = searchParams.get('redirect') || '/';
   const { login } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +36,7 @@ function ConnexionForm() {
     }
   };
 
-  const inscriptionHref = redirectTo !== '/mon-compte'
+  const inscriptionHref = redirectTo !== '/'
     ? `/inscription?redirect=${encodeURIComponent(redirectTo)}`
     : '/inscription';
 

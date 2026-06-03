@@ -1,11 +1,20 @@
 'use client';
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Input from '@/components/ui/Input';
 import { register, verifyOtp, resendOtp } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
+
+function extractApiError(err: unknown, fallback: string): string {
+  const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
+  if (!detail) return fallback;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail) && detail.length > 0)
+    return detail.map((d: { msg?: string }) => d.msg ?? String(d)).join(', ');
+  return fallback;
+}
 
 function InscriptionForm() {
   const router = useRouter();
@@ -45,8 +54,7 @@ function InscriptionForm() {
       await resendOtp(email);
       setResendTimer(120);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setError(msg || 'Erreur lors du renvoi du code.');
+      setError(extractApiError(err, 'Erreur lors du renvoi du code.'));
     } finally {
       setResendLoading(false);
     }
@@ -61,8 +69,7 @@ function InscriptionForm() {
       await register({ email, phone: phone || undefined, first_name: firstName, last_name: lastName, password });
       setStep(2);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setError(msg || 'Une erreur est survenue. Veuillez réessayer.');
+      setError(extractApiError(err, 'Une erreur est survenue. Veuillez réessayer.'));
     } finally {
       setLoading(false);
     }
@@ -77,14 +84,13 @@ function InscriptionForm() {
       await login({ email, password });
       router.push(redirectTo);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setError(msg || 'Code incorrect ou expiré.');
+      setError(extractApiError(err, 'Code incorrect ou expiré.'));
     } finally {
       setLoading(false);
     }
   };
 
-  const connexionHref = redirectTo !== '/mon-compte'
+  const connexionHref = redirectTo !== '/'
     ? `/connexion?redirect=${encodeURIComponent(redirectTo)}`
     : '/connexion';
 
