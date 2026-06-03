@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
@@ -119,10 +119,20 @@ export default function AdminConnexionPage() {
               color: '#1c2310', fontSize: 14, fontWeight: 600,
               cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'background 0.2s',
+              marginBottom: 16,
             }}
           >
             {loading ? 'Connexion…' : 'Se connecter'}
           </button>
+
+          <div style={{ textAlign: 'center' }}>
+            <a href="/" style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', textDecoration: 'none', letterSpacing: '1px' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#E8B96A')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
+            >
+              &larr; Retour au site
+            </a>
+          </div>
         </form>
       </div>
     </div>

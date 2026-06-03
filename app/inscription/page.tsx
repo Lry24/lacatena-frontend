@@ -1,9 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/Input';
-import { register, verifyOtp } from '@/lib/api';
+import { register, verifyOtp, resendOtp } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 
 export default function InscriptionPage() {
@@ -14,6 +14,8 @@ export default function InscriptionPage() {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
 
   // Step 1 fields
   const [firstName, setFirstName] = useState('');
@@ -21,6 +23,31 @@ export default function InscriptionPage() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0 || resendLoading) return;
+    setResendLoading(true);
+    setError('');
+    try {
+      await resendOtp(email);
+      setResendTimer(120);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setError(msg || 'Erreur lors du renvoi du code.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   const handleStep1 = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,6 +181,18 @@ export default function InscriptionPage() {
               >
                 {loading ? 'Vérification...' : 'Vérifier et accéder'}
               </button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={resendLoading || resendTimer > 0}
+                  className="text-xs uppercase tracking-widest transition-colors hover:text-[#f5cb85] disabled:opacity-50"
+                  style={{ color: 'var(--gold)', letterSpacing: '2px', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  {resendLoading ? 'Envoi...' : resendTimer > 0 ? `Renvoyer le code (${resendTimer}s)` : 'Renvoyer le code'}
+                </button>
+              </div>
             </form>
           </>
         )}

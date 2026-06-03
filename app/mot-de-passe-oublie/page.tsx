@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Input from '@/components/ui/Input';
 import { forgotPassword, resetPassword } from '@/lib/api';
@@ -12,6 +12,32 @@ export default function MotDePasseOubliePage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0 || loading) return;
+    setLoading(true);
+    setError('');
+    try {
+      await forgotPassword(email);
+      setResendTimer(120);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setError(msg || 'Erreur lors du renvoi du code.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleStep1 = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +46,7 @@ export default function MotDePasseOubliePage() {
     try {
       await forgotPassword(email);
       setStep(2);
+      setResendTimer(60);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       setError(msg || 'Aucun compte associé à cet email.');
@@ -118,6 +145,18 @@ export default function MotDePasseOubliePage() {
               >
                 {loading ? 'Réinitialisation...' : 'Réinitialiser'}
               </button>
+
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={loading || resendTimer > 0}
+                  className="text-xs uppercase tracking-widest transition-colors hover:text-[#f5cb85] disabled:opacity-50"
+                  style={{ color: 'var(--gold)', letterSpacing: '2px', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  {resendTimer > 0 ? `Renvoyer le code (${resendTimer}s)` : 'Renvoyer le code'}
+                </button>
+              </div>
             </form>
           </>
         )}
