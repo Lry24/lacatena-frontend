@@ -74,7 +74,7 @@ export default function Header() {
       >
         <div
           className="flex items-center"
-          style={{ padding: '0 40px', height: 96, maxWidth: 1440, margin: '0 auto' }}
+          style={{ padding: '0 40px', height: 130, maxWidth: 1440, margin: '0 auto' }}
         >
           {/* LEFT nav */}
           <nav className="hidden md:flex items-center gap-7 flex-1">
@@ -92,14 +92,14 @@ export default function Header() {
 
           {/* CENTER — Logo */}
           <div className="flex-1 flex justify-center md:flex-none md:mx-0">
-            <Link href="/" className="flex items-center justify-center group" style={{ filter: 'drop-shadow(0 0 12px rgba(232,185,106,0.18))' }}>
+            <Link href="/" className="flex items-center justify-center group" style={{ filter: 'drop-shadow(0 0 16px rgba(232,185,106,0.22))' }}>
               <Image
                 src="/images/noBack.png"
                 alt="La Catena"
-                width={110}
-                height={110}
+                width={160}
+                height={160}
                 className="object-contain transition-all duration-300 group-hover:scale-105"
-                style={{ filter: 'brightness(1.08)' }}
+                style={{ filter: 'brightness(1.1)' }}
                 priority
               />
             </Link>
