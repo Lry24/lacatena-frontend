@@ -84,8 +84,7 @@ export default function InscriptionPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: '#1A1F0E', padding: '48px 24px' }}>
       <Link href="/" className="flex flex-col items-center mb-12">
-        <span className="font-serif text-2xl" style={{ color: 'var(--gold)', letterSpacing: '-0.5px' }}>La Catena</span>
-        <span style={{ fontSize: 9, letterSpacing: '3px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginTop: 4 }}>Boutique Multibrand</span>
+        <img src="/images/noBack.png" alt="La Catena" style={{ width: 80, height: 80, objectFit: 'contain' }} />
       </Link>
 
       {/* Step indicator */}

@@ -21,6 +21,7 @@ export interface LoginData {
 export interface LoginResponse {
   access_token: string;
   refresh_token: string;
+  token_type?: string;
 }
 
 export interface ForgotPasswordData {
@@ -97,6 +98,7 @@ export interface ProductImageResponse {
   uuid: string;
   url: string;
   alt?: string;
+  alt_text?: string;
   is_primary: boolean;
 }
 
@@ -112,7 +114,7 @@ export interface ProductResponse {
   is_featured: boolean;
   gender: string;
   brand: string;
-  tags: string[];
+  tags?: string;
   primary_image_url?: string;
 }
 
@@ -188,8 +190,15 @@ export interface CreateOrderData {
 
 export interface OrderResponse {
   uuid: string;
-  reference: string;
+  order_number: string;
   status: string;
   total_ttc: number;
   created_at: string;
+}
+
+export interface OrderListResponse {
+  items: OrderResponse[];
+  total: number;
+  page: number;
+  pages: number;
 }

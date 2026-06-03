@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
@@ -27,6 +27,7 @@ export default function CommandePage() {
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const [useNewAddress, setUseNewAddress] = useState(true);
   const [form, setForm] = useState<FormData>({ recipient_name: '', phone: '', street: '', city: '', state: '', postal_code: '', country: 'Togo', notes: '' });
+  const [paymentMethod, setPaymentMethod] = useState<string>('mobile_money');
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -52,15 +53,15 @@ export default function CommandePage() {
     try {
       const order = await createOrderFromCart({
         session_key: sessionKey,
-        payment_method: 'mobile_money',
+        payment_method: paymentMethod,
         shipping_address_uuid: (!useNewAddress && selectedAddress) ? selectedAddress : undefined,
         shipping_cost: shipping,
         notes: form.notes || undefined,
       });
-      setConfirmed(order.reference);
+      setConfirmed(order.order_number);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setError(msg || 'Une erreur est survenue. Veuillez rÃ©essayer.');
+      setError(msg || 'Une erreur est survenue. Veuillez reessayer.');
     } finally {
       setLoading(false);
     }
@@ -72,13 +73,13 @@ export default function CommandePage() {
         <Header />
         <main style={{ paddingTop: 166, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="text-center animate-fade-up" style={{ maxWidth: 480, padding: '0 24px' }}>
-            <div className="chain-divider mb-8" style={{ fontSize: 28, letterSpacing: '4px', color: 'rgba(232,185,106,0.4)' }}>âŠ™âŠ™âŠ™âŠ™âŠ™âŠ™</div>
-            <h1 className="font-serif mb-4" style={{ fontSize: 40, color: 'var(--gold)' }}>Commande confirmÃ©e</h1>
+            <div className="chain-divider mb-8" style={{ fontSize: 28, letterSpacing: '4px', color: 'rgba(232,185,106,0.4)' }}>&#8857;&#8857;&#8857;&#8857;&#8857;&#8857;</div>
+            <h1 className="font-serif mb-4" style={{ fontSize: 40, color: 'var(--gold)' }}>Commande confirm&eacute;e</h1>
             <p style={{ color: 'var(--cream-muted)', fontSize: 14, lineHeight: 1.7, marginBottom: 8 }}>
-              Merci pour votre commande. Nous l&apos;avons bien reÃ§ue et la prÃ©parons avec soin.
+              Merci pour votre commande. Nous l&apos;avons bien re&ccedil;ue et la pr&eacute;parons avec soin.
             </p>
             <p style={{ fontSize: 11, letterSpacing: '2px', color: 'var(--cream-muted)', marginBottom: 40 }}>
-              RÃ©fÃ©rence : <span style={{ color: 'var(--gold)' }}>{confirmed}</span>
+              R&eacute;f&eacute;rence : <span style={{ color: 'var(--gold)' }}>{confirmed}</span>
             </p>
             <Link href="/boutique" className="uppercase font-medium tracking-widest transition-colors hover:bg-[#f5cb85]" style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '14px 28px', borderRadius: 2, fontSize: 10, letterSpacing: '2px' }}>
               Continuer les achats
@@ -103,7 +104,7 @@ export default function CommandePage() {
               {/* Saved addresses */}
               {isAuthenticated && addresses.length > 0 && (
                 <div>
-                  <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Adresses enregistrÃ©es</p>
+                  <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Adresses enregistr&eacute;es</p>
                   <div className="flex flex-col gap-3 mb-4">
                     {addresses.map((addr) => (
                       <label key={addr.uuid} className="flex items-start gap-3 cursor-pointer p-4" style={{ border: `0.5px solid ${selectedAddress === addr.uuid && !useNewAddress ? 'var(--gold)' : 'rgba(240,234,210,0.15)'}`, borderRadius: 4, background: selectedAddress === addr.uuid && !useNewAddress ? 'rgba(232,185,106,0.04)' : 'transparent' }}>
@@ -113,7 +114,7 @@ export default function CommandePage() {
                           className="mt-1 accent-[#E8B96A]"
                         />
                         <div>
-                          <p style={{ fontSize: 13, color: 'var(--cream)', fontWeight: 500 }}>{addr.label} â€” {addr.recipient_name}</p>
+                          <p style={{ fontSize: 13, color: 'var(--cream)', fontWeight: 500 }}>{addr.label} &mdash; {addr.recipient_name}</p>
                           <p style={{ fontSize: 12, color: 'var(--cream-muted)', marginTop: 4 }}>{addr.street}, {addr.city}, {addr.country}</p>
                         </div>
                       </label>
@@ -131,18 +132,42 @@ export default function CommandePage() {
                 <div>
                   <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Adresse de livraison</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input label="Nom complet" value={form.recipient_name} onChange={set('recipient_name')} required placeholder="PrÃ©nom Nom" />
-                    <Input label="TÃ©lÃ©phone" value={form.phone} onChange={set('phone')} required placeholder="+228 ..." type="tel" />
+                    <Input label="Nom complet" value={form.recipient_name} onChange={set('recipient_name')} required placeholder="Prenom Nom" />
+                    <Input label="Telephone" value={form.phone} onChange={set('phone')} required placeholder="+228 ..." type="tel" />
                     <div className="md:col-span-2">
-                      <Input label="Adresse" value={form.street} onChange={set('street')} required placeholder="Rue, numÃ©ro, quartier" />
+                      <Input label="Adresse" value={form.street} onChange={set('street')} required placeholder="Rue, numero, quartier" />
                     </div>
-                    <Input label="Ville" value={form.city} onChange={set('city')} required placeholder="LomÃ©" />
-                    <Input label="RÃ©gion / Ã‰tat" value={form.state} onChange={set('state')} required placeholder="Maritime" />
+                    <Input label="Ville" value={form.city} onChange={set('city')} required placeholder="Lome" />
+                    <Input label="Region / Etat" value={form.state} onChange={set('state')} required placeholder="Maritime" />
                     <Input label="Code postal" value={form.postal_code} onChange={set('postal_code')} placeholder="00228" />
                     <Input label="Pays" value={form.country} onChange={set('country')} required placeholder="Togo" />
                   </div>
                 </div>
               )}
+
+              {/* Payment method */}
+              <div>
+                <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Mode de paiement</p>
+                <div className="flex flex-col gap-3">
+                  {[
+                    { value: 'mobile_money', label: 'Mobile Money (Flooz / T-Money)' },
+                    { value: 'cash', label: 'Paiement a la livraison' },
+                    { value: 'card', label: 'Carte bancaire' },
+                  ].map((opt) => (
+                    <label key={opt.value} className="flex items-center gap-3 cursor-pointer p-4" style={{ border: `0.5px solid ${paymentMethod === opt.value ? 'var(--gold)' : 'rgba(240,234,210,0.15)'}`, borderRadius: 4, background: paymentMethod === opt.value ? 'rgba(232,185,106,0.04)' : 'transparent' }}>
+                      <input
+                        type="radio"
+                        name="payment_method"
+                        value={opt.value}
+                        checked={paymentMethod === opt.value}
+                        onChange={() => setPaymentMethod(opt.value)}
+                        className="accent-[#E8B96A]"
+                      />
+                      <span style={{ fontSize: 13, color: paymentMethod === opt.value ? 'var(--cream)' : 'var(--cream-muted)' }}>{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               {/* Notes */}
               <div>
@@ -151,7 +176,7 @@ export default function CommandePage() {
                   value={form.notes}
                   onChange={set('notes')}
                   rows={3}
-                  placeholder="Instructions particuliÃ¨res pour la livraison..."
+                  placeholder="Instructions particulieres pour la livraison..."
                   className="w-full px-4 py-3 text-sm outline-none resize-none transition-all"
                   style={{ background: 'rgba(240,234,210,0.05)', border: '0.5px solid rgba(240,234,210,0.1)', borderRadius: 4, color: 'var(--cream)', fontSize: 13 }}
                   onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--gold)'; }}
@@ -179,7 +204,7 @@ export default function CommandePage() {
                   <div key={item.id} className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <p style={{ fontSize: 12, color: 'var(--cream)', lineHeight: 1.4 }}>{item.product_name}</p>
-                      <p style={{ fontSize: 11, color: 'var(--cream-muted)' }}>Ã— {item.quantity}</p>
+                      <p style={{ fontSize: 11, color: 'var(--cream-muted)' }}>&times; {item.quantity}</p>
                     </div>
                     <span style={{ fontSize: 12, color: 'var(--cream)', flexShrink: 0 }}>
                       {item.subtotal.toLocaleString('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 })}
@@ -211,4 +236,3 @@ export default function CommandePage() {
     </>
   );
 }
-

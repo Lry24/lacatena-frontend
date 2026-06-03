@@ -9,22 +9,22 @@ import Breadcrumb from '@/components/common/Breadcrumb';
 import { getProducts, getCategories } from '@/lib/api';
 import type { ProductResponse, CategoryResponse } from '@/types';
 
-/* Swatches circulaires fixes pour accÃ¨s rapide â€” inspirÃ© African Avenue */
+/* Swatches circulaires fixes pour acces rapide — inspire African Avenue */
 const QUICK_FILTERS: { label: string; img: string; gender: string; category: string; isNew?: boolean; isPromo?: boolean }[] = [
   { label: 'Tous', img: '/images/categories/categories-01.png', gender: '', category: '' },
   { label: 'Femme', img: '/images/categories/categories-01.png', gender: 'femme', category: '' },
   { label: 'Homme', img: '/images/categories/categories-02.png', gender: 'homme', category: '' },
   { label: 'Accessoires', img: '/images/categories/categories-03.png', gender: '', category: 'accessoires' },
   { label: 'Enfant', img: '/images/categories/categories-04.png', gender: 'enfant', category: '' },
-  { label: 'NouveautÃ©s', img: '/images/categories/categories-05.png', gender: '', category: '', isNew: true },
+  { label: 'Nouveautes', img: '/images/categories/categories-05.png', gender: '', category: '', isNew: true },
   { label: 'Promos', img: '/images/categories/categories-06.png', gender: '', category: '', isPromo: true },
 ];
 
 const SORT_OPTIONS = [
-  { value: '', label: 'Trier par dÃ©faut' },
+  { value: '', label: 'Trier par defaut' },
   { value: 'price_asc', label: 'Prix croissant' },
-  { value: 'price_desc', label: 'Prix dÃ©croissant' },
-  { value: 'newest', label: 'NouveautÃ©s' },
+  { value: 'price_desc', label: 'Prix decroissant' },
+  { value: 'newest', label: 'Nouveautes' },
   { value: 'brand', label: 'Marque' },
 ];
 
@@ -109,7 +109,7 @@ function BoutiqueContent() {
     <>
       <Header />
       <main style={{ paddingTop: 166 }}>{/* 36px annonce + 64px nav */}
-        {/* â”€â”€ Quick filter swatches circulaires â€” African Avenue style â”€â”€ */}
+        {/* â”€â”€ Quick filter swatches circulaires — African Avenue style â”€â”€ */}
         <div style={{ borderBottom: '0.5px solid var(--border)', padding: '28px 40px' }}>
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10" style={{ maxWidth: 1440, margin: '0 auto' }}>
             {QUICK_FILTERS.map((f) => {
@@ -194,7 +194,7 @@ function BoutiqueContent() {
             {/* Categories */}
             {categories.length > 0 && (
               <div>
-                <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>CatÃ©gories</p>
+                <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>Categories</p>
                 <div className="flex flex-col gap-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="radio" name="category" value="" checked={categorySlug === ''} onChange={() => setCategorySlug('')} className="accent-[#E8B96A]" />
@@ -218,7 +218,7 @@ function BoutiqueContent() {
                   className="w-full px-2 py-2 text-sm outline-none"
                   style={{ background: 'rgba(240,234,210,0.05)', border: '0.5px solid rgba(240,234,210,0.1)', color: 'var(--cream)', borderRadius: 2 }}
                 />
-                <span style={{ color: 'var(--cream-muted)', fontSize: 12 }}>â€”</span>
+                <span style={{ color: 'var(--cream-muted)', fontSize: 12 }}>—</span>
                 <input type="number" placeholder="Max" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)}
                   className="w-full px-2 py-2 text-sm outline-none"
                   style={{ background: 'rgba(240,234,210,0.05)', border: '0.5px solid rgba(240,234,210,0.1)', color: 'var(--cream)', borderRadius: 2 }}
@@ -230,7 +230,7 @@ function BoutiqueContent() {
             <div className="flex flex-col gap-3">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={isNew} onChange={(e) => setIsNew(e.target.checked)} className="accent-[#E8B96A]" />
-                <span style={{ fontSize: 13, color: 'var(--cream-muted)' }}>NouveautÃ©s seulement</span>
+                <span style={{ fontSize: 13, color: 'var(--cream-muted)' }}>Nouveautes seulement</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={isPromo} onChange={(e) => setIsPromo(e.target.checked)} className="accent-[#E8B96A]" />
@@ -243,7 +243,7 @@ function BoutiqueContent() {
                 Appliquer
               </button>
               <button onClick={resetFilters} className="w-full uppercase text-xs tracking-widest py-2 transition-colors" style={{ border: '0.5px solid rgba(240,234,210,0.15)', color: 'var(--cream-muted)', borderRadius: 2, fontSize: 10, letterSpacing: '2px' }}>
-                RÃ©initialiser
+                Reinitialiser
               </button>
             </div>
           </aside>
@@ -274,7 +274,7 @@ function BoutiqueContent() {
               </div>
             ) : products.length === 0 ? (
               <div className="flex flex-col items-center justify-center" style={{ minHeight: 400, gap: 16 }}>
-                <p className="font-serif text-2xl" style={{ color: 'var(--cream-muted)' }}>Aucun produit trouvÃ©</p>
+                <p className="font-serif text-2xl" style={{ color: 'var(--cream-muted)' }}>Aucun produit trouve</p>
                 <button onClick={resetFilters} style={{ fontSize: 10, letterSpacing: '2px', color: 'var(--gold)', textTransform: 'uppercase' }}>
                   Voir tous les produits â†’
                 </button>
@@ -318,7 +318,7 @@ export default function BoutiquePage() {
   return (
     <Suspense fallback={
       <div style={{ minHeight: '100vh', background: '#1a1f0e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ color: 'var(--cream-muted)', letterSpacing: '3px', fontSize: 10, textTransform: 'uppercase' }}>Chargementâ€¦</span>
+        <span style={{ color: 'var(--cream-muted)', letterSpacing: '3px', fontSize: 10, textTransform: 'uppercase' }}>Chargement...</span>
       </div>
     }>
       <BoutiqueContent />
