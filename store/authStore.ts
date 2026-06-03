@@ -55,7 +55,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       const user = await api.getMe();
       set({ user, isAuthenticated: true });
     } catch {
-      set({ user: null, isAuthenticated: false });
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        document.cookie = 'access_token=; path=/; max-age=0';
+      }
+      set({ user: null, token: null, isAuthenticated: false });
     }
   },
 }));

@@ -21,6 +21,7 @@ export interface LoginData {
 export interface LoginResponse {
   access_token: string;
   refresh_token: string;
+  token_type?: string;
 }
 
 export interface ForgotPasswordData {
@@ -125,7 +126,7 @@ export interface ProductResponse {
   is_featured: boolean;
   gender: string;
   brand: string;
-  tags: string[];
+  tags?: string;
   primary_image_url?: string;
 }
 

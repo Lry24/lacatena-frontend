@@ -34,6 +34,9 @@ export const register = (data: RegisterData) =>
 export const verifyOtp = (data: VerifyOtpData) =>
   api.post('/auth/verify-otp', data).then((r) => r.data);
 
+export const resendOtp = (email: string) =>
+  api.post('/auth/resend-otp', { email }).then((r) => r.data);
+
 export const forgotPassword = (email: string) =>
   api.post('/auth/forgot-password', { email }).then((r) => r.data);
 

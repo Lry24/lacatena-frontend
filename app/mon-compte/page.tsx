@@ -432,15 +432,15 @@ export default function MonComptePage() {
                 <div style={{ background: 'rgba(240,234,210,0.04)', border: '0.5px solid rgba(240,234,210,0.1)', borderRadius: 4, padding: '28px', maxWidth: 540 }}>
                   <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 20 }}>Nouvelle adresse</p>
                   <form onSubmit={handleAddAddress} className="flex flex-col gap-4">
-                    <Input label="Libelle" value={addrForm.label} onChange={setAddr('label')} required placeholder="Domicile, Bureau..." />
+                    <Input label="Libell&eacute;" value={addrForm.label} onChange={setAddr('label')} required placeholder="Domicile, Bureau..." />
                     <div className="grid grid-cols-2 gap-3">
                       <Input label="Nom complet" value={addrForm.recipient_name} onChange={setAddr('recipient_name')} required placeholder="Prenom Nom" />
-                      <Input label="Telephone" value={addrForm.phone} onChange={setAddr('phone')} required placeholder="+228 ..." type="tel" />
+                      <Input label="T&eacute;l&eacute;phone" value={addrForm.phone} onChange={setAddr('phone')} required placeholder="+228 ..." type="tel" />
                     </div>
                     <Input label="Adresse" value={addrForm.street} onChange={setAddr('street')} required placeholder="Rue, quartier..." />
                     <div className="grid grid-cols-2 gap-3">
                       <Input label="Ville" value={addrForm.city} onChange={setAddr('city')} required placeholder="Lome" />
-                      <Input label="Region" value={addrForm.state} onChange={setAddr('state')} required placeholder="Maritime" />
+                      <Input label="R&eacute;gion" value={addrForm.state} onChange={setAddr('state')} required placeholder="Maritime" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <Input label="Code postal" value={addrForm.postal_code} onChange={setAddr('postal_code')} placeholder="00228" />

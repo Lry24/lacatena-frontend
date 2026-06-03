@@ -408,6 +408,30 @@ export default function CommandePage() {
                 </div>
               )}
 
+              {/* Payment method */}
+              <div>
+                <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>Mode de paiement</p>
+                <div className="flex flex-col gap-3">
+                  {[
+                    { value: 'mobile_money', label: 'Mobile Money (Flooz / T-Money)' },
+                    { value: 'cash', label: 'Paiement a la livraison' },
+                    { value: 'card', label: 'Carte bancaire' },
+                  ].map((opt) => (
+                    <label key={opt.value} className="flex items-center gap-3 cursor-pointer p-4" style={{ border: `0.5px solid ${paymentMethod === opt.value ? 'var(--gold)' : 'rgba(240,234,210,0.15)'}`, borderRadius: 4, background: paymentMethod === opt.value ? 'rgba(232,185,106,0.04)' : 'transparent' }}>
+                      <input
+                        type="radio"
+                        name="payment_method"
+                        value={opt.value}
+                        checked={paymentMethod === opt.value}
+                        onChange={() => setPaymentMethod(opt.value)}
+                        className="accent-[#E8B96A]"
+                      />
+                      <span style={{ fontSize: 13, color: paymentMethod === opt.value ? 'var(--cream)' : 'var(--cream-muted)' }}>{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               {/* Notes */}
               <div>
                 <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 12 }}>Note (optionnel)</p>

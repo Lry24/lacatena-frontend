@@ -63,7 +63,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = () => {
     logout();
-    router.replace('/admin/connexion');
+    router.replace('/');
   };
 
   const isActive = (href: string, exact?: boolean) => {
