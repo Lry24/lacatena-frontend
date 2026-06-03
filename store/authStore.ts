@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import type { UserResponse, LoginData } from '@/types';
 import * as api from '@/lib/api';
+import { useCartStore } from './cartStore';
 
 interface AuthState {
   user: UserResponse | null;
@@ -22,22 +23,31 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window !== 'undefined') {
       localStorage.setItem('access_token', res.access_token);
       localStorage.setItem('refresh_token', res.refresh_token);
-      // Poser aussi un cookie pour le middleware (protection routes /admin)
       document.cookie = `access_token=${res.access_token}; path=/; max-age=${60 * 60 * 24 * 30}`;
     }
     set({ token: res.access_token, isAuthenticated: true });
-    const user = await api.getMe();
-    set({ user });
+    
+    try {
+      const user = await api.getMe();
+      set({ user });
+    } catch (e) {
+      // Ignorer erreur temporaire
+    }
+
+    // Sync local cart items to server
+    await useCartStore.getState().syncLocalToServer();
   },
 
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
-      // Supprimer le cookie
       document.cookie = 'access_token=; path=/; max-age=0';
     }
     set({ user: null, token: null, isAuthenticated: false });
+    
+    // Refresh cart (will switch to local storage, which should be empty)
+    useCartStore.getState().fetchCart();
   },
 
   fetchMe: async () => {

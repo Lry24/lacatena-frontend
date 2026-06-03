@@ -49,8 +49,8 @@ export default function Footer() {
             <Image
               src="/images/noBack.png"
               alt="La Catena"
-              width={90}
-              height={90}
+              width={220}
+              height={220}
               className="object-contain logo-levitate"
             />
           </Link>

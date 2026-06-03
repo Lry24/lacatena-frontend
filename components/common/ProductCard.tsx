@@ -15,16 +15,23 @@ export default function ProductCard({ product, variantUuid }: Props) {
   const [hovered, setHovered] = useState(false);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
+  const [qty, setQty] = useState(1);
   const { addItem } = useCartStore();
   const { toggle, isInWishlist } = useWishlistStore();
   const wished = isInWishlist(product.uuid);
 
   const displayPrice = product.is_promo && product.promo_price != null
-    ? product.promo_price
-    : product.price_ttc;
+    ? (Number(product.promo_price) || 0)
+    : (Number(product.price_ttc) || 0);
 
   const fmt = (n: number | string) =>
     Number(n).toLocaleString('fr-FR') + ' FCFA';
+
+  const handleQty = (e: React.MouseEvent, delta: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setQty((q) => Math.max(1, Math.min(10, q + delta)));
+  };
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,8 +39,14 @@ export default function ProductCard({ product, variantUuid }: Props) {
     if (!variantUuid || adding) return;
     setAdding(true);
     try {
-      await addItem(variantUuid, 1);
+      await addItem(variantUuid, qty, {
+        product_name: product.name,
+        product_slug: product.slug,
+        unit_price: Number(displayPrice) || 0,
+        product_image_url: product.primary_image_url ?? undefined,
+      });
       setAdded(true);
+      setQty(1);
       setTimeout(() => setAdded(false), 1800);
     } finally {
       setAdding(false);
@@ -51,7 +64,7 @@ export default function ProductCard({ product, variantUuid }: Props) {
       href={`/produits/${product.slug}`}
       className="group block"
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => { setHovered(false); }}
     >
       {/* ── Image block ──────────────────────────────────────────────── */}
       <div
@@ -73,7 +86,6 @@ export default function ProductCard({ product, variantUuid }: Props) {
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
         ) : (
-          /* Placeholder élégant */
           <div className="w-full h-full flex flex-col items-center justify-center gap-3">
             <span style={{ fontSize: 28, color: 'rgba(232,185,106,0.2)', letterSpacing: 4 }}>⊙⊙⊙</span>
             <span style={{ fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.2)' }}>
@@ -82,11 +94,11 @@ export default function ProductCard({ product, variantUuid }: Props) {
           </div>
         )}
 
-        {/* Gradient overlay au hover (readabilité du CTA) */}
+        {/* Gradient overlay */}
         <div
           className="absolute inset-0 transition-opacity duration-300"
           style={{
-            background: 'linear-gradient(to top, rgba(26,31,14,0.75) 0%, transparent 50%)',
+            background: 'linear-gradient(to top, rgba(26,31,14,0.85) 0%, rgba(26,31,14,0.2) 45%, transparent 70%)',
             opacity: hovered ? 1 : 0,
             pointerEvents: 'none',
           }}
@@ -118,7 +130,7 @@ export default function ProductCard({ product, variantUuid }: Props) {
         {/* Wishlist top-right */}
         <button
           onClick={handleWishlist}
-          className="absolute top-3 right-3 z-10 flex items-center justify-center transition-all duration-200"
+          className="absolute top-3 right-3 z-10 flex items-center justify-center btn-outline"
           style={{
             width: 30, height: 30, borderRadius: '50%',
             background: wished ? 'var(--gold)' : 'rgba(26,31,14,0.65)',
@@ -132,33 +144,81 @@ export default function ProductCard({ product, variantUuid }: Props) {
           {wished ? '♥' : '♡'}
         </button>
 
-        {/* CTA slide-up depuis le bas — inspiré African Avenue */}
+        {/* CTA slide-up */}
         <div
           className="absolute bottom-0 left-0 right-0 z-10 transition-all duration-300"
           style={{
             transform: hovered ? 'translateY(0)' : 'translateY(100%)',
             opacity: hovered ? 1 : 0,
-            padding: '0 12px 12px',
+            padding: '0 10px 10px',
           }}
         >
           {variantUuid ? (
-            <button
-              onClick={handleAddToCart}
-              disabled={adding}
-              className="w-full transition-colors duration-200"
-              style={{
-                background: added ? '#4A6020' : 'var(--gold)',
-                color: added ? 'var(--gold)' : '#2D3A0F',
-                border: added ? '0.5px solid rgba(232,185,106,0.4)' : 'none',
-                padding: '10px',
-                fontSize: 9,
-                letterSpacing: '2.5px',
-                textTransform: 'uppercase',
-                fontWeight: 600,
-              }}
-            >
-              {added ? '✓ Ajouté' : adding ? '…' : 'Ajouter au panier'}
-            </button>
+            <div className="flex flex-col gap-1.5">
+              {/* Quantity row */}
+              <div className="flex items-center gap-2">
+                {/* Stepper */}
+                <div
+                  className="flex items-center"
+                  style={{
+                    background: 'rgba(26,31,14,0.85)',
+                    border: '0.5px solid rgba(232,185,106,0.3)',
+                    borderRadius: 2,
+                    backdropFilter: 'blur(6px)',
+                    flexShrink: 0,
+                  }}
+                >
+                  <button
+                    onClick={(e) => handleQty(e, -1)}
+                    className="flex items-center justify-center transition-colors hover:text-[var(--gold)]"
+                    style={{ width: 28, height: 28, color: 'rgba(240,234,210,0.6)', fontSize: 14, lineHeight: 1 }}
+                  >
+                    −
+                  </button>
+                  <span
+                    style={{
+                      width: 24, textAlign: 'center',
+                      fontSize: 12, fontWeight: 600,
+                      color: 'var(--gold)',
+                      borderLeft: '0.5px solid rgba(232,185,106,0.2)',
+                      borderRight: '0.5px solid rgba(232,185,106,0.2)',
+                      lineHeight: '28px',
+                    }}
+                  >
+                    {qty}
+                  </span>
+                  <button
+                    onClick={(e) => handleQty(e, 1)}
+                    className="flex items-center justify-center transition-colors hover:text-[var(--gold)]"
+                    style={{ width: 28, height: 28, color: 'rgba(240,234,210,0.6)', fontSize: 14, lineHeight: 1 }}
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Add to cart button */}
+                <button
+                  onClick={handleAddToCart}
+                  disabled={adding}
+                  className="btn-gold flex-1"
+                  style={{
+                    background: added ? '#4A6020' : 'var(--gold)',
+                    color: added ? 'var(--gold)' : '#2D3A0F',
+                    border: added ? '0.5px solid rgba(232,185,106,0.4)' : 'none',
+                    padding: '7px 8px',
+                    fontSize: 8,
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    boxShadow: added ? 'none' : '0 2px 12px rgba(232,185,106,0.25)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {added ? '✓ Ajouté' : adding ? '…' : 'Ajouter au panier'}
+                </button>
+              </div>
+            </div>
           ) : (
             <div style={{
               background: 'rgba(26,31,14,0.85)',
@@ -177,20 +237,17 @@ export default function ProductCard({ product, variantUuid }: Props) {
 
       {/* ── Info block ───────────────────────────────────────────────── */}
       <div style={{ marginTop: 12, paddingBottom: 4 }}>
-        {/* Brand label — uppercase muted, très petit */}
         {product.brand && (
           <p style={{ fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 4 }}>
             {product.brand}
           </p>
         )}
-        {/* Nom produit */}
         <p
           className="transition-colors duration-200 group-hover:text-[#E8B96A]"
           style={{ fontSize: 13, color: 'var(--cream)', lineHeight: 1.35, marginBottom: 6 }}
         >
           {product.name}
         </p>
-        {/* Prix */}
         <div className="flex items-center gap-2">
           <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--gold)' }}>
             {fmt(displayPrice)}

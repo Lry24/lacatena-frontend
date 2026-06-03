@@ -1,13 +1,16 @@
 'use client';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Input from '@/components/ui/Input';
 import { register, verifyOtp } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 
-export default function InscriptionPage() {
+function InscriptionForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/mon-compte';
   const { login } = useAuthStore();
   const [step, setStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState('');
@@ -45,7 +48,7 @@ export default function InscriptionPage() {
     try {
       await verifyOtp({ email, otp });
       await login({ email, password });
-      router.push('/mon-compte');
+      router.push(redirectTo);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       setError(msg || 'Code incorrect ou expiré.');
@@ -54,12 +57,24 @@ export default function InscriptionPage() {
     }
   };
 
+  const connexionHref = redirectTo !== '/mon-compte'
+    ? `/connexion?redirect=${encodeURIComponent(redirectTo)}`
+    : '/connexion';
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: '#1A1F0E', padding: '48px 24px' }}>
-      <Link href="/" className="flex flex-col items-center mb-12">
-        <span className="font-serif text-2xl" style={{ color: 'var(--gold)', letterSpacing: '-0.5px' }}>La Catena</span>
-        <span style={{ fontSize: 9, letterSpacing: '3px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginTop: 4 }}>Boutique Multibrand</span>
+      <Link href="/" className="flex flex-col items-center mb-8">
+        <Image src="/images/noBack.png" alt="La Catena" width={220} height={220} className="object-contain" style={{ filter: 'drop-shadow(0 0 16px rgba(232,185,106,0.22)) brightness(1.1)' }} priority />
       </Link>
+
+      {/* Message contextuel si redirection depuis le panier */}
+      {redirectTo === '/commande' && (
+        <div className="w-full max-w-[440px] mb-6" style={{ background: 'rgba(232,185,106,0.08)', border: '0.5px solid rgba(232,185,106,0.25)', borderRadius: 4, padding: '12px 16px', textAlign: 'center' }}>
+          <p style={{ fontSize: 12, color: 'var(--gold)', letterSpacing: '0.5px' }}>
+            Créez un compte pour finaliser votre commande
+          </p>
+        </div>
+      )}
 
       {/* Step indicator */}
       <div className="flex items-center gap-3 mb-10">
@@ -160,9 +175,17 @@ export default function InscriptionPage() {
 
         <p className="mt-8 text-center" style={{ fontSize: 13, color: 'var(--cream-muted)' }}>
           Déjà un compte ?{' '}
-          <Link href="/connexion" style={{ color: 'var(--gold)' }}>Se connecter</Link>
+          <Link href={connexionHref} style={{ color: 'var(--gold)' }}>Se connecter</Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function InscriptionPage() {
+  return (
+    <Suspense>
+      <InscriptionForm />
+    </Suspense>
   );
 }

@@ -9,9 +9,10 @@ import * as adminApi from '@/lib/adminApi';
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n);
 const fmtDate = (s: string) => new Date(s).toLocaleString('fr-FR');
 
-const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+const STATUSES = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled'];
 const STATUS_LABELS: Record<string, string> = {
-  pending: 'En attente', confirmed: 'Confirmée', shipped: 'Expédiée', delivered: 'Livrée', cancelled: 'Annulée', refunded: 'Remboursée',
+  pending: 'En attente', paid: 'Payée', processing: 'En traitement',
+  shipped: 'Expédiée', delivered: 'Livrée', cancelled: 'Annulée', refunded: 'Remboursée',
 };
 
 interface OrderDetail {

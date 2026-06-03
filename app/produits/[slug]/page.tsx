@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import { use } from 'react';
 import Image from 'next/image';
@@ -7,6 +7,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Breadcrumb from '@/components/common/Breadcrumb';
 import ProductCard from '@/components/common/ProductCard';
+import LoadingScreen from '@/components/common/LoadingScreen';
 import { getProduct, getProducts } from '@/lib/api';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
@@ -21,6 +22,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   const [mainImage, setMainImage] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [addedMsg, setAddedMsg] = useState(false);
+  const [qty, setQty] = useState(1);
 
   const { addItem } = useCartStore();
   const { toggle, isInWishlist } = useWishlistStore();
@@ -40,22 +42,14 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   }, [slug]);
 
   if (loading) {
-    return (
-      <>
-        <Header />
-        <main style={{ paddingTop: 166, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ color: 'var(--cream-muted)', fontSize: 13, letterSpacing: '2px', textTransform: 'uppercase' }}>Chargement...</div>
-        </main>
-        <Footer />
-      </>
-    );
+    return <LoadingScreen message="Chargement du produit" />;
   }
 
   if (!product) {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 166, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main style={{ paddingTop: 190, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="text-center">
             <p className="font-serif text-2xl" style={{ color: 'var(--gold)' }}>Produit introuvable</p>
             <Link href="/boutique" style={{ fontSize: 10, letterSpacing: '2px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginTop: 16, display: 'block' }}>← Retour boutique</Link>
@@ -67,8 +61,8 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   }
 
   const displayPrice = product.is_promo && product.promo_price != null
-    ? (product.promo_price + (selectedVariant?.extra_price ?? 0))
-    : (product.price_ttc + (selectedVariant?.extra_price ?? 0));
+    ? (Number(product.promo_price) || 0)
+    : (Number(product.price_ttc) || 0);
 
   const wished = isInWishlist(product.uuid);
 
@@ -76,8 +70,18 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
     if (!selectedVariant) return;
     setAdding(true);
     try {
-      await addItem(selectedVariant.uuid, 1);
+      await addItem(selectedVariant.uuid, qty, {
+        product_name: product.name,
+        product_slug: product.slug,
+        variant_sku: selectedVariant.sku,
+        unit_price: displayPrice,
+        subtotal: displayPrice,
+        product_image_url: mainImage ?? undefined,
+        variant_size: selectedVariant.size,
+        variant_color: selectedVariant.color,
+      });
       setAddedMsg(true);
+      setQty(1);
       setTimeout(() => setAddedMsg(false), 2500);
     } finally {
       setAdding(false);
@@ -91,7 +95,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 166 }}>
+      <main style={{ paddingTop: 190 }}>
         {/* Breadcrumb */}
         <div style={{ padding: '24px 40px', maxWidth: 1440, margin: '0 auto' }}>
           <Breadcrumb items={[
@@ -227,10 +231,48 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
 
             {/* Actions */}
             <div className="flex flex-col gap-3 mt-2">
+              {/* Sélecteur de quantité */}
+              {activeSizes.length > 0 && (
+                <div className="flex items-center gap-4">
+                  <span style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}>Quantité</span>
+                  <div
+                    className="flex items-center"
+                    style={{ border: '0.5px solid rgba(232,185,106,0.3)', borderRadius: 2, background: 'rgba(232,185,106,0.04)' }}
+                  >
+                    <button
+                      onClick={() => setQty((q) => Math.max(1, q - 1))}
+                      className="flex items-center justify-center transition-colors hover:text-[var(--gold)]"
+                      style={{ width: 40, height: 40, color: 'rgba(240,234,210,0.5)', fontSize: 18, lineHeight: 1 }}
+                    >
+                      −
+                    </button>
+                    <span
+                      style={{
+                        width: 44, textAlign: 'center',
+                        fontSize: 15, fontWeight: 600, color: 'var(--gold)',
+                        borderLeft: '0.5px solid rgba(232,185,106,0.2)',
+                        borderRight: '0.5px solid rgba(232,185,106,0.2)',
+                        lineHeight: '40px',
+                      }}
+                    >
+                      {qty}
+                    </span>
+                    <button
+                      onClick={() => setQty((q) => Math.min(10, q + 1))}
+                      className="flex items-center justify-center transition-colors hover:text-[var(--gold)]"
+                      style={{ width: 40, height: 40, color: 'rgba(240,234,210,0.5)', fontSize: 18, lineHeight: 1 }}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span style={{ fontSize: 12, color: 'rgba(240,234,210,0.35)' }}>/ 10 max</span>
+                </div>
+              )}
+
               <button
                 onClick={handleAddToCart}
                 disabled={adding || !selectedVariant || activeSizes.length === 0}
-                className="w-full uppercase font-medium tracking-widest transition-all duration-200 hover:bg-[#f5cb85] disabled:opacity-40"
+                className="w-full uppercase font-medium tracking-widest transition-all duration-200 hover:bg-[#f5cb85] disabled:opacity-40 btn-gold"
                 style={{
                   background: addedMsg ? '#4A6020' : 'var(--gold)',
                   color: addedMsg ? 'var(--gold)' : '#2D3A0F',
@@ -239,15 +281,16 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                   fontSize: 11,
                   letterSpacing: '2px',
                   border: addedMsg ? '0.5px solid rgba(232,185,106,0.3)' : 'none',
+                  boxShadow: addedMsg ? 'none' : '0 4px 20px rgba(232,185,106,0.2)',
                 }}
               >
                 {activeSizes.length === 0
                   ? 'Rupture de stock'
                   : addedMsg
-                  ? '✓ Ajouté au panier'
+                  ? `✓ ${qty > 1 ? qty + ' articles ajoutés' : 'Ajouté au panier'}`
                   : adding
                   ? '...'
-                  : 'Ajouter au panier'}
+                  : qty > 1 ? `Ajouter ${qty} au panier` : 'Ajouter au panier'}
               </button>
 
               <button

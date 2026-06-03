@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import Input from '@/components/ui/Input';
 import { forgotPassword, resetPassword } from '@/lib/api';
@@ -46,9 +47,8 @@ export default function MotDePasseOubliePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: '#1A1F0E', padding: '48px 24px' }}>
-      <Link href="/" className="flex flex-col items-center mb-12">
-        <span className="font-serif text-2xl" style={{ color: 'var(--gold)', letterSpacing: '-0.5px' }}>La Catena</span>
-        <span style={{ fontSize: 9, letterSpacing: '3px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginTop: 4 }}>Boutique Multibrand</span>
+      <Link href="/" className="flex flex-col items-center mb-8">
+        <Image src="/images/noBack.png" alt="La Catena" width={220} height={220} className="object-contain" style={{ filter: 'drop-shadow(0 0 16px rgba(232,185,106,0.22)) brightness(1.1)' }} priority />
       </Link>
 
       <div style={{ width: '100%', maxWidth: 400 }}>

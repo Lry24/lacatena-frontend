@@ -1,13 +1,15 @@
 'use client';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Input from '@/components/ui/Input';
 import { useAuthStore } from '@/store/authStore';
 
-export default function ConnexionPage() {
+function ConnexionForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/mon-compte';
   const { login } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +26,7 @@ export default function ConnexionPage() {
       if (user && ['admin', 'staff'].includes(user.role)) {
         router.push('/admin');
       } else {
-        router.push('/mon-compte');
+        router.push(redirectTo);
       }
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
@@ -33,6 +35,10 @@ export default function ConnexionPage() {
       setLoading(false);
     }
   };
+
+  const inscriptionHref = redirectTo !== '/mon-compte'
+    ? `/inscription?redirect=${encodeURIComponent(redirectTo)}`
+    : '/inscription';
 
   return (
     <div className="min-h-screen flex" style={{ background: '#1A1F0E' }}>
@@ -48,9 +54,18 @@ export default function ConnexionPage() {
 
       {/* Form */}
       <div className="flex-1 flex flex-col items-center justify-center" style={{ padding: '48px 40px', maxWidth: 480, margin: '0 auto' }}>
-        <Link href="/" className="flex flex-col items-center mb-12">
-          <img src="/images/noBack.png" alt="La Catena" style={{ width: 80, height: 80, objectFit: 'contain' }} />
+        <Link href="/" className="flex flex-col items-center mb-8">
+          <Image src="/images/noBack.png" alt="La Catena" width={220} height={220} className="object-contain" style={{ filter: 'drop-shadow(0 0 16px rgba(232,185,106,0.22)) brightness(1.1)' }} priority />
         </Link>
+
+        {/* Message contextuel si redirection depuis le panier */}
+        {redirectTo === '/commande' && (
+          <div className="w-full mb-6" style={{ background: 'rgba(232,185,106,0.08)', border: '0.5px solid rgba(232,185,106,0.25)', borderRadius: 4, padding: '12px 16px', textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: 'var(--gold)', letterSpacing: '0.5px' }}>
+              Connectez-vous pour finaliser votre commande
+            </p>
+          </div>
+        )}
 
         <h1 className="font-serif mb-2 text-center" style={{ fontSize: 32, color: 'var(--cream)' }}>Connexion</h1>
         <p className="mb-10 text-center" style={{ fontSize: 13, color: 'var(--cream-muted)' }}>
@@ -87,9 +102,17 @@ export default function ConnexionPage() {
 
         <p className="mt-8 text-center" style={{ fontSize: 13, color: 'var(--cream-muted)' }}>
           Pas encore de compte ?{' '}
-          <Link href="/inscription" style={{ color: 'var(--gold)' }}>Créer un compte</Link>
+          <Link href={inscriptionHref} style={{ color: 'var(--gold)' }}>Créer un compte</Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function ConnexionPage() {
+  return (
+    <Suspense>
+      <ConnexionForm />
+    </Suspense>
   );
 }

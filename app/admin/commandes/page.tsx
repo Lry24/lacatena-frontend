@@ -19,11 +19,12 @@ interface Order {
 const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n);
 const fmtDate = (s: string) => new Date(s).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-const STATUSES = ['', 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled', 'refunded'];
+const STATUSES = ['', 'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
 const STATUS_LABELS: Record<string, string> = {
   '': 'Tous les statuts',
   pending: 'En attente',
-  confirmed: 'Confirmée',
+  paid: 'Payée',
+  processing: 'En traitement',
   shipped: 'Expédiée',
   delivered: 'Livrée',
   cancelled: 'Annulée',

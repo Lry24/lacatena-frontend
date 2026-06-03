@@ -2,8 +2,10 @@ import axios from 'axios';
 import type {
   LoginData, LoginResponse, RegisterData, VerifyOtpData, ResetPasswordData,
   ProductsParams, PaginatedProducts, ProductDetailResponse,
-  CategoryResponse, CartSessionResponse, CartResponse, AddToCartData,
-  CreateOrderData, OrderResponse, UserResponse, AddressCreate, AddressResponse,
+  CategoryResponse, CartResponse, AddToCartData,
+  CreateOrderData, OrderResponse, PaginatedOrders,
+  UserResponse, UserUpdate, PasswordChangeData,
+  AddressCreate, AddressResponse,
 } from '@/types';
 
 const api = axios.create({
@@ -54,25 +56,28 @@ export const getCategories = () =>
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────
 
-export const createCartSession = () =>
-  api.post<CartSessionResponse>('/cart/session').then((r) => r.data);
+export const getCart = () =>
+  api.get<CartResponse>(`/cart/me`).then((r) => r.data);
 
-export const getCart = (sessionKey: string) =>
-  api.get<CartResponse>(`/cart/${sessionKey}`).then((r) => r.data);
+export const addToCart = (item: AddToCartData) =>
+  api.post<CartResponse>(`/cart/me/items`, item).then((r) => r.data);
 
-export const addToCart = (sessionKey: string, item: AddToCartData) =>
-  api.post<CartResponse>(`/cart/${sessionKey}/items`, item).then((r) => r.data);
+export const updateCartItem = (itemId: number, quantity: number) =>
+  api.patch<CartResponse>(`/cart/me/items/${itemId}`, { quantity }).then((r) => r.data);
 
-export const updateCartItem = (sessionKey: string, itemId: number, quantity: number) =>
-  api.patch<CartResponse>(`/cart/${sessionKey}/items/${itemId}`, { quantity }).then((r) => r.data);
+export const removeCartItem = (itemId: number) =>
+  api.delete<CartResponse>(`/cart/me/items/${itemId}`).then((r) => r.data);
 
-export const removeCartItem = (sessionKey: string, itemId: number) =>
-  api.delete<CartResponse>(`/cart/${sessionKey}/items/${itemId}`).then((r) => r.data);
+export const clearCartServer = () =>
+  api.delete<CartResponse>(`/cart/me`).then((r) => r.data);
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
 
 export const createOrderFromCart = (data: CreateOrderData) =>
   api.post<OrderResponse>('/orders/from-cart', data).then((r) => r.data);
+
+export const getPaymentMethods = () =>
+  api.get<{ value: string; label: string }[]>('/orders/payment-methods').then((r) => r.data);
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 
@@ -81,5 +86,23 @@ export const getUserAddresses = () =>
 
 export const createAddress = (data: AddressCreate) =>
   api.post<AddressResponse>('/users/me/addresses', data).then((r) => r.data);
+
+export const deleteAddress = (uuid: string) =>
+  api.delete(`/users/me/addresses/${uuid}`).then((r) => r.data);
+
+export const setDefaultAddress = (uuid: string) =>
+  api.patch<AddressResponse>(`/users/me/addresses/${uuid}/set-default`).then((r) => r.data);
+
+export const updateProfile = (data: UserUpdate) =>
+  api.patch<UserResponse>('/users/me', data).then((r) => r.data);
+
+export const changePassword = (data: PasswordChangeData) =>
+  api.patch('/users/me/password', data).then((r) => r.data);
+
+export const getMyOrders = (page = 1, size = 20) =>
+  api.get<PaginatedOrders>('/users/me/orders', { params: { page, size } }).then((r) => r.data);
+
+export const getOrderDetail = (uuid: string) =>
+  api.get('/orders/' + uuid).then((r) => r.data);
 
 export default api;

@@ -2,84 +2,219 @@
 import { create } from 'zustand';
 import type { CartItemResponse } from '@/types';
 import * as api from '@/lib/api';
+import { useAuthStore } from './authStore';
+
+export interface LocalCartItem {
+  id?: number | string; // Use variant_uuid as id locally
+  variant_uuid: string;
+  quantity: number;
+  product_name?: string;
+  product_slug?: string;
+  variant_sku?: string;
+  unit_price?: number;
+  subtotal?: number;
+  product_image_url?: string;
+  variant_size?: string;
+  variant_color?: string;
+}
 
 interface CartState {
-  sessionKey: string | null;
-  items: CartItemResponse[];
+  items: CartItemResponse[] | LocalCartItem[];
   total: number;
   totalItems: number;
   loading: boolean;
-  initSession: () => Promise<void>;
   fetchCart: () => Promise<void>;
-  addItem: (variantUuid: string, quantity?: number) => Promise<void>;
-  updateItem: (itemId: number, quantity: number) => Promise<void>;
-  removeItem: (itemId: number) => Promise<void>;
-  clearCart: () => void;
+  addItem: (variantUuid: string, quantity?: number, extraInfo?: Partial<LocalCartItem>) => Promise<void>;
+  updateItem: (itemId: number | string, quantity: number) => Promise<void>;
+  removeItem: (itemId: number | string) => Promise<void>;
+  clearCart: () => Promise<void>;
+  syncLocalToServer: () => Promise<void>;
 }
 
-const SESSION_KEY = 'cart_session_key';
+const LOCAL_CART_KEY = 'lacatena_cart';
 
 export const useCartStore = create<CartState>((set, get) => ({
-  sessionKey: null,
   items: [],
   total: 0,
   totalItems: 0,
   loading: false,
 
-  initSession: async () => {
-    let key = typeof window !== 'undefined' ? localStorage.getItem(SESSION_KEY) : null;
-    if (!key) {
-      const session = await api.createCartSession();
-      key = session.session_key;
-      if (typeof window !== 'undefined') localStorage.setItem(SESSION_KEY, key);
-    }
-    set({ sessionKey: key });
-    await get().fetchCart();
-  },
-
   fetchCart: async () => {
-    const { sessionKey } = get();
-    if (!sessionKey) return;
-    try {
-      set({ loading: true });
-      const cart = await api.getCart(sessionKey);
-      set({ items: cart.items, total: cart.total_ttc, totalItems: cart.total_items });
-    } catch {
-      // session may be expired — reset
-      if (typeof window !== 'undefined') localStorage.removeItem(SESSION_KEY);
-      set({ sessionKey: null, items: [], total: 0, totalItems: 0 });
-    } finally {
-      set({ loading: false });
+    const isAuthenticated = useAuthStore.getState().isAuthenticated;
+    if (isAuthenticated) {
+      try {
+        set({ loading: true });
+        const cart = await api.getCart();
+        set({ items: cart.items ?? [], total: cart.total_ttc ?? 0, totalItems: cart.total_items ?? 0 });
+      } catch {
+        set({ items: [], total: 0, totalItems: 0 });
+      } finally {
+        set({ loading: false });
+      }
+    } else {
+      if (typeof window !== 'undefined') {
+        const local = localStorage.getItem(LOCAL_CART_KEY);
+        if (local) {
+          try {
+            const parsed = JSON.parse(local);
+            const items = (parsed.items || []).map((item: any) => ({
+              ...item,
+              unit_price: Number(item.unit_price) || 0,
+              quantity: Number(item.quantity) || 0,
+              subtotal: (Number(item.unit_price) || 0) * (Number(item.quantity) || 0),
+            }));
+            const totalItems = items.reduce((acc: number, item: any) => acc + item.quantity, 0);
+            const total = items.reduce((acc: number, item: any) => acc + item.unit_price * item.quantity, 0);
+            set({ items, total, totalItems });
+          } catch {
+            set({ items: [], total: 0, totalItems: 0 });
+          }
+        } else {
+            set({ items: [], total: 0, totalItems: 0 });
+        }
+      }
     }
   },
 
-  addItem: async (variantUuid, quantity = 1) => {
-    let { sessionKey } = get();
-    if (!sessionKey) {
-      await get().initSession();
-      sessionKey = get().sessionKey;
+  addItem: async (variantUuid, quantity = 1, extraInfo = {}) => {
+    const isAuthenticated = useAuthStore.getState().isAuthenticated;
+    const previousState = { items: get().items, total: get().total, totalItems: get().totalItems };
+
+    const { items } = get();
+    const newItems = [...items] as LocalCartItem[];
+    const existing = newItems.find((i) => i.variant_uuid === variantUuid);
+    if (existing) {
+      existing.quantity += quantity;
+      existing.subtotal = (Number(existing.unit_price) || 0) * existing.quantity;
+    } else {
+      const unitPrice = Number(extraInfo.unit_price) || 0;
+      newItems.push({ id: variantUuid, variant_uuid: variantUuid, quantity, ...extraInfo, unit_price: unitPrice, subtotal: unitPrice * quantity });
     }
-    if (!sessionKey) return;
-    const cart = await api.addToCart(sessionKey, { variant_uuid: variantUuid, quantity });
-    set({ items: cart.items, total: cart.total_ttc, totalItems: cart.total_items });
+    const totalItems = newItems.reduce((acc, item) => acc + item.quantity, 0);
+    const total = newItems.reduce((acc, item) => acc + (Number(item.unit_price) || 0) * item.quantity, 0);
+    
+    // Mise à jour optimiste
+    set({ items: newItems as CartItemResponse[], total, totalItems });
+
+    if (isAuthenticated) {
+      try {
+        const cart = await api.addToCart({ variant_uuid: variantUuid, quantity });
+        set({ items: cart.items, total: cart.total_ttc, totalItems: cart.total_items });
+      } catch (err) {
+        // En cas d'erreur API, on annule (rollback)
+        set(previousState);
+      }
+    } else {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(LOCAL_CART_KEY, JSON.stringify({ items: newItems }));
+      }
+    }
   },
 
   updateItem: async (itemId, quantity) => {
-    const { sessionKey } = get();
-    if (!sessionKey) return;
-    const cart = await api.updateCartItem(sessionKey, itemId, quantity);
-    set({ items: cart.items, total: cart.total_ttc, totalItems: cart.total_items });
+    const isAuthenticated = useAuthStore.getState().isAuthenticated;
+    const previousState = { items: get().items, total: get().total, totalItems: get().totalItems };
+
+    const { items } = get();
+    const newItems = [...items] as LocalCartItem[];
+    const index = newItems.findIndex((i) => i.variant_uuid === itemId || i.id === itemId);
+    
+    if (index !== -1) {
+      if (quantity <= 0) {
+        newItems.splice(index, 1);
+      } else {
+        newItems[index].quantity = quantity;
+        newItems[index].subtotal = (Number(newItems[index].unit_price) || 0) * quantity;
+      }
+      const totalItems = newItems.reduce((acc, item) => acc + item.quantity, 0);
+      const total = newItems.reduce((acc, item) => acc + (Number(item.unit_price) || 0) * item.quantity, 0);
+      
+      // Mise à jour optimiste
+      set({ items: newItems as CartItemResponse[], total, totalItems });
+
+      if (isAuthenticated) {
+        if (typeof itemId === 'number' || !isNaN(Number(itemId))) {
+            try {
+              const cart = await api.updateCartItem(Number(itemId), quantity);
+              set({ items: cart.items, total: cart.total_ttc, totalItems: cart.total_items });
+            } catch (err) {
+              set(previousState);
+            }
+        } else {
+             // C'est un string temporaire avant fetch complet, on annule l'optimiste et on refresh
+             set(previousState);
+             get().fetchCart();
+        }
+      } else {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(LOCAL_CART_KEY, JSON.stringify({ items: newItems }));
+        }
+      }
+    }
   },
 
   removeItem: async (itemId) => {
-    const { sessionKey } = get();
-    if (!sessionKey) return;
-    const cart = await api.removeCartItem(sessionKey, itemId);
-    set({ items: cart.items, total: cart.total_ttc, totalItems: cart.total_items });
+    const isAuthenticated = useAuthStore.getState().isAuthenticated;
+    const previousState = { items: get().items, total: get().total, totalItems: get().totalItems };
+
+    const { items } = get();
+    const newItems = (items as LocalCartItem[]).filter((i) => i.variant_uuid !== itemId && i.id !== itemId);
+    const totalItems = newItems.reduce((acc, item) => acc + item.quantity, 0);
+    const total = newItems.reduce((acc, item) => acc + (item.unit_price || 0) * item.quantity, 0);
+    
+    // Mise à jour optimiste
+    set({ items: newItems as CartItemResponse[], total, totalItems });
+
+    if (isAuthenticated) {
+        if (typeof itemId === 'number' || !isNaN(Number(itemId))) {
+            try {
+              const cart = await api.removeCartItem(Number(itemId));
+              set({ items: cart.items, total: cart.total_ttc, totalItems: cart.total_items });
+            } catch (err) {
+              set(previousState);
+            }
+        } else {
+            set(previousState);
+            get().fetchCart();
+        }
+    } else {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(LOCAL_CART_KEY, JSON.stringify({ items: newItems }));
+      }
+    }
   },
 
-  clearCart: () => {
-    if (typeof window !== 'undefined') localStorage.removeItem(SESSION_KEY);
-    set({ sessionKey: null, items: [], total: 0, totalItems: 0 });
+  clearCart: async () => {
+    const isAuthenticated = useAuthStore.getState().isAuthenticated;
+    if (isAuthenticated) {
+      try {
+        await api.clearCartServer();
+      } catch {}
+    }
+    if (typeof window !== 'undefined') localStorage.removeItem(LOCAL_CART_KEY);
+    set({ items: [], total: 0, totalItems: 0 });
   },
+
+  syncLocalToServer: async () => {
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem(LOCAL_CART_KEY);
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          const items = parsed.items || [];
+          for (const item of items) {
+            try {
+              await api.addToCart({ variant_uuid: item.variant_uuid, quantity: item.quantity });
+            } catch (e) {
+              console.error("Failed to sync item", item);
+            }
+          }
+          localStorage.removeItem(LOCAL_CART_KEY);
+        } catch (e) {
+          console.error("Failed to parse local cart", e);
+        }
+      }
+    }
+    await get().fetchCart();
+  }
 }));

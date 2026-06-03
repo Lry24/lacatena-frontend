@@ -27,9 +27,12 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [announcementIdx, setAnnouncementIdx] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const { totalItems } = useCartStore();
   const { items: wishlistItems } = useWishlistStore();
   const { isAuthenticated } = useAuthStore();
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -74,7 +77,7 @@ export default function Header() {
       >
         <div
           className="flex items-center"
-          style={{ padding: '0 40px', height: 130, maxWidth: 1440, margin: '0 auto' }}
+          style={{ padding: '0 40px', height: 155, maxWidth: 1440, margin: '0 auto' }}
         >
           {/* LEFT nav */}
           <nav className="hidden md:flex items-center gap-7 flex-1">
@@ -96,8 +99,8 @@ export default function Header() {
               <Image
                 src="/images/noBack.png"
                 alt="La Catena"
-                width={160}
-                height={160}
+                width={220}
+                height={220}
                 className="object-contain transition-all duration-300 group-hover:scale-105"
                 style={{ filter: 'brightness(1.1)' }}
                 priority
@@ -155,7 +158,7 @@ export default function Header() {
             </Link>
 
             {/* Account */}
-            <Link href={isAuthenticated ? '/mon-compte' : '/connexion'} aria-label="Compte" className="transition-opacity hover:opacity-60">
+            <Link href={mounted && isAuthenticated ? '/mon-compte' : '/connexion'} aria-label="Compte" className="transition-opacity hover:opacity-60">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(245,237,216,0.75)" strokeWidth="1.5">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
               </svg>
@@ -202,9 +205,9 @@ export default function Header() {
           ))}
           <div style={{ height: '0.5px', background: 'var(--border)' }} />
           <Link href="/favoris" onClick={() => setMenuOpen(false)} style={{ fontSize: 11, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}>Favoris</Link>
-          <Link href={isAuthenticated ? '/mon-compte' : '/connexion'} onClick={() => setMenuOpen(false)}
+          <Link href={mounted && isAuthenticated ? '/mon-compte' : '/connexion'} onClick={() => setMenuOpen(false)}
             style={{ fontSize: 11, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)' }}>
-            {isAuthenticated ? 'Mon compte' : 'Connexion'}
+            {mounted && isAuthenticated ? 'Mon compte' : 'Connexion'}
           </Link>
         </div>
       </div>

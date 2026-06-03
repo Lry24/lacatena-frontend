@@ -37,13 +37,13 @@ export interface ResetPasswordData {
 
 export interface AddressResponse {
   uuid: string;
-  label: string;
+  label?: string;
   recipient_name: string;
-  phone: string;
+  phone?: string;
   street: string;
   city: string;
-  state: string;
-  postal_code: string;
+  state?: string;
+  postal_code?: string;
   country: string;
   is_default: boolean;
 }
@@ -69,7 +69,19 @@ export interface UserResponse {
   full_name: string;
   role: string;
   is_verified: boolean;
+  avatar_url?: string;
   addresses: AddressResponse[];
+}
+
+export interface UserUpdate {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+}
+
+export interface PasswordChangeData {
+  old_password: string;
+  new_password: string;
 }
 
 // ─── Category ─────────────────────────────────────────────────────────────────
@@ -97,6 +109,7 @@ export interface ProductImageResponse {
   uuid: string;
   url: string;
   alt?: string;
+  alt_text?: string;
   is_primary: boolean;
 }
 
@@ -147,10 +160,7 @@ export interface PaginatedProducts {
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────
 
-export interface CartSessionResponse {
-  session_key: string;
-  expires_at: string;
-}
+
 
 export interface CartItemResponse {
   id: number;
@@ -158,6 +168,7 @@ export interface CartItemResponse {
   unit_price: number;
   subtotal: number;
   product_name: string;
+  product_slug?: string;
   product_image_url?: string;
   variant_size: string;
   variant_color: string;
@@ -165,7 +176,6 @@ export interface CartItemResponse {
 
 export interface CartResponse {
   uuid: string;
-  session_key: string;
   total_ttc: number;
   total_items: number;
   items: CartItemResponse[];
@@ -179,17 +189,27 @@ export interface AddToCartData {
 // ─── Order ────────────────────────────────────────────────────────────────────
 
 export interface CreateOrderData {
-  session_key: string;
   payment_method: string;
   shipping_address_uuid?: string;
+  shipping_address_snapshot?: Record<string, string>;
   shipping_cost: number;
   notes?: string;
 }
 
 export interface OrderResponse {
   uuid: string;
-  reference: string;
+  order_number: string;
   status: string;
   total_ttc: number;
+  shipping_cost: number;
+  payment_method?: string;
   created_at: string;
+}
+
+export interface PaginatedOrders {
+  items: OrderResponse[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
 }

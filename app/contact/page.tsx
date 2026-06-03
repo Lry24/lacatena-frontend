@@ -20,7 +20,7 @@ export default function ContactPage() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 166 }}>
+      <main style={{ paddingTop: 190 }}>
         {/* Hero */}
         <div
           className="flex flex-col items-center justify-center text-center"
