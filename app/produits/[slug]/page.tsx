@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useEffect, useState } from 'react';
 import { use } from 'react';
 import Image from 'next/image';
@@ -43,7 +43,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 100, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main style={{ paddingTop: 132, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ color: 'var(--cream-muted)', fontSize: 13, letterSpacing: '2px', textTransform: 'uppercase' }}>Chargement...</div>
         </main>
         <Footer />
@@ -55,7 +55,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 100, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main style={{ paddingTop: 132, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="text-center">
             <p className="font-serif text-2xl" style={{ color: 'var(--gold)' }}>Produit introuvable</p>
             <Link href="/boutique" style={{ fontSize: 10, letterSpacing: '2px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginTop: 16, display: 'block' }}>← Retour boutique</Link>
@@ -91,7 +91,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 100 }}>
+      <main style={{ paddingTop: 132 }}>
         {/* Breadcrumb */}
         <div style={{ padding: '24px 40px', maxWidth: 1440, margin: '0 auto' }}>
           <Breadcrumb items={[

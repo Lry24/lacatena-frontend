@@ -20,7 +20,12 @@ export default function ConnexionPage() {
     setError('');
     try {
       await login({ email, password });
-      router.push('/mon-compte');
+      const user = useAuthStore.getState().user;
+      if (user && ['admin', 'staff'].includes(user.role)) {
+        router.push('/admin');
+      } else {
+        router.push('/mon-compte');
+      }
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       setError(msg || 'Email ou mot de passe incorrect.');
@@ -36,17 +41,15 @@ export default function ConnexionPage() {
         <Image src="/images/hero/hero-02.png" alt="La Catena" fill className="object-cover" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(26,31,14,0.1) 0%, rgba(26,31,14,0.6) 100%)' }} />
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="chain-divider" style={{ fontSize: 24, letterSpacing: '6px', color: 'rgba(232,185,106,0.4)' }}>⊙⊙⊙⊙⊙⊙⊙⊙</span>
-          <p className="font-serif mt-4 text-center" style={{ fontSize: 32, color: 'var(--gold)', letterSpacing: '-0.5px' }}>La Catena</p>
-          <p style={{ fontSize: 10, letterSpacing: '3px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginTop: 8 }}>Boutique Multibrand</p>
+          <img src="/images/highQuality.png" alt="La Catena" style={{ width: 160, height: 160, objectFit: 'contain', filter: 'drop-shadow(0 0 40px rgba(232,185,106,0.25))' }} />
+          <p style={{ fontSize: 10, letterSpacing: '3px', color: 'rgba(240,234,210,0.5)', textTransform: 'uppercase', marginTop: 20 }}>Boutique Multibrand</p>
         </div>
       </div>
 
       {/* Form */}
       <div className="flex-1 flex flex-col items-center justify-center" style={{ padding: '48px 40px', maxWidth: 480, margin: '0 auto' }}>
         <Link href="/" className="flex flex-col items-center mb-12">
-          <span className="font-serif text-2xl" style={{ color: 'var(--gold)', letterSpacing: '-0.5px' }}>La Catena</span>
-          <span style={{ fontSize: 9, letterSpacing: '3px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginTop: 4 }}>Boutique Multibrand</span>
+          <img src="/images/noBack.png" alt="La Catena" style={{ width: 80, height: 80, objectFit: 'contain' }} />
         </Link>
 
         <h1 className="font-serif mb-2 text-center" style={{ fontSize: 32, color: 'var(--cream)' }}>Connexion</h1>

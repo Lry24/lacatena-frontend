@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 import AdminTable, { Column } from '@/components/admin/AdminTable';
 import Modal from '@/components/admin/Modal';
@@ -22,8 +22,8 @@ const fmtDate = (s?: string) => s ? new Date(s).toLocaleDateString('fr-FR') : '�
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '10px 12px', boxSizing: 'border-box',
-  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(240,234,210,0.1)',
-  borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none',
+  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none',
 };
 
 const defaultUserForm = () => ({ first_name: '', last_name: '', email: '', password: '', role: 'staff' });
@@ -98,12 +98,12 @@ export default function UtilisateursPage() {
   const columns: Column<AdminUser>[] = [
     {
       key: 'full_name', label: 'Nom',
-      render: (r) => <span style={{ fontWeight: 500, color: '#f0ead2' }}>{r.full_name}</span>,
+      render: (r) => <span style={{ fontWeight: 500, color: 'rgba(255,255,255,0.92)' }}>{r.full_name}</span>,
     },
     { key: 'email', label: 'E-mail', render: (r) => <span style={{ color: 'rgba(240,234,210,0.7)', fontSize: 12 }}>{r.email}</span> },
     { key: 'role', label: 'Rôle', render: (r) => <StatusBadge status={r.role} /> },
     { key: 'is_active', label: 'Actif', render: (r) => <StatusBadge status={r.is_active ? 'active' : 'inactive'} /> },
-    { key: 'last_login', label: 'Dernière connexion', render: (r) => <span style={{ color: 'rgba(240,234,210,0.4)', fontSize: 12 }}>{fmtDate(r.last_login)}</span> },
+    { key: 'last_login', label: 'Dernière connexion', render: (r) => <span style={{ color: 'rgba(255,255,255,0.58)', fontSize: 12 }}>{fmtDate(r.last_login)}</span> },
     {
       key: 'actions', label: '',
       render: (r) => (
@@ -128,9 +128,9 @@ export default function UtilisateursPage() {
       <ToastContainer toasts={toasts} onClose={removeToast} />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 600, color: '#f0ead2', margin: 0 }}>Utilisateurs</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 600, color: 'rgba(255,255,255,0.92)', margin: 0 }}>Utilisateurs</h1>
         <button onClick={() => setCreateModal(true)}
-          style={{ padding: '9px 18px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1a1f0e', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+          style={{ padding: '9px 18px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1c2310', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
           + Nouvel utilisateur
         </button>
       </div>
@@ -141,29 +141,29 @@ export default function UtilisateursPage() {
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { setSearch(q); setPage(1); } }}
           placeholder="Rechercher…"
-          style={{ padding: '8px 12px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none', width: 220 }}
+          style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none', width: 220 }}
         />
         <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-          style={{ padding: '8px 12px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none' }}>
+          style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none' }}>
           <option value="">Tous les rôles</option>
           <option value="admin">Admin</option>
           <option value="staff">Staff</option>
         </select>
       </div>
 
-      <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, overflow: 'hidden' }}>
         <AdminTable columns={columns} data={users} loading={loading} emptyMessage="Aucun utilisateur trouvé." />
       </div>
 
       {pages > 1 && (
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 20 }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-            style={{ padding: '7px 14px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 6, color: '#f0ead2', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, fontSize: 13 }}>
+            style={{ padding: '7px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: 'rgba(255,255,255,0.92)', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, fontSize: 13 }}>
             ← Précédent
           </button>
-          <span style={{ padding: '7px 14px', color: 'rgba(240,234,210,0.5)', fontSize: 13 }}>Page {page} / {pages}</span>
+          <span style={{ padding: '7px 14px', color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>Page {page} / {pages}</span>
           <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages}
-            style={{ padding: '7px 14px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 6, color: '#f0ead2', cursor: page === pages ? 'not-allowed' : 'pointer', opacity: page === pages ? 0.4 : 1, fontSize: 13 }}>
+            style={{ padding: '7px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: 'rgba(255,255,255,0.92)', cursor: page === pages ? 'not-allowed' : 'pointer', opacity: page === pages ? 0.4 : 1, fontSize: 13 }}>
             Suivant →
           </button>
         </div>
@@ -174,24 +174,24 @@ export default function UtilisateursPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label style={{ display: 'block', fontSize: 11, color: 'rgba(240,234,210,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Prénom *</label>
+              <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.65)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Prénom *</label>
               <input value={form.first_name} onChange={set('first_name')} style={inputStyle} />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 11, color: 'rgba(240,234,210,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Nom</label>
+              <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.65)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Nom</label>
               <input value={form.last_name} onChange={set('last_name')} style={inputStyle} />
             </div>
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 11, color: 'rgba(240,234,210,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>E-mail *</label>
+            <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.65)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>E-mail *</label>
             <input type="email" value={form.email} onChange={set('email')} style={inputStyle} />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 11, color: 'rgba(240,234,210,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Mot de passe *</label>
+            <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.65)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Mot de passe *</label>
             <input type="password" value={form.password} onChange={set('password')} style={inputStyle} />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 11, color: 'rgba(240,234,210,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Rôle</label>
+            <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.65)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Rôle</label>
             <select value={form.role} onChange={set('role')} style={inputStyle}>
               <option value="staff">Staff</option>
               <option value="admin">Admin</option>
@@ -199,8 +199,8 @@ export default function UtilisateursPage() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-          <button onClick={() => setCreateModal(false)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: 'rgba(240,234,210,0.6)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
-          <button onClick={handleCreateUser} disabled={saving} style={{ flex: 1, padding: '10px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1a1f0e', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>
+          <button onClick={() => setCreateModal(false)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
+          <button onClick={handleCreateUser} disabled={saving} style={{ flex: 1, padding: '10px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1c2310', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>
             {saving ? 'Création…' : 'Créer'}
           </button>
         </div>
@@ -209,10 +209,10 @@ export default function UtilisateursPage() {
       {/* Delete confirm */}
       <Modal open={!!deleting} onClose={() => setDeleting(null)} title="Supprimer l'utilisateur" width={400}>
         <p style={{ color: 'rgba(240,234,210,0.7)', fontSize: 13, marginBottom: 20 }}>
-          Êtes-vous sûr de vouloir supprimer <strong style={{ color: '#f0ead2' }}>{deleting?.full_name}</strong> ?
+          Êtes-vous sûr de vouloir supprimer <strong style={{ color: 'rgba(255,255,255,0.92)' }}>{deleting?.full_name}</strong> ?
         </p>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={() => setDeleting(null)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: 'rgba(240,234,210,0.6)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
+          <button onClick={() => setDeleting(null)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
           <button onClick={handleDelete} style={{ flex: 1, padding: '10px', background: '#c9634a', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>Supprimer</button>
         </div>
       </Modal>

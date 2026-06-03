@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useEffect, useState } from 'react';
 import Modal from '@/components/admin/Modal';
 import { ToastContainer, useToast } from '@/components/admin/Toast';
@@ -19,8 +19,8 @@ interface Category {
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '10px 12px', boxSizing: 'border-box',
-  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(240,234,210,0.1)',
-  borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none',
+  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none',
 };
 
 const defaultCatForm = () => ({
@@ -125,9 +125,9 @@ export default function CategoriesPage() {
       <ToastContainer toasts={toasts} onClose={removeToast} />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 600, color: '#f0ead2', margin: 0 }}>Catégories</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 600, color: 'rgba(255,255,255,0.92)', margin: 0 }}>Catégories</h1>
         <button onClick={openCreate}
-          style={{ padding: '9px 18px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1a1f0e', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+          style={{ padding: '9px 18px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1c2310', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
           + Nouvelle catégorie
         </button>
       </div>
@@ -135,13 +135,13 @@ export default function CategoriesPage() {
       {loading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} style={{ height: 120, background: '#1e2411', borderRadius: 10, border: '1px solid rgba(240,234,210,0.08)', animation: 'adminPulse 1.5s infinite' }} />
+            <div key={i} style={{ height: 120, background: '#1e2614', borderRadius: 10, border: '1px solid rgba(255,255,255,0.11)', animation: 'adminPulse 1.5s infinite' }} />
           ))}
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
           {categories.map((cat) => (
-            <div key={cat.uuid} style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div key={cat.uuid} style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 {cat.image_url ? (
                   <img src={cat.image_url} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: '50%' }} />
@@ -151,12 +151,12 @@ export default function CategoriesPage() {
                   </div>
                 )}
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#f0ead2' }}>{cat.name}</div>
-                  <div style={{ fontSize: 11, color: 'rgba(240,234,210,0.4)' }}>{cat.slug}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>{cat.name}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.58)' }}>{cat.slug}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {cat.gender && <span style={{ fontSize: 10, padding: '2px 7px', background: 'rgba(240,234,210,0.06)', color: 'rgba(240,234,210,0.5)', borderRadius: 4 }}>{cat.gender}</span>}
+                {cat.gender && <span style={{ fontSize: 10, padding: '2px 7px', background: 'rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.65)', borderRadius: 4 }}>{cat.gender}</span>}
                 <span style={{ fontSize: 10, padding: '2px 7px', background: cat.is_active ? 'rgba(111,170,48,0.1)' : 'rgba(201,99,74,0.1)', color: cat.is_active ? '#6faa30' : '#c9634a', borderRadius: 4 }}>
                   {cat.is_active ? 'Active' : 'Inactive'}
                 </span>
@@ -178,16 +178,16 @@ export default function CategoriesPage() {
       <Modal open={modal} onClose={() => setModal(false)} title={editing ? 'Modifier la catégorie' : 'Nouvelle catégorie'}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label style={{ display: 'block', fontSize: 11, color: 'rgba(240,234,210,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Nom *</label>
+            <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.65)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Nom *</label>
             <input value={form.name} onChange={set('name')} required style={inputStyle} placeholder="Nom de la catégorie" />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 11, color: 'rgba(240,234,210,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Description</label>
+            <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.65)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Description</label>
             <textarea value={form.description} onChange={set('description')} rows={2} style={{ ...inputStyle, resize: 'vertical' }} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
-              <label style={{ display: 'block', fontSize: 11, color: 'rgba(240,234,210,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Genre</label>
+              <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.65)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Genre</label>
               <select value={form.gender} onChange={set('gender')} style={inputStyle}>
                 <option value="">Tous</option>
                 <option value="homme">Homme</option>
@@ -196,12 +196,12 @@ export default function CategoriesPage() {
               </select>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 11, color: 'rgba(240,234,210,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Ordre de tri</label>
+              <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.65)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Ordre de tri</label>
               <input type="number" value={form.sort_order} onChange={set('sort_order')} style={inputStyle} />
             </div>
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: 11, color: 'rgba(240,234,210,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Catégorie parente</label>
+            <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.65)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>Catégorie parente</label>
             <select value={form.parent_uuid} onChange={set('parent_uuid')} style={inputStyle}>
               <option value="">Aucune</option>
               {categories.filter(c => !editing || c.uuid !== editing.uuid).map(c => (
@@ -209,14 +209,14 @@ export default function CategoriesPage() {
               ))}
             </select>
           </div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: '#f0ead2' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: 'rgba(255,255,255,0.92)' }}>
             <input type="checkbox" checked={form.is_active} onChange={(e) => setForm(p => ({ ...p, is_active: e.target.checked }))} style={{ accentColor: '#E8B96A' }} />
             Catégorie active
           </label>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-          <button onClick={() => setModal(false)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: 'rgba(240,234,210,0.6)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
-          <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: '10px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1a1f0e', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>
+          <button onClick={() => setModal(false)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
+          <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: '10px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1c2310', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>
             {saving ? 'Enregistrement…' : editing ? 'Mettre à jour' : 'Créer'}
           </button>
         </div>
@@ -225,10 +225,10 @@ export default function CategoriesPage() {
       {/* Delete confirm */}
       <Modal open={!!deleting} onClose={() => setDeleting(null)} title="Supprimer la catégorie" width={400}>
         <p style={{ color: 'rgba(240,234,210,0.7)', fontSize: 13, marginBottom: 20 }}>
-          Êtes-vous sûr de vouloir supprimer la catégorie <strong style={{ color: '#f0ead2' }}>{deleting?.name}</strong> ?
+          Êtes-vous sûr de vouloir supprimer la catégorie <strong style={{ color: 'rgba(255,255,255,0.92)' }}>{deleting?.name}</strong> ?
         </p>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={() => setDeleting(null)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: 'rgba(240,234,210,0.6)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
+          <button onClick={() => setDeleting(null)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
           <button onClick={handleDelete} style={{ flex: 1, padding: '10px', background: '#c9634a', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>Supprimer</button>
         </div>
       </Modal>

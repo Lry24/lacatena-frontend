@@ -2,13 +2,24 @@
 
 :root {
   --gold: #E8B96A;
-  --gold-dim: rgba(232, 185, 106, 0.3);
-  --cream: #f0ead2;
-  --cream-muted: rgba(240, 234, 210, 0.45);
-  --cream-subtle: rgba(240, 234, 210, 0.15);
+  --gold-dim: rgba(232, 185, 106, 0.35);
+  --gold-faint: rgba(232, 185, 106, 0.12);
+  --cream: #f8f2e4;              /* blanc ivoire plus lumineux */
+  --cream-muted: rgba(248, 242, 228, 0.72);  /* textes secondaires bien lisibles */
+  --cream-subtle: rgba(248, 242, 228, 0.22);
   --forest: #1a1f0e;
   --forest-dark: #3d5018;
-  --border: rgba(240, 234, 210, 0.1);
+  --olive: #4A6020;
+  --border: rgba(248, 242, 228, 0.14);
+  --surface: rgba(255, 255, 255, 0.055);     /* cartes légèrement plus claires */
+  --surface-hover: rgba(255, 255, 255, 0.09);
+}
+
+/* Textes globaux plus nets */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 @theme inline {
@@ -20,7 +31,6 @@ body {
   font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
   background: var(--forest);
   color: var(--cream);
-  -webkit-font-smoothing: antialiased;
 }
 
 /* hooked-ux: Subtil keyframe pour le reward visuel */
@@ -31,6 +41,51 @@ body {
 
 .animate-fade-up {
   animation: fadeUp 0.6s ease forwards;
+}
+
+/* ── Admin — beaucoup plus de blanc ───────────────────────────────────────── */
+/* Toutes les couleurs de texte dans /admin remontées à near-white */
+
+/* Titres de page admin */
+.admin-title {
+  color: #ffffff !important;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+/* Textes généraux dans l'admin plus blancs */
+main > div p,
+main > div span,
+main > div td,
+main > div th,
+main > div label {
+  /* héritage géré par les composants — override ici si besoin */
+}
+
+/* Variables CSS spécifiques admin */
+:root {
+  --admin-bg:          #141a0b;
+  --admin-surface:     #1e2614;
+  --admin-surface-2:   #252e16;
+  --admin-border:      rgba(255, 255, 255, 0.11);
+  --admin-text:        rgba(255, 255, 255, 0.92);
+  --admin-text-muted:  rgba(255, 255, 255, 0.58);
+  --admin-text-faint:  rgba(255, 255, 255, 0.35);
+  --admin-gold:        #E8B96A;
+  --admin-gold-bg:     rgba(232, 185, 106, 0.12);
+}
+
+/* Logo lévitation — footer */
+@keyframes levitate {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+.logo-levitate {
+  animation: levitate 3.5s ease-in-out infinite;
+  display: inline-block;
 }
 
 /* refactoring-ui: chain motif */

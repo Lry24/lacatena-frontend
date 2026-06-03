@@ -22,27 +22,28 @@ export default function AdminTable<T>({
   data,
   loading,
   onRowClick,
-  emptyMessage = 'Aucune donnée disponible.',
+  emptyMessage = 'Aucune donnee disponible.',
   skeletonRows = 5,
 }: AdminTableProps<T>) {
   return (
     <div style={{ overflowX: 'auto', width: '100%' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-dm-sans)' }}>
         <thead>
-          <tr style={{ borderBottom: '1px solid rgba(240,234,210,0.08)' }}>
+          <tr style={{ borderBottom: '1px solid var(--admin-border, rgba(255,255,255,0.11))' }}>
             {columns.map((col) => (
               <th
                 key={col.key}
                 style={{
-                  padding: '10px 14px',
+                  padding: '11px 16px',
                   textAlign: 'left',
                   fontSize: 10,
-                  letterSpacing: '2px',
+                  letterSpacing: '1.8px',
                   textTransform: 'uppercase',
-                  color: 'rgba(240,234,210,0.4)',
-                  fontWeight: 500,
+                  color: 'var(--admin-text-muted, rgba(255,255,255,0.55))',
+                  fontWeight: 600,
                   whiteSpace: 'nowrap',
                   width: col.width,
+                  background: 'rgba(255,255,255,0.025)',
                 }}
               >
                 {col.label}
@@ -55,11 +56,10 @@ export default function AdminTable<T>({
             ? Array.from({ length: skeletonRows }).map((_, i) => (
                 <tr key={i}>
                   {columns.map((col) => (
-                    <td key={col.key} style={{ padding: '12px 14px' }}>
+                    <td key={col.key} style={{ padding: '13px 16px' }}>
                       <div style={{
-                        height: 14,
-                        borderRadius: 4,
-                        background: 'rgba(240,234,210,0.06)',
+                        height: 14, borderRadius: 4,
+                        background: 'rgba(255,255,255,0.07)',
                         animation: 'adminPulse 1.5s ease-in-out infinite',
                         width: '70%',
                       }} />
@@ -70,7 +70,10 @@ export default function AdminTable<T>({
             : data.length === 0
             ? (
                 <tr>
-                  <td colSpan={columns.length} style={{ padding: '32px 14px', textAlign: 'center', color: 'rgba(240,234,210,0.3)', fontSize: 13 }}>
+                  <td
+                    colSpan={columns.length}
+                    style={{ padding: '40px 16px', textAlign: 'center', color: 'var(--admin-text-faint, rgba(255,255,255,0.35))', fontSize: 13 }}
+                  >
                     {emptyMessage}
                   </td>
                 </tr>
@@ -80,15 +83,18 @@ export default function AdminTable<T>({
                   key={i}
                   onClick={() => onRowClick?.(row)}
                   style={{
-                    borderBottom: '1px solid rgba(240,234,210,0.04)',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
                     cursor: onRowClick ? 'pointer' : 'default',
                     transition: 'background 0.15s',
                   }}
-                  onMouseEnter={(e) => { if (onRowClick) (e.currentTarget as HTMLTableRowElement).style.background = 'rgba(240,234,210,0.03)'; }}
+                  onMouseEnter={(e) => { if (onRowClick) (e.currentTarget as HTMLTableRowElement).style.background = 'rgba(255,255,255,0.04)'; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'; }}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} style={{ padding: '12px 14px', fontSize: 13, color: '#f0ead2', verticalAlign: 'middle' }}>
+                    <td
+                      key={col.key}
+                      style={{ padding: '13px 16px', fontSize: 13, color: 'var(--admin-text, rgba(255,255,255,0.92))', verticalAlign: 'middle' }}
+                    >
                       {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? '')}
                     </td>
                   ))}

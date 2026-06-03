@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -52,7 +52,7 @@ export default function MonComptePage() {
       setAddrForm({ label: '', recipient_name: '', phone: '', street: '', city: '', state: '', postal_code: '', country: 'Togo', is_default: false });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setAddrError(msg || 'Erreur lors de l\'enregistrement.');
+      setAddrError(msg || "Erreur lors de l'enregistrement.");
     } finally {
       setAddrLoading(false);
     }
@@ -74,7 +74,7 @@ export default function MonComptePage() {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 100, minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main style={{ paddingTop: 132, minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <p style={{ color: 'var(--cream-muted)', fontSize: 13 }}>Chargement...</p>
         </main>
         <Footer />
@@ -85,9 +85,38 @@ export default function MonComptePage() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 100 }}>
+      <main style={{ paddingTop: 132 }}>
         <div style={{ padding: '40px 40px 80px', maxWidth: 1440, margin: '0 auto' }}>
-          {/* Header */}
+
+          {/* Bandeau admin */}
+          {(user.role === 'admin' || user.role === 'staff') && (
+            <Link href="/admin" style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: 'rgba(74,96,32,0.2)', border: '1px solid rgba(232,185,106,0.3)',
+              borderRadius: 8, padding: '14px 20px', marginBottom: 32,
+              textDecoration: 'none',
+            }}>
+              <div className="flex items-center gap-3">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E8B96A" strokeWidth="1.6">
+                  <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--gold)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                    Espace Administration
+                  </p>
+                  <p style={{ fontSize: 12, color: 'var(--cream-muted)', marginTop: 2 }}>
+                    Connecte en tant que <strong style={{ color: 'var(--cream)' }}>{user.role}</strong> — Acces au dashboard
+                  </p>
+                </div>
+              </div>
+              <span style={{ fontSize: 11, color: 'var(--gold)', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                Ouvrir &rarr;
+              </span>
+            </Link>
+          )}
+
+          {/* Header compte */}
           <div className="flex items-center justify-between mb-10">
             <div>
               <h1 className="font-serif" style={{ fontSize: 40, color: 'var(--gold)' }}>Mon compte</h1>
@@ -99,7 +128,7 @@ export default function MonComptePage() {
               onClick={handleLogout}
               style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)', border: '0.5px solid rgba(240,234,210,0.15)', padding: '8px 16px', borderRadius: 2 }}
             >
-              Déconnexion
+              Deconnexion
             </button>
           </div>
 
@@ -128,16 +157,16 @@ export default function MonComptePage() {
             ))}
           </div>
 
-          {/* Tab content */}
+          {/* Tab: Profil */}
           {tab === 'profil' && (
             <div style={{ maxWidth: 480 }}>
               <div className="flex flex-col gap-5">
                 {[
-                  { label: 'Prénom', value: user.first_name },
+                  { label: 'Prenom', value: user.first_name },
                   { label: 'Nom', value: user.last_name },
                   { label: 'Email', value: user.email },
-                  { label: 'Téléphone', value: user.phone || '—' },
-                  { label: 'Statut', value: user.is_verified ? 'Vérifié ✓' : 'Non vérifié' },
+                  { label: 'Telephone', value: user.phone || '—' },
+                  { label: 'Statut', value: user.is_verified ? 'Verifie' : 'Non verifie' },
                 ].map((field) => (
                   <div key={field.label}>
                     <p style={{ fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 4 }}>{field.label}</p>
@@ -148,16 +177,18 @@ export default function MonComptePage() {
             </div>
           )}
 
+          {/* Tab: Commandes */}
           {tab === 'commandes' && (
             <div className="flex flex-col items-center justify-center" style={{ minHeight: 240, gap: 16 }}>
-              <span style={{ fontSize: 32, color: 'rgba(232,185,106,0.2)' }}>⊙</span>
+              <span style={{ fontSize: 32, color: 'rgba(232,185,106,0.2)' }}>&#9711;</span>
               <p style={{ fontSize: 14, color: 'var(--cream-muted)' }}>Aucune commande pour le moment</p>
               <Link href="/boutique" style={{ fontSize: 10, letterSpacing: '2px', color: 'var(--gold)', textTransform: 'uppercase' }}>
-                Découvrir la boutique →
+                Decouvrir la boutique &rarr;
               </Link>
             </div>
           )}
 
+          {/* Tab: Adresses */}
           {tab === 'adresses' && (
             <div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -173,7 +204,11 @@ export default function MonComptePage() {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <p style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}>{addr.label}</p>
-                      {addr.is_default && <span style={{ fontSize: 9, letterSpacing: '1px', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.3)', padding: '1px 8px', borderRadius: 20 }}>Par défaut</span>}
+                      {addr.is_default && (
+                        <span style={{ fontSize: 9, letterSpacing: '1px', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.3)', padding: '1px 8px', borderRadius: 20 }}>
+                          Par defaut
+                        </span>
+                      )}
                     </div>
                     <p style={{ fontSize: 13, color: 'var(--cream)', fontWeight: 500 }}>{addr.recipient_name}</p>
                     <p style={{ fontSize: 12, color: 'var(--cream-muted)', marginTop: 4, lineHeight: 1.6 }}>
@@ -185,7 +220,7 @@ export default function MonComptePage() {
 
                 <button
                   onClick={() => setShowAddressForm(true)}
-                  className="flex flex-col items-center justify-center gap-2 transition-colors hover:border-[rgba(232,185,106,0.3)]"
+                  className="flex flex-col items-center justify-center gap-2 transition-colors"
                   style={{ padding: '20px', border: '0.5px dashed rgba(240,234,210,0.15)', borderRadius: 4, minHeight: 120 }}
                 >
                   <span style={{ fontSize: 24, color: 'var(--cream-muted)' }}>+</span>
@@ -197,15 +232,15 @@ export default function MonComptePage() {
                 <div style={{ background: 'rgba(240,234,210,0.04)', border: '0.5px solid rgba(240,234,210,0.1)', borderRadius: 4, padding: '28px', maxWidth: 540 }}>
                   <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 20 }}>Nouvelle adresse</p>
                   <form onSubmit={handleAddAddress} className="flex flex-col gap-4">
-                    <Input label="Libellé" value={addrForm.label} onChange={setAddr('label')} required placeholder="Domicile, Bureau..." />
+                    <Input label="Libelle" value={addrForm.label} onChange={setAddr('label')} required placeholder="Domicile, Bureau..." />
                     <div className="grid grid-cols-2 gap-3">
-                      <Input label="Nom complet" value={addrForm.recipient_name} onChange={setAddr('recipient_name')} required placeholder="Prénom Nom" />
-                      <Input label="Téléphone" value={addrForm.phone} onChange={setAddr('phone')} required placeholder="+228 ..." type="tel" />
+                      <Input label="Nom complet" value={addrForm.recipient_name} onChange={setAddr('recipient_name')} required placeholder="Prenom Nom" />
+                      <Input label="Telephone" value={addrForm.phone} onChange={setAddr('phone')} required placeholder="+228 ..." type="tel" />
                     </div>
                     <Input label="Adresse" value={addrForm.street} onChange={setAddr('street')} required placeholder="Rue, quartier..." />
                     <div className="grid grid-cols-2 gap-3">
-                      <Input label="Ville" value={addrForm.city} onChange={setAddr('city')} required placeholder="Lomé" />
-                      <Input label="Région" value={addrForm.state} onChange={setAddr('state')} required placeholder="Maritime" />
+                      <Input label="Ville" value={addrForm.city} onChange={setAddr('city')} required placeholder="Lome" />
+                      <Input label="Region" value={addrForm.state} onChange={setAddr('state')} required placeholder="Maritime" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <Input label="Code postal" value={addrForm.postal_code} onChange={setAddr('postal_code')} placeholder="00228" />
@@ -218,14 +253,23 @@ export default function MonComptePage() {
                         onChange={(e) => setAddrForm((f) => ({ ...f, is_default: e.target.checked }))}
                         className="accent-[#E8B96A]"
                       />
-                      <span style={{ fontSize: 12, color: 'var(--cream-muted)' }}>Définir comme adresse par défaut</span>
+                      <span style={{ fontSize: 12, color: 'var(--cream-muted)' }}>Definir comme adresse par defaut</span>
                     </label>
                     {addrError && <p style={{ fontSize: 12, color: 'rgba(220,100,100,0.9)' }}>{addrError}</p>}
                     <div className="flex gap-3">
-                      <button type="submit" disabled={addrLoading} className="flex-1 uppercase font-medium tracking-widest transition-colors hover:bg-[#f5cb85] disabled:opacity-40" style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '12px', borderRadius: 2, fontSize: 10, letterSpacing: '2px' }}>
+                      <button
+                        type="submit"
+                        disabled={addrLoading}
+                        className="flex-1 uppercase font-medium tracking-widest transition-colors hover:bg-[#f5cb85] disabled:opacity-40"
+                        style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '12px', borderRadius: 2, fontSize: 10, letterSpacing: '2px' }}
+                      >
                         {addrLoading ? '...' : 'Enregistrer'}
                       </button>
-                      <button type="button" onClick={() => setShowAddressForm(false)} style={{ padding: '12px 16px', border: '0.5px solid rgba(240,234,210,0.15)', borderRadius: 2, color: 'var(--cream-muted)', fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowAddressForm(false)}
+                        style={{ padding: '12px 16px', border: '0.5px solid rgba(240,234,210,0.15)', borderRadius: 2, color: 'var(--cream-muted)', fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase' }}
+                      >
                         Annuler
                       </button>
                     </div>
@@ -235,12 +279,15 @@ export default function MonComptePage() {
             </div>
           )}
 
+          {/* Tab: Favoris */}
           {tab === 'favoris' && (
             wishlistItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center" style={{ minHeight: 300, gap: 16 }}>
-                <span style={{ fontSize: 32, color: 'rgba(232,185,106,0.2)' }}>♡</span>
+                <span style={{ fontSize: 32, color: 'rgba(232,185,106,0.2)' }}>&#9825;</span>
                 <p style={{ fontSize: 14, color: 'var(--cream-muted)' }}>Votre liste de favoris est vide</p>
-                <Link href="/boutique" style={{ fontSize: 10, letterSpacing: '2px', color: 'var(--gold)', textTransform: 'uppercase' }}>Découvrir la boutique →</Link>
+                <Link href="/boutique" style={{ fontSize: 10, letterSpacing: '2px', color: 'var(--gold)', textTransform: 'uppercase' }}>
+                  Decouvrir la boutique &rarr;
+                </Link>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -248,6 +295,7 @@ export default function MonComptePage() {
               </div>
             )
           )}
+
         </div>
       </main>
       <Footer />

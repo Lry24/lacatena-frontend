@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import StatusBadge from '@/components/admin/StatusBadge';
@@ -94,7 +94,7 @@ export default function CommandeDetailPage() {
     );
   }
 
-  if (!order) return <div style={{ color: 'rgba(240,234,210,0.5)', textAlign: 'center', paddingTop: 80 }}>Commande introuvable.</div>;
+  if (!order) return <div style={{ color: 'rgba(255,255,255,0.65)', textAlign: 'center', paddingTop: 80 }}>Commande introuvable.</div>;
 
   return (
     <div>
@@ -103,10 +103,10 @@ export default function CommandeDetailPage() {
       {/* Back + header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
         <button onClick={() => router.push('/admin/commandes')}
-          style={{ background: 'none', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 6, padding: '6px 12px', color: 'rgba(240,234,210,0.5)', cursor: 'pointer', fontSize: 12 }}>
+          style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '6px 12px', color: 'rgba(255,255,255,0.65)', cursor: 'pointer', fontSize: 12 }}>
           ← Retour
         </button>
-        <h1 style={{ fontSize: 18, fontWeight: 600, color: '#f0ead2', margin: 0 }}>
+        <h1 style={{ fontSize: 18, fontWeight: 600, color: 'rgba(255,255,255,0.92)', margin: 0 }}>
           Commande <span style={{ color: '#E8B96A' }}>{order.order_number}</span>
         </h1>
         <StatusBadge status={order.status} />
@@ -116,8 +116,8 @@ export default function CommandeDetailPage() {
         {/* Left */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {/* Info */}
-          <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, padding: 20 }}>
-            <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.4)', margin: '0 0 16px' }}>Informations</h2>
+          <div style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, padding: 20 }}>
+            <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.58)', margin: '0 0 16px' }}>Informations</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {[
                 ['Date', fmtDate(order.created_at)],
@@ -128,33 +128,33 @@ export default function CommandeDetailPage() {
                 ['Téléphone', order.customer_phone || '—'],
               ].map(([k, v]) => (
                 <div key={k}>
-                  <div style={{ fontSize: 10, color: 'rgba(240,234,210,0.4)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>{k}</div>
-                  <div style={{ fontSize: 13, color: '#f0ead2' }}>{v}</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.58)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>{k}</div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.92)' }}>{v}</div>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Articles */}
-          <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, padding: 20 }}>
-            <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.4)', margin: '0 0 16px' }}>Articles</h2>
+          <div style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, padding: 20 }}>
+            <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.58)', margin: '0 0 16px' }}>Articles</h2>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(240,234,210,0.06)' }}>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.09)' }}>
                   {['Produit', 'SKU', 'Taille', 'Couleur', 'Qté', 'Prix unit.', 'Sous-total'].map(h => (
-                    <th key={h} style={{ padding: '6px 8px', textAlign: 'left', color: 'rgba(240,234,210,0.4)', fontWeight: 400, fontSize: 10, letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
+                    <th key={h} style={{ padding: '6px 8px', textAlign: 'left', color: 'rgba(255,255,255,0.58)', fontWeight: 400, fontSize: 10, letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {(order.items ?? []).map((item, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid rgba(240,234,210,0.04)' }}>
-                    <td style={{ padding: '10px 8px', color: '#f0ead2' }}>{item.product_name}</td>
-                    <td style={{ padding: '10px 8px', color: 'rgba(240,234,210,0.5)', fontFamily: 'monospace', fontSize: 11 }}>{item.sku}</td>
-                    <td style={{ padding: '10px 8px', color: 'rgba(240,234,210,0.6)' }}>{item.size}</td>
-                    <td style={{ padding: '10px 8px', color: 'rgba(240,234,210,0.6)' }}>{item.color}</td>
-                    <td style={{ padding: '10px 8px', color: '#f0ead2', textAlign: 'center' }}>{item.quantity}</td>
-                    <td style={{ padding: '10px 8px', color: '#f0ead2', textAlign: 'right' }}>{fmt(item.unit_price)}</td>
+                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.92)' }}>{item.product_name}</td>
+                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.65)', fontFamily: 'monospace', fontSize: 11 }}>{item.sku}</td>
+                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.75)' }}>{item.size}</td>
+                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.75)' }}>{item.color}</td>
+                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.92)', textAlign: 'center' }}>{item.quantity}</td>
+                    <td style={{ padding: '10px 8px', color: 'rgba(255,255,255,0.92)', textAlign: 'right' }}>{fmt(item.unit_price)}</td>
                     <td style={{ padding: '10px 8px', color: '#E8B96A', fontWeight: 500, textAlign: 'right' }}>{fmt(item.subtotal)}</td>
                   </tr>
                 ))}
@@ -162,33 +162,33 @@ export default function CommandeDetailPage() {
             </table>
 
             {/* Totals */}
-            <div style={{ borderTop: '1px solid rgba(240,234,210,0.08)', marginTop: 16, paddingTop: 16 }}>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.11)', marginTop: 16, paddingTop: 16 }}>
               {[
                 ['Sous-total HT', fmt(order.subtotal_ht)],
                 ['TVA', fmt(order.tva_amount)],
                 ['Livraison', fmt(order.shipping_cost)],
                 order.discount_amount ? ['Réduction', `-${fmt(order.discount_amount)}`] : null,
               ].filter(Boolean).map((item) => { const [k, v] = item as [string, string]; return (
-                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13, color: 'rgba(240,234,210,0.6)' }}>
+                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>
                   <span>{k}</span><span>{v}</span>
                 </div>); })}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 0', fontSize: 16, fontWeight: 700, color: '#f0ead2', borderTop: '1px solid rgba(240,234,210,0.08)', marginTop: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 0', fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.92)', borderTop: '1px solid rgba(255,255,255,0.11)', marginTop: 8 }}>
                 <span>Total TTC</span><span style={{ color: '#E8B96A' }}>{fmt(order.total_ttc)}</span>
               </div>
             </div>
           </div>
 
           {/* Notes */}
-          <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, padding: 20 }}>
-            <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.4)', margin: '0 0 12px' }}>Notes internes</h2>
+          <div style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, padding: 20 }}>
+            <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.58)', margin: '0 0 12px' }}>Notes internes</h2>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={4}
               style={{
                 width: '100%', padding: '10px 12px', boxSizing: 'border-box',
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(240,234,210,0.1)',
-                borderRadius: 8, color: '#f0ead2', fontSize: 13, resize: 'vertical', outline: 'none',
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, resize: 'vertical', outline: 'none',
               }}
             />
           </div>
@@ -196,19 +196,19 @@ export default function CommandeDetailPage() {
 
         {/* Right — Actions */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, padding: 20 }}>
-            <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.4)', margin: '0 0 16px' }}>Changer le statut</h2>
+          <div style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, padding: 20 }}>
+            <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.58)', margin: '0 0 16px' }}>Changer le statut</h2>
             <select
               value={newStatus}
               onChange={(e) => setNewStatus(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none', marginBottom: 12, boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none', marginBottom: 12, boxSizing: 'border-box' }}
             >
               {STATUSES.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
             </select>
             <button
               onClick={handleStatusUpdate}
               disabled={saving}
-              style={{ width: '100%', padding: '10px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1a1f0e', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+              style={{ width: '100%', padding: '10px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1c2310', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
             >
               {saving ? 'Enregistrement…' : 'Enregistrer'}
             </button>
@@ -231,12 +231,12 @@ export default function CommandeDetailPage() {
       {/* Refund modal */}
       <Modal open={refundModal} onClose={() => setRefundModal(false)} title="Remboursement">
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: 12, color: 'rgba(240,234,210,0.5)', marginBottom: 8 }}>Raison du remboursement *</label>
+          <label style={{ display: 'block', fontSize: 12, color: 'rgba(255,255,255,0.65)', marginBottom: 8 }}>Raison du remboursement *</label>
           <textarea
             value={refundReason}
             onChange={(e) => setRefundReason(e.target.value)}
             rows={3}
-            style={{ width: '100%', padding: '10px 12px', boxSizing: 'border-box', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none', resize: 'none' }}
+            style={{ width: '100%', padding: '10px 12px', boxSizing: 'border-box', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none', resize: 'none' }}
           />
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'rgba(240,234,210,0.7)', marginBottom: 20, cursor: 'pointer' }}>
@@ -244,7 +244,7 @@ export default function CommandeDetailPage() {
           Remettre en stock
         </label>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={() => setRefundModal(false)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: 'rgba(240,234,210,0.6)', cursor: 'pointer', fontSize: 13 }}>
+          <button onClick={() => setRefundModal(false)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', fontSize: 13 }}>
             Annuler
           </button>
           <button onClick={handleRefund} disabled={saving} style={{ flex: 1, padding: '10px', background: '#c9634a', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>

@@ -14,48 +14,56 @@ export default function StatCard({ label, value, subLabel, icon, variant = 'defa
   const accentMap = {
     default: '#E8B96A',
     warning: '#e6a817',
-    danger: '#c9634a',
-    success: '#6faa30',
+    danger: '#e07070',
+    success: '#82c840',
   };
   const accent = accentMap[variant];
 
   if (loading) {
     return (
       <div style={{
-        background: '#1e2411',
-        border: '1px solid rgba(240,234,210,0.08)',
-        borderRadius: 10,
-        padding: '20px 24px',
+        background: 'var(--admin-surface, #1e2614)',
+        border: '1px solid var(--admin-border, rgba(255,255,255,0.11))',
+        borderRadius: 12,
+        padding: '22px 24px',
       }}>
-        <div style={{ width: 80, height: 12, background: 'rgba(240,234,210,0.08)', borderRadius: 4, marginBottom: 12, animation: 'pulse 1.5s infinite' }} />
-        <div style={{ width: 120, height: 28, background: 'rgba(240,234,210,0.08)', borderRadius: 4, animation: 'pulse 1.5s infinite' }} />
+        <div style={{ width: 80, height: 12, background: 'rgba(255,255,255,0.08)', borderRadius: 4, marginBottom: 12 }} />
+        <div style={{ width: 120, height: 28, background: 'rgba(255,255,255,0.08)', borderRadius: 4 }} />
       </div>
     );
   }
 
   return (
     <div style={{
-      background: '#1e2411',
-      border: '1px solid rgba(240,234,210,0.08)',
-      borderRadius: 10,
-      padding: '20px 24px',
+      background: 'var(--admin-surface, #1e2614)',
+      border: '1px solid var(--admin-border, rgba(255,255,255,0.11))',
+      borderRadius: 12,
+      padding: '22px 24px',
       display: 'flex',
       flexDirection: 'column',
-      gap: 8,
+      gap: 10,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.5)', fontFamily: 'var(--font-dm-sans)' }}>
+        <span style={{
+          fontSize: 11, letterSpacing: '1.8px', textTransform: 'uppercase',
+          color: 'var(--admin-text-muted, rgba(255,255,255,0.58))',
+          fontFamily: 'var(--font-dm-sans)',
+        }}>
           {label}
         </span>
-        {icon && (
-          <span style={{ color: accent, opacity: 0.7 }}>{icon}</span>
-        )}
+        {icon && <span style={{ color: accent, opacity: 0.85 }}>{icon}</span>}
       </div>
-      <div style={{ fontSize: 28, fontWeight: 600, color: accent, fontFamily: 'var(--font-dm-sans)', lineHeight: 1 }}>
+      <div style={{
+        fontSize: 30, fontWeight: 700, color: accent,
+        fontFamily: 'var(--font-dm-sans)', lineHeight: 1,
+        letterSpacing: '-0.5px',
+      }}>
         {value}
       </div>
       {subLabel && (
-        <div style={{ fontSize: 12, color: 'rgba(240,234,210,0.5)' }}>{subLabel}</div>
+        <div style={{ fontSize: 12, color: 'var(--admin-text-muted, rgba(255,255,255,0.55))' }}>
+          {subLabel}
+        </div>
       )}
     </div>
   );

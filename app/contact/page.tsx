@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -20,18 +20,18 @@ export default function ContactPage() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 100 }}>
+      <main style={{ paddingTop: 132 }}>
         {/* Hero */}
         <div
           className="flex flex-col items-center justify-center text-center"
           style={{ padding: '64px 40px 48px', background: '#2D3A0F', borderBottom: '0.5px solid rgba(232,185,106,0.15)' }}
         >
-          <p style={{ fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: 'rgba(232,185,106,0.7)', marginBottom: 12 }}>Nous sommes là pour vous</p>
+          <p style={{ fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: 'rgba(232,185,106,0.7)', marginBottom: 12 }}>Nous sommes lÃ  pour vous</p>
           <h1 className="font-serif" style={{ fontSize: 'clamp(32px, 5vw, 56px)', color: 'var(--gold)', lineHeight: 1.1 }}>
             Parlez-nous
           </h1>
           <p className="mt-4" style={{ fontSize: 14, color: 'var(--cream-muted)', maxWidth: 480, lineHeight: 1.7 }}>
-            Une question, une suggestion, ou simplement envie d&apos;échanger ? Notre équipe vous répond avec plaisir.
+            Une question, une suggestion, ou simplement envie d&apos;Ã©changer ? Notre Ã©quipe vous rÃ©pond avec plaisir.
           </p>
         </div>
 
@@ -48,11 +48,11 @@ export default function ContactPage() {
             {sent ? (
               <div className="animate-fade-up flex flex-col gap-4" style={{ padding: '40px', background: 'rgba(232,185,106,0.06)', border: '0.5px solid rgba(232,185,106,0.3)', borderRadius: 4 }}>
                 <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(232,185,106,0.15)', border: '0.5px solid rgba(232,185,106,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ color: 'var(--gold)', fontSize: 18 }}>✓</span>
+                  <span style={{ color: 'var(--gold)', fontSize: 18 }}>âœ“</span>
                 </div>
-                <h2 className="font-serif" style={{ fontSize: 24, color: 'var(--cream)' }}>Message envoyé</h2>
+                <h2 className="font-serif" style={{ fontSize: 24, color: 'var(--cream)' }}>Message envoyÃ©</h2>
                 <p style={{ fontSize: 13, color: 'var(--cream-muted)', lineHeight: 1.7 }}>
-                  Merci, <span style={{ color: 'var(--cream)' }}>{form.name}</span>. Nous avons bien reçu votre message et vous répondrons dans les 24 heures.
+                  Merci, <span style={{ color: 'var(--cream)' }}>{form.name}</span>. Nous avons bien reÃ§u votre message et vous rÃ©pondrons dans les 24 heures.
                 </p>
               </div>
             ) : (
@@ -60,7 +60,7 @@ export default function ContactPage() {
                 <h2 className="font-serif mb-8" style={{ fontSize: 32, color: 'var(--cream)' }}>Envoyez-nous un message</h2>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                   <div className="grid grid-cols-2 gap-4">
-                    <Input label="Votre nom" value={form.name} onChange={set('name')} required placeholder="Prénom Nom" />
+                    <Input label="Votre nom" value={form.name} onChange={set('name')} required placeholder="PrÃ©nom Nom" />
                     <Input label="Email" type="email" value={form.email} onChange={set('email')} required placeholder="vous@exemple.com" />
                   </div>
 
@@ -73,7 +73,7 @@ export default function ContactPage() {
                       className="w-full px-4 py-3 text-sm outline-none transition-all"
                       style={{ background: 'rgba(240,234,210,0.05)', border: '0.5px solid rgba(240,234,210,0.1)', color: form.subject ? 'var(--cream)' : 'var(--cream-muted)', borderRadius: 4 }}
                     >
-                      <option value="" disabled>Sélectionner un sujet</option>
+                      <option value="" disabled>SÃ©lectionner un sujet</option>
                       <option value="commande">Ma commande</option>
                       <option value="produit">Question produit</option>
                       <option value="livraison">Livraison & retours</option>
@@ -89,7 +89,7 @@ export default function ContactPage() {
                       onChange={set('message')}
                       rows={6}
                       required
-                      placeholder="Décrivez votre demande..."
+                      placeholder="DÃ©crivez votre demande..."
                       className="w-full px-4 py-3 text-sm outline-none resize-none transition-all"
                       style={{ background: 'rgba(240,234,210,0.05)', border: '0.5px solid rgba(240,234,210,0.1)', borderRadius: 4, color: 'var(--cream)', fontSize: 13 }}
                       onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--gold)'; }}
@@ -111,27 +111,27 @@ export default function ContactPage() {
 
           {/* Info */}
           <div className="flex flex-col gap-8">
-            <h2 className="font-serif" style={{ fontSize: 32, color: 'var(--cream)' }}>Nos coordonnées</h2>
+            <h2 className="font-serif" style={{ fontSize: 32, color: 'var(--cream)' }}>Nos coordonnÃ©es</h2>
 
             {[
               {
-                icon: '📍',
+                icon: 'ðŸ“',
                 title: 'Adresse',
-                lines: ['Boulevard de la République', 'Lomé, Togo'],
+                lines: ['Boulevard de la RÃ©publique', 'LomÃ©, Togo'],
               },
               {
-                icon: '🕐',
+                icon: 'ðŸ•',
                 title: 'Horaires',
-                lines: ['Lundi — Samedi : 9h à 18h', 'Dimanche : Fermé'],
+                lines: ['Lundi â€” Samedi : 9h Ã  18h', 'Dimanche : FermÃ©'],
               },
               {
-                icon: '✉',
+                icon: 'âœ‰',
                 title: 'Email',
                 lines: ['contact@lacatena.tg', 'support@lacatena.tg'],
               },
               {
-                icon: '📞',
-                title: 'Téléphone',
+                icon: 'ðŸ“ž',
+                title: 'TÃ©lÃ©phone',
                 lines: ['+228 XX XX XX XX', 'WhatsApp disponible'],
               },
             ].map((item) => (
@@ -153,7 +153,7 @@ export default function ContactPage() {
             <div style={{ padding: '24px', background: '#4A6020', border: '0.5px solid rgba(232,185,106,0.2)', borderRadius: 4 }}>
               <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>Notre engagement</p>
               <p style={{ fontSize: 13, color: 'rgba(240,234,210,0.75)', lineHeight: 1.7 }}>
-                Chaque message reçoit une réponse personnalisée dans les 24 heures. Votre satisfaction est notre priorité absolue.
+                Chaque message reÃ§oit une rÃ©ponse personnalisÃ©e dans les 24 heures. Votre satisfaction est notre prioritÃ© absolue.
               </p>
             </div>
           </div>
@@ -163,3 +163,4 @@ export default function ContactPage() {
     </>
   );
 }
+

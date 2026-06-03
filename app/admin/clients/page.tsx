@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 import AdminTable, { Column } from '@/components/admin/AdminTable';
 import Modal from '@/components/admin/Modal';
@@ -82,16 +82,16 @@ export default function ClientsPage() {
       key: 'full_name', label: 'Nom',
       render: (r) => (
         <div>
-          <div style={{ fontWeight: 500, color: '#f0ead2' }}>{r.full_name}</div>
+          <div style={{ fontWeight: 500, color: 'rgba(255,255,255,0.92)' }}>{r.full_name}</div>
         </div>
       ),
     },
     { key: 'email', label: 'E-mail', render: (r) => <span style={{ color: 'rgba(240,234,210,0.7)', fontSize: 12 }}>{r.email}</span> },
-    { key: 'phone', label: 'Téléphone', render: (r) => <span style={{ color: 'rgba(240,234,210,0.5)' }}>{r.phone ?? '—'}</span> },
+    { key: 'phone', label: 'Téléphone', render: (r) => <span style={{ color: 'rgba(255,255,255,0.65)' }}>{r.phone ?? '—'}</span> },
     { key: 'role', label: 'Type', render: (r) => <StatusBadge status={r.role} /> },
     { key: 'is_active', label: 'Statut', render: (r) => <StatusBadge status={r.is_active ? 'active' : 'inactive'} /> },
     { key: 'orders_count', label: 'Commandes', render: (r) => <span style={{ color: '#E8B96A', fontWeight: 500 }}>{r.orders_count ?? 0}</span> },
-    { key: 'created_at', label: 'Inscription', render: (r) => <span style={{ color: 'rgba(240,234,210,0.4)', fontSize: 12 }}>{r.created_at ? fmtDate(r.created_at) : '—'}</span> },
+    { key: 'created_at', label: 'Inscription', render: (r) => <span style={{ color: 'rgba(255,255,255,0.58)', fontSize: 12 }}>{r.created_at ? fmtDate(r.created_at) : '—'}</span> },
     {
       key: 'actions', label: '',
       render: (r) => (
@@ -111,8 +111,8 @@ export default function ClientsPage() {
       <ToastContainer toasts={toasts} onClose={removeToast} />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 600, color: '#f0ead2', margin: 0 }}>Clients</h1>
-        <span style={{ fontSize: 12, color: 'rgba(240,234,210,0.4)' }}>{total} client{total !== 1 ? 's' : ''}</span>
+        <h1 style={{ fontSize: 20, fontWeight: 600, color: 'rgba(255,255,255,0.92)', margin: 0 }}>Clients</h1>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.58)' }}>{total} client{total !== 1 ? 's' : ''}</span>
       </div>
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
@@ -121,29 +121,29 @@ export default function ClientsPage() {
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { setSearch(q); setPage(1); } }}
           placeholder="Rechercher un client…"
-          style={{ padding: '8px 12px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none', width: 240 }}
+          style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none', width: 240 }}
         />
         <select value={activeFilter} onChange={(e) => { setActiveFilter(e.target.value); setPage(1); }}
-          style={{ padding: '8px 12px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none' }}>
+          style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none' }}>
           <option value="">Tous</option>
           <option value="true">Actifs</option>
           <option value="false">Inactifs</option>
         </select>
       </div>
 
-      <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, overflow: 'hidden' }}>
         <AdminTable columns={columns} data={customers} loading={loading} onRowClick={openDetail} emptyMessage="Aucun client trouvé." />
       </div>
 
       {pages > 1 && (
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 20 }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-            style={{ padding: '7px 14px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 6, color: '#f0ead2', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, fontSize: 13 }}>
+            style={{ padding: '7px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: 'rgba(255,255,255,0.92)', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, fontSize: 13 }}>
             ← Précédent
           </button>
-          <span style={{ padding: '7px 14px', color: 'rgba(240,234,210,0.5)', fontSize: 13 }}>Page {page} / {pages}</span>
+          <span style={{ padding: '7px 14px', color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>Page {page} / {pages}</span>
           <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages}
-            style={{ padding: '7px 14px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 6, color: '#f0ead2', cursor: page === pages ? 'not-allowed' : 'pointer', opacity: page === pages ? 0.4 : 1, fontSize: 13 }}>
+            style={{ padding: '7px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: 'rgba(255,255,255,0.92)', cursor: page === pages ? 'not-allowed' : 'pointer', opacity: page === pages ? 0.4 : 1, fontSize: 13 }}>
             Suivant →
           </button>
         </div>
@@ -162,25 +162,25 @@ export default function ClientsPage() {
                 ['Statut', detail.is_active ? 'Actif' : 'Inactif'],
               ].map(([k, v]) => (
                 <div key={k}>
-                  <div style={{ fontSize: 10, color: 'rgba(240,234,210,0.4)', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 4 }}>{k}</div>
-                  <div style={{ fontSize: 13, color: '#f0ead2' }}>{v}</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.58)', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 4 }}>{k}</div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.92)' }}>{v}</div>
                 </div>
               ))}
             </div>
 
-            <div style={{ fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.4)', marginBottom: 12, paddingTop: 16, borderTop: '1px solid rgba(240,234,210,0.06)' }}>
+            <div style={{ fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.58)', marginBottom: 12, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.09)' }}>
               Commandes
             </div>
             {loadingOrders ? (
               <div style={{ height: 60, background: 'rgba(240,234,210,0.04)', borderRadius: 8, animation: 'adminPulse 1.5s infinite' }} />
             ) : detailOrders.length === 0 ? (
-              <div style={{ color: 'rgba(240,234,210,0.3)', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>Aucune commande.</div>
+              <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>Aucune commande.</div>
             ) : (
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(240,234,210,0.06)' }}>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.09)' }}>
                     {['N°', 'Total', 'Statut', 'Date'].map(h => (
-                      <th key={h} style={{ padding: '6px 8px', textAlign: 'left', color: 'rgba(240,234,210,0.4)', fontWeight: 400, fontSize: 10, letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
+                      <th key={h} style={{ padding: '6px 8px', textAlign: 'left', color: 'rgba(255,255,255,0.58)', fontWeight: 400, fontSize: 10, letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -188,9 +188,9 @@ export default function ClientsPage() {
                   {detailOrders.map((o) => (
                     <tr key={o.uuid} style={{ borderBottom: '1px solid rgba(240,234,210,0.04)' }}>
                       <td style={{ padding: '8px', color: '#E8B96A', fontWeight: 500 }}>{o.order_number}</td>
-                      <td style={{ padding: '8px', color: '#f0ead2' }}>{fmt(o.total_ttc)}</td>
+                      <td style={{ padding: '8px', color: 'rgba(255,255,255,0.92)' }}>{fmt(o.total_ttc)}</td>
                       <td style={{ padding: '8px' }}><StatusBadge status={o.status} /></td>
-                      <td style={{ padding: '8px', color: 'rgba(240,234,210,0.4)' }}>{fmtDate(o.created_at)}</td>
+                      <td style={{ padding: '8px', color: 'rgba(255,255,255,0.58)' }}>{fmtDate(o.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>

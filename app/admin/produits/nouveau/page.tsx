@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ProductForm, { ProductFormData, defaultProductForm } from '@/components/admin/ProductForm';
@@ -61,13 +61,13 @@ export default function NouveauProduitPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button type="button" onClick={() => router.push('/admin/produits')}
-            style={{ background: 'none', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 6, padding: '6px 12px', color: 'rgba(240,234,210,0.5)', cursor: 'pointer', fontSize: 12 }}>
+            style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '6px 12px', color: 'rgba(255,255,255,0.65)', cursor: 'pointer', fontSize: 12 }}>
             ← Retour
           </button>
-          <h1 style={{ fontSize: 20, fontWeight: 600, color: '#f0ead2', margin: 0 }}>Nouveau produit</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 600, color: 'rgba(255,255,255,0.92)', margin: 0 }}>Nouveau produit</h1>
         </div>
         <button type="submit" disabled={saving}
-          style={{ padding: '10px 24px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1a1f0e', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+          style={{ padding: '10px 24px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1c2310', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
           {saving ? 'Création…' : 'Créer le produit'}
         </button>
       </div>

@@ -22,6 +22,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window !== 'undefined') {
       localStorage.setItem('access_token', res.access_token);
       localStorage.setItem('refresh_token', res.refresh_token);
+      // Poser aussi un cookie pour le middleware (protection routes /admin)
+      document.cookie = `access_token=${res.access_token}; path=/; max-age=${60 * 60 * 24 * 30}`;
     }
     set({ token: res.access_token, isAuthenticated: true });
     const user = await api.getMe();
@@ -32,6 +34,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window !== 'undefined') {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      // Supprimer le cookie
+      document.cookie = 'access_token=; path=/; max-age=0';
     }
     set({ user: null, token: null, isAuthenticated: false });
   },

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminTable, { Column } from '@/components/admin/AdminTable';
@@ -77,12 +77,12 @@ export default function ProduitsPage() {
       key: 'image', label: '', width: 48,
       render: (r) => r.primary_image_url
         ? <img src={r.primary_image_url} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4 }} />
-        : <div style={{ width: 36, height: 36, background: 'rgba(240,234,210,0.06)', borderRadius: 4 }} />,
+        : <div style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.09)', borderRadius: 4 }} />,
     },
-    { key: 'name', label: 'Nom', render: (r) => <span style={{ fontWeight: 500, color: '#f0ead2' }}>{r.name}</span> },
-    { key: 'reference', label: 'Réf.', render: (r) => <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'rgba(240,234,210,0.5)' }}>{r.reference}</span> },
-    { key: 'brand', label: 'Marque', render: (r) => <span style={{ color: 'rgba(240,234,210,0.6)' }}>{r.brand}</span> },
-    { key: 'category', label: 'Catégorie', render: (r) => <span style={{ color: 'rgba(240,234,210,0.5)' }}>{(r.category as { name: string } | undefined)?.name ?? '—'}</span> },
+    { key: 'name', label: 'Nom', render: (r) => <span style={{ fontWeight: 500, color: 'rgba(255,255,255,0.92)' }}>{r.name}</span> },
+    { key: 'reference', label: 'Réf.', render: (r) => <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'rgba(255,255,255,0.65)' }}>{r.reference}</span> },
+    { key: 'brand', label: 'Marque', render: (r) => <span style={{ color: 'rgba(255,255,255,0.75)' }}>{r.brand}</span> },
+    { key: 'category', label: 'Catégorie', render: (r) => <span style={{ color: 'rgba(255,255,255,0.65)' }}>{(r.category as { name: string } | undefined)?.name ?? '—'}</span> },
     { key: 'price_ttc', label: 'Prix TTC', render: (r) => <span style={{ color: '#E8B96A', fontWeight: 500 }}>{fmt(r.price_ttc)}</span> },
     { key: 'total_stock', label: 'Stock', render: (r) => <span style={{ color: (r.total_stock ?? 0) <= 0 ? '#c9634a' : '#6faa30', fontWeight: 500 }}>{r.total_stock ?? 0}</span> },
     {
@@ -125,10 +125,10 @@ export default function ProduitsPage() {
       <ToastContainer toasts={toasts} onClose={removeToast} />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 600, color: '#f0ead2', margin: 0 }}>Produits</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 600, color: 'rgba(255,255,255,0.92)', margin: 0 }}>Produits</h1>
         <button
           onClick={() => router.push('/admin/produits/nouveau')}
-          style={{ padding: '9px 18px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1a1f0e', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+          style={{ padding: '9px 18px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1c2310', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
         >
           + Nouveau produit
         </button>
@@ -141,23 +141,23 @@ export default function ProduitsPage() {
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { setSearch(q); setPage(1); } }}
           placeholder="Rechercher…"
-          style={{ padding: '8px 12px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none', width: 200 }}
+          style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none', width: 200 }}
         />
         <select value={gender} onChange={(e) => { setGender(e.target.value); setPage(1); }}
-          style={{ padding: '8px 12px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none' }}>
+          style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none' }}>
           <option value="">Genre</option>
           <option value="homme">Homme</option>
           <option value="femme">Femme</option>
           <option value="unisex">Unisexe</option>
         </select>
         <select value={catFilter} onChange={(e) => { setCatFilter(e.target.value); setPage(1); }}
-          style={{ padding: '8px 12px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none' }}>
+          style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none' }}>
           <option value="">Catégorie</option>
           {categories.map((c) => <option key={c.uuid} value={c.uuid}>{c.name}</option>)}
         </select>
         {[{ label: 'Nouveau', val: isNew, set: setIsNew }, { label: 'Promo', val: isPromo, set: setIsPromo }, { label: 'Vedette', val: isFeatured, set: setIsFeatured }].map(({ label, val, set }) => (
           <select key={label} value={val} onChange={(e) => { set(e.target.value); setPage(1); }}
-            style={{ padding: '8px 12px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none' }}>
+            style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none' }}>
             <option value="">{label}</option>
             <option value="true">Oui</option>
             <option value="false">Non</option>
@@ -165,7 +165,7 @@ export default function ProduitsPage() {
         ))}
       </div>
 
-      <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, overflow: 'hidden' }}>
         <AdminTable
           columns={columns}
           data={products}
@@ -178,12 +178,12 @@ export default function ProduitsPage() {
       {pages > 1 && (
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 20 }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-            style={{ padding: '7px 14px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 6, color: '#f0ead2', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, fontSize: 13 }}>
+            style={{ padding: '7px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: 'rgba(255,255,255,0.92)', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, fontSize: 13 }}>
             ← Précédent
           </button>
-          <span style={{ padding: '7px 14px', color: 'rgba(240,234,210,0.5)', fontSize: 13 }}>Page {page} / {pages}</span>
+          <span style={{ padding: '7px 14px', color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>Page {page} / {pages}</span>
           <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages}
-            style={{ padding: '7px 14px', background: '#1e2411', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 6, color: '#f0ead2', cursor: page === pages ? 'not-allowed' : 'pointer', opacity: page === pages ? 0.4 : 1, fontSize: 13 }}>
+            style={{ padding: '7px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: 'rgba(255,255,255,0.92)', cursor: page === pages ? 'not-allowed' : 'pointer', opacity: page === pages ? 0.4 : 1, fontSize: 13 }}>
             Suivant →
           </button>
         </div>

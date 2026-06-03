@@ -74,7 +74,7 @@ export default function Header() {
       >
         <div
           className="flex items-center"
-          style={{ padding: '0 40px', height: 64, maxWidth: 1440, margin: '0 auto' }}
+          style={{ padding: '0 40px', height: 96, maxWidth: 1440, margin: '0 auto' }}
         >
           {/* LEFT nav */}
           <nav className="hidden md:flex items-center gap-7 flex-1">
@@ -82,7 +82,7 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}
+                style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(245,237,216,0.75)' }}
                 className="transition-colors hover:text-[#E8B96A] whitespace-nowrap"
               >
                 {item.label}
@@ -92,19 +92,16 @@ export default function Header() {
 
           {/* CENTER — Logo */}
           <div className="flex-1 flex justify-center md:flex-none md:mx-0">
-            <Link href="/" className="flex flex-col items-center leading-none group">
-              <div style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', marginBottom: 3 }}>
-                <Image src="/images/logo1.jpg" alt="La Catena" width={36} height={36} className="object-cover" />
-              </div>
-              <span
-                className="font-serif group-hover:text-[#f5cb85] transition-colors"
-                style={{ color: 'var(--gold)', fontSize: 17, letterSpacing: '-0.3px', lineHeight: 1 }}
-              >
-                La Catena
-              </span>
-              <span style={{ fontSize: 6, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginTop: 2 }}>
-                Boutique Multibrand
-              </span>
+            <Link href="/" className="flex items-center justify-center group" style={{ filter: 'drop-shadow(0 0 12px rgba(232,185,106,0.18))' }}>
+              <Image
+                src="/images/noBack.png"
+                alt="La Catena"
+                width={110}
+                height={110}
+                className="object-contain transition-all duration-300 group-hover:scale-105"
+                style={{ filter: 'brightness(1.08)' }}
+                priority
+              />
             </Link>
           </div>
 
@@ -114,7 +111,7 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}
+                style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(245,237,216,0.75)' }}
                 className="transition-colors hover:text-[#E8B96A] whitespace-nowrap"
               >
                 {item.label}
@@ -126,7 +123,7 @@ export default function Header() {
 
             {/* Search */}
             <Link href="/boutique" aria-label="Rechercher" className="transition-opacity hover:opacity-60">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--cream-muted)" strokeWidth="1.5">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(245,237,216,0.75)" strokeWidth="1.5">
                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
               </svg>
             </Link>
@@ -146,7 +143,7 @@ export default function Header() {
 
             {/* Cart */}
             <Link href="/panier" aria-label="Panier" className="relative transition-opacity hover:opacity-60">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--cream-muted)" strokeWidth="1.5">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(245,237,216,0.75)" strokeWidth="1.5">
                 <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" />
               </svg>
               {totalItems > 0 && (
@@ -159,7 +156,7 @@ export default function Header() {
 
             {/* Account */}
             <Link href={isAuthenticated ? '/mon-compte' : '/connexion'} aria-label="Compte" className="transition-opacity hover:opacity-60">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--cream-muted)" strokeWidth="1.5">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(245,237,216,0.75)" strokeWidth="1.5">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
               </svg>
             </Link>
@@ -168,7 +165,7 @@ export default function Header() {
           {/* Mobile icons */}
           <div className="flex md:hidden items-center gap-4 ml-auto">
             <Link href="/panier" className="relative">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cream-muted)" strokeWidth="1.5">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(245,237,216,0.75)" strokeWidth="1.5">
                 <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" />
               </svg>
               {totalItems > 0 && (
@@ -181,7 +178,7 @@ export default function Header() {
             <button onClick={() => setMenuOpen(!menuOpen)} className="flex flex-col justify-center gap-1.5" style={{ width: 22, height: 22 }} aria-label="Menu">
               {[0, 1, 2].map((i) => (
                 <span key={i} className="block transition-all duration-200" style={{
-                  height: 1, background: 'var(--cream-muted)', width: '100%',
+                  height: 1, background: 'rgba(245,237,216,0.75)', width: '100%',
                   transform: menuOpen ? (i === 0 ? 'rotate(45deg) translateY(5px)' : i === 2 ? 'rotate(-45deg) translateY(-5px)' : 'none') : 'none',
                   opacity: menuOpen && i === 1 ? 0 : 1,
                 }} />

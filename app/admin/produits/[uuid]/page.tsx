@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import ProductForm, { ProductFormData, defaultProductForm } from '@/components/admin/ProductForm';
@@ -27,8 +27,8 @@ const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', c
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '9px 12px', boxSizing: 'border-box',
-  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(240,234,210,0.1)',
-  borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none',
+  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none',
 };
 
 export default function EditProduitPage() {
@@ -229,13 +229,13 @@ export default function EditProduitPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button type="button" onClick={() => router.push('/admin/produits')}
-            style={{ background: 'none', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 6, padding: '6px 12px', color: 'rgba(240,234,210,0.5)', cursor: 'pointer', fontSize: 12 }}>
+            style={{ background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '6px 12px', color: 'rgba(255,255,255,0.65)', cursor: 'pointer', fontSize: 12 }}>
             ← Retour
           </button>
-          <h1 style={{ fontSize: 20, fontWeight: 600, color: '#f0ead2', margin: 0 }}>Éditer le produit</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 600, color: 'rgba(255,255,255,0.92)', margin: 0 }}>Éditer le produit</h1>
         </div>
         <button type="submit" disabled={saving}
-          style={{ padding: '10px 24px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1a1f0e', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+          style={{ padding: '10px 24px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1c2310', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
           {saving ? 'Enregistrement…' : 'Enregistrer'}
         </button>
       </div>
@@ -243,21 +243,21 @@ export default function EditProduitPage() {
       <ProductForm form={form} setForm={setForm} categories={categories} />
 
       {/* Images */}
-      <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, padding: 20, marginTop: 20 }}>
+      <div style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, padding: 20, marginTop: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.4)', margin: 0 }}>Images</h2>
+          <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.58)', margin: 0 }}>Images</h2>
           <label style={{ padding: '8px 14px', background: 'rgba(232,185,106,0.1)', border: '1px solid rgba(232,185,106,0.2)', borderRadius: 8, color: '#E8B96A', fontSize: 12, cursor: 'pointer' }}>
             {uploadingImg ? 'Upload…' : '+ Ajouter une image'}
             <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
           </label>
         </div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          {images.length === 0 && <div style={{ color: 'rgba(240,234,210,0.3)', fontSize: 13 }}>Aucune image ajoutée.</div>}
+          {images.length === 0 && <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>Aucune image ajoutée.</div>}
           {images.map((img) => (
             <div key={img.uuid} style={{ position: 'relative', width: 100, height: 100 }}>
               <img src={img.url} alt="" style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 8, border: img.is_primary ? '2px solid #E8B96A' : '2px solid transparent' }} />
               {img.is_primary && (
-                <div style={{ position: 'absolute', top: 4, left: 4, background: '#E8B96A', color: '#1a1f0e', fontSize: 9, padding: '1px 5px', borderRadius: 3, fontWeight: 700 }}>PRINCIPALE</div>
+                <div style={{ position: 'absolute', top: 4, left: 4, background: '#E8B96A', color: '#1c2310', fontSize: 9, padding: '1px 5px', borderRadius: 3, fontWeight: 700 }}>PRINCIPALE</div>
               )}
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', gap: 3, padding: 4 }}>
                 {!img.is_primary && (
@@ -271,9 +271,9 @@ export default function EditProduitPage() {
       </div>
 
       {/* Variants */}
-      <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, padding: 20, marginTop: 20 }}>
+      <div style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, padding: 20, marginTop: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.4)', margin: 0 }}>Variantes</h2>
+          <h2 style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.58)', margin: 0 }}>Variantes</h2>
           <button type="button" onClick={openNewVariant}
             style={{ padding: '8px 14px', background: 'rgba(232,185,106,0.1)', border: '1px solid rgba(232,185,106,0.2)', borderRadius: 8, color: '#E8B96A', fontSize: 12, cursor: 'pointer' }}>
             + Ajouter une variante
@@ -281,24 +281,24 @@ export default function EditProduitPage() {
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid rgba(240,234,210,0.06)' }}>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.09)' }}>
               {['SKU', 'Taille', 'Couleur', 'Prix extra', 'Stock', 'Seuil alerte', 'Actif', ''].map(h => (
-                <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: 'rgba(240,234,210,0.4)', fontWeight: 400, fontSize: 10, letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
+                <th key={h} style={{ padding: '6px 10px', textAlign: 'left', color: 'rgba(255,255,255,0.58)', fontWeight: 400, fontSize: 10, letterSpacing: '1px', textTransform: 'uppercase' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {variants.length === 0 && (
-              <tr><td colSpan={8} style={{ padding: '20px', textAlign: 'center', color: 'rgba(240,234,210,0.3)', fontSize: 13 }}>Aucune variante.</td></tr>
+              <tr><td colSpan={8} style={{ padding: '20px', textAlign: 'center', color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>Aucune variante.</td></tr>
             )}
             {variants.map((v) => (
               <tr key={v.uuid} style={{ borderBottom: '1px solid rgba(240,234,210,0.04)' }}>
-                <td style={{ padding: '10px 10px', fontFamily: 'monospace', fontSize: 11, color: 'rgba(240,234,210,0.5)' }}>{v.sku}</td>
-                <td style={{ padding: '10px 10px', color: '#f0ead2' }}>{v.size}</td>
-                <td style={{ padding: '10px 10px', color: '#f0ead2' }}>{v.color}</td>
-                <td style={{ padding: '10px 10px', color: '#f0ead2' }}>{fmt(v.extra_price)}</td>
+                <td style={{ padding: '10px 10px', fontFamily: 'monospace', fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>{v.sku}</td>
+                <td style={{ padding: '10px 10px', color: 'rgba(255,255,255,0.92)' }}>{v.size}</td>
+                <td style={{ padding: '10px 10px', color: 'rgba(255,255,255,0.92)' }}>{v.color}</td>
+                <td style={{ padding: '10px 10px', color: 'rgba(255,255,255,0.92)' }}>{fmt(v.extra_price)}</td>
                 <td style={{ padding: '10px 10px', color: v.stock <= v.stock_alert ? '#c9634a' : '#6faa30', fontWeight: 500 }}>{v.stock}</td>
-                <td style={{ padding: '10px 10px', color: 'rgba(240,234,210,0.5)' }}>{v.stock_alert}</td>
+                <td style={{ padding: '10px 10px', color: 'rgba(255,255,255,0.65)' }}>{v.stock_alert}</td>
                 <td style={{ padding: '10px 10px' }}>
                   <span style={{ fontSize: 11, color: v.is_active ? '#6faa30' : '#c9634a' }}>{v.is_active ? 'Oui' : 'Non'}</span>
                 </td>
@@ -325,7 +325,7 @@ export default function EditProduitPage() {
             { label: 'Seuil alerte stock', key: 'stock_alert', type: 'number', placeholder: '5' },
           ].map(({ label, key, type, placeholder }) => (
             <div key={key}>
-              <label style={{ display: 'block', fontSize: 11, color: 'rgba(240,234,210,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>{label}</label>
+              <label style={{ display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.65)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 7 }}>{label}</label>
               <input
                 type={type}
                 value={varForm[key as keyof typeof varForm]}
@@ -337,8 +337,8 @@ export default function EditProduitPage() {
           ))}
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-          <button type="button" onClick={() => setVarModal(false)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: 'rgba(240,234,210,0.6)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
-          <button type="button" onClick={handleSaveVariant} style={{ flex: 1, padding: '10px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1a1f0e', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>
+          <button type="button" onClick={() => setVarModal(false)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
+          <button type="button" onClick={handleSaveVariant} style={{ flex: 1, padding: '10px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1c2310', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>
             {editVar ? 'Mettre à jour' : 'Ajouter'}
           </button>
         </div>
@@ -348,7 +348,7 @@ export default function EditProduitPage() {
       <Modal open={!!deleteImgId} onClose={() => setDeleteImgId(null)} title="Supprimer l'image" width={400}>
         <p style={{ color: 'rgba(240,234,210,0.7)', fontSize: 13, marginBottom: 20 }}>Êtes-vous sûr de vouloir supprimer cette image ?</p>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button type="button" onClick={() => setDeleteImgId(null)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: 'rgba(240,234,210,0.6)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
+          <button type="button" onClick={() => setDeleteImgId(null)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
           <button type="button" onClick={handleDeleteImage} style={{ flex: 1, padding: '10px', background: '#c9634a', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>Supprimer</button>
         </div>
       </Modal>
@@ -357,7 +357,7 @@ export default function EditProduitPage() {
       <Modal open={!!deleteVarId} onClose={() => setDeleteVarId(null)} title="Supprimer la variante" width={400}>
         <p style={{ color: 'rgba(240,234,210,0.7)', fontSize: 13, marginBottom: 20 }}>Êtes-vous sûr de vouloir supprimer cette variante ?</p>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button type="button" onClick={() => setDeleteVarId(null)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(240,234,210,0.1)', borderRadius: 8, color: 'rgba(240,234,210,0.6)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
+          <button type="button" onClick={() => setDeleteVarId(null)} style={{ flex: 1, padding: '10px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', fontSize: 13 }}>Annuler</button>
           <button type="button" onClick={handleDeleteVariant} style={{ flex: 1, padding: '10px', background: '#c9634a', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>Supprimer</button>
         </div>
       </Modal>

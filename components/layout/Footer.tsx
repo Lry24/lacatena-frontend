@@ -45,13 +45,14 @@ export default function Footer() {
       >
         {/* Col 1: Logo + tagline */}
         <div className="flex flex-col gap-5">
-          <Link href="/" className="flex items-center gap-3">
-            <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden' }}>
-              <Image src="/images/logo1.jpg" alt="La Catena" width={40} height={40} className="object-cover" />
-            </div>
-            <span className="font-serif text-xl" style={{ color: 'var(--gold)', letterSpacing: '-0.5px' }}>
-              La Catena
-            </span>
+          <Link href="/">
+            <Image
+              src="/images/noBack.png"
+              alt="La Catena"
+              width={90}
+              height={90}
+              className="object-contain logo-levitate"
+            />
           </Link>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--cream-muted)', maxWidth: 220, lineHeight: 1.7, fontSize: 13 }}>
             Pièces sélectionnées. Marques choisies. Une seule adresse pour tout ce qui compte.

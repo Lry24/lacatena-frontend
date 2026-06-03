@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
@@ -45,16 +45,14 @@ export default function AdminConnexionPage() {
     }}>
       <div style={{
         width: '100%', maxWidth: 420,
-        background: '#1e2411',
-        border: '1px solid rgba(240,234,210,0.08)',
+        background: '#1e2614',
+        border: '1px solid rgba(255,255,255,0.11)',
         borderRadius: 12, padding: '40px 36px',
       }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <div style={{ fontSize: 24, color: '#E8B96A', fontFamily: 'var(--font-dm-serif)', letterSpacing: '-0.5px', marginBottom: 6 }}>
-            La Catena
-          </div>
-          <div style={{ fontSize: 10, color: 'rgba(240,234,210,0.4)', letterSpacing: '3px', textTransform: 'uppercase' }}>
+          <img src="/images/noBack.png" alt="La Catena" style={{ width: 90, height: 90, objectFit: 'contain', margin: '0 auto 8px' }} />
+          <div style={{ fontSize: 10, color: 'rgba(240,234,210,0.45)', letterSpacing: '3px', textTransform: 'uppercase' }}>
             Espace Administration
           </div>
         </div>
@@ -72,7 +70,7 @@ export default function AdminConnexionPage() {
           )}
 
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.5)', marginBottom: 8 }}>
+            <label style={{ display: 'block', fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.65)', marginBottom: 8 }}>
               Adresse e-mail
             </label>
             <input
@@ -84,15 +82,15 @@ export default function AdminConnexionPage() {
               style={{
                 width: '100%', padding: '11px 14px',
                 background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(240,234,210,0.1)',
-                borderRadius: 8, color: '#f0ead2', fontSize: 14,
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 14,
                 outline: 'none', boxSizing: 'border-box',
               }}
             />
           </div>
 
           <div style={{ marginBottom: 28 }}>
-            <label style={{ display: 'block', fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.5)', marginBottom: 8 }}>
+            <label style={{ display: 'block', fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.65)', marginBottom: 8 }}>
               Mot de passe
             </label>
             <input
@@ -104,8 +102,8 @@ export default function AdminConnexionPage() {
               style={{
                 width: '100%', padding: '11px 14px',
                 background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(240,234,210,0.1)',
-                borderRadius: 8, color: '#f0ead2', fontSize: 14,
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 14,
                 outline: 'none', boxSizing: 'border-box',
               }}
             />
@@ -118,7 +116,7 @@ export default function AdminConnexionPage() {
               width: '100%', padding: '13px',
               background: loading ? 'rgba(232,185,106,0.4)' : '#E8B96A',
               border: 'none', borderRadius: 8,
-              color: '#1a1f0e', fontSize: 14, fontWeight: 600,
+              color: '#1c2310', fontSize: 14, fontWeight: 600,
               cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'background 0.2s',
             }}

@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const initials = user ? `${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase() : 'A';
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0f1209', fontFamily: 'var(--font-dm-sans)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#141a0b', fontFamily: 'var(--font-dm-sans)' }}>
       {/* Overlay mobile */}
       {sidebarOpen && (
         <div
@@ -86,8 +86,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside style={{
         width: 240,
-        background: '#1a1f0e',
-        borderRight: '1px solid rgba(240,234,210,0.06)',
+        background: '#1c2310',
+        borderRight: '1px solid rgba(255,255,255,0.1)',
         display: 'flex',
         flexDirection: 'column',
         position: 'fixed',
@@ -97,12 +97,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         transition: 'transform 0.25s ease',
       }}>
         {/* Logo */}
-        <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(240,234,210,0.06)' }}>
-          <div style={{ fontSize: 18, color: '#E8B96A', fontFamily: 'var(--font-dm-serif)', letterSpacing: '-0.5px' }}>
-            La Catena
-          </div>
-          <div style={{ fontSize: 9, color: 'rgba(240,234,210,0.4)', letterSpacing: '3px', textTransform: 'uppercase', marginTop: 4 }}>
-            Administration
+        <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.09)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src="/images/noBack.png" alt="La Catena" style={{ width: 44, height: 44, objectFit: 'contain' }} />
+          <div>
+            <div style={{ fontSize: 15, color: '#E8B96A', fontFamily: 'var(--font-dm-serif)', letterSpacing: '-0.3px', lineHeight: 1.2 }}>
+              La Catena
+            </div>
+            <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.45)', letterSpacing: '2.5px', textTransform: 'uppercase', marginTop: 3 }}>
+              Administration
+            </div>
           </div>
         </div>
 
@@ -119,77 +122,77 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
-                  padding: '9px 12px',
+                  padding: '10px 12px',
                   borderRadius: 7,
                   marginBottom: 2,
-                  color: active ? '#E8B96A' : 'rgba(240,234,210,0.6)',
-                  background: active ? 'rgba(232,185,106,0.08)' : 'transparent',
+                  color: active ? '#E8B96A' : 'rgba(255,255,255,0.82)',
+                  background: active ? 'rgba(232,185,106,0.12)' : 'transparent',
                   textDecoration: 'none',
                   fontSize: 13,
                   fontWeight: active ? 500 : 400,
                   transition: 'all 0.15s',
+                  letterSpacing: '0.1px',
                 }}
               >
-                <span style={{ opacity: active ? 1 : 0.7 }}>{item.icon}</span>
+                <span style={{ opacity: active ? 1 : 0.8 }}>{item.icon}</span>
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        {/* Footer */}
-        <div style={{ padding: '12px 10px', borderTop: '1px solid rgba(240,234,210,0.06)' }}>
+        {/* Footer sidebar */}
+        <div style={{ padding: '12px 10px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
           <button
             onClick={handleLogout}
             style={{
               display: 'flex', alignItems: 'center', gap: 10,
-              width: '100%', padding: '9px 12px', borderRadius: 7,
+              width: '100%', padding: '10px 12px', borderRadius: 7,
               background: 'none', border: 'none', cursor: 'pointer',
-              color: 'rgba(240,234,210,0.5)', fontSize: 13, textAlign: 'left',
+              color: 'rgba(255,255,255,0.6)', fontSize: 13, textAlign: 'left',
               transition: 'color 0.15s',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#c9634a')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(240,234,210,0.5)')}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#e07070')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
             </svg>
-            Déconnexion
+            Deconnexion
           </button>
         </div>
       </aside>
 
       {/* Main */}
       <div style={{ marginLeft: 240, flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* Header */}
+        {/* Top header */}
         <header style={{
-          height: 56,
-          background: '#1a1f0e',
-          borderBottom: '1px solid rgba(240,234,210,0.06)',
+          height: 58,
+          background: '#1c2310',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 24px',
+          padding: '0 28px',
           position: 'sticky', top: 0, zIndex: 30,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {/* Mobile menu */}
             <button
               onClick={() => setSidebarOpen(true)}
-              style={{ background: 'none', border: 'none', color: '#f0ead2', cursor: 'pointer', display: 'none' }}
+              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', display: 'none' }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
-            <div style={{ fontSize: 12, color: 'rgba(240,234,210,0.4)' }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.5px' }}>
               {pathname.replace('/admin', '').replace(/\//g, ' / ').replace(/^/, 'Admin').trim() || 'Admin / Dashboard'}
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 13, color: 'rgba(240,234,210,0.6)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>
               Bonjour, <span style={{ color: '#E8B96A', fontWeight: 500 }}>{user?.first_name}</span>
             </span>
             <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'rgba(232,185,106,0.15)',
-              border: '1px solid rgba(232,185,106,0.3)',
+              width: 34, height: 34, borderRadius: '50%',
+              background: 'rgba(232,185,106,0.18)',
+              border: '1.5px solid rgba(232,185,106,0.4)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 12, fontWeight: 600, color: '#E8B96A',
             }}>
@@ -199,7 +202,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Content */}
-        <main style={{ flex: 1, padding: '28px 28px', overflowX: 'hidden' }}>
+        <main style={{ flex: 1, padding: '32px', overflowX: 'hidden' }}>
           {children}
         </main>
       </div>
