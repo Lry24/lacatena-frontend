@@ -44,6 +44,20 @@ export default function AdminDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (!data) return;
+    const interval = setInterval(async () => {
+      try {
+        const fresh = await adminApi.getDashboard();
+        if (fresh.pending_orders > (data?.pending_orders ?? 0)) {
+          showToast('Nouvelle commande en attente !', 'success');
+        }
+        setData(fresh);
+      } catch {}
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [data?.pending_orders]);
+
   const handleExport = async (type: 'orders' | 'products' | 'customers') => {
     setExportOpen(false);
     try {

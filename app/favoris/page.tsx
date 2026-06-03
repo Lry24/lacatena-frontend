@@ -22,7 +22,7 @@ export default function FavorisPage() {
 
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center" style={{ minHeight: 360, gap: 20 }}>
-              <span style={{ fontSize: 56, color: 'rgba(232,185,106,0.2)', lineHeight: 1 }}>â™¡</span>
+              <span style={{ fontSize: 56, color: 'rgba(232,185,106,0.2)', lineHeight: 1 }}>&#9825;</span>
               <p className="font-serif text-2xl" style={{ color: 'var(--cream-muted)' }}>Aucun favori pour l&apos;instant</p>
               <p style={{ fontSize: 13, color: 'var(--cream-muted)', lineHeight: 1.7, maxWidth: 380 }}>
                 Explorez notre boutique et ajoutez vos pieces preferees à vos favoris pour les retrouver ici.

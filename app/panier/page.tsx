@@ -32,7 +32,7 @@ export default function PanierPage() {
           ) : items.length === 0 ? (
             /* Empty cart */
             <div className="flex flex-col items-center justify-center text-center" style={{ minHeight: 360, gap: 20 }}>
-              <span style={{ fontSize: 48, color: 'rgba(232,185,106,0.3)' }}>âŠ™</span>
+              <span style={{ fontSize: 48, color: 'rgba(232,185,106,0.3)' }}>&#8857;</span>
               <p className="font-serif text-2xl" style={{ color: 'var(--cream-muted)' }}>Votre panier est vide</p>
               <p style={{ fontSize: 13, color: 'var(--cream-muted)', lineHeight: 1.7 }}>
                 Decouvrez notre selection et trouvez votre prochaine piece.
@@ -69,7 +69,7 @@ export default function PanierPage() {
                       <p className="text-sm font-medium" style={{ color: 'var(--cream)' }}>{item.product_name}</p>
                       <p style={{ fontSize: 11, color: 'var(--cream-muted)', marginTop: 4 }}>
                         {item.variant_size && <span>Taille: {item.variant_size}</span>}
-                        {item.variant_size && item.variant_color && <span style={{ margin: '0 6px' }}>Â·</span>}
+                        {item.variant_size && item.variant_color && <span style={{ margin: '0 6px' }}>&middot;</span>}
                         {item.variant_color && <span>Couleur: {item.variant_color}</span>}
                       </p>
                       <p className="mt-2" style={{ fontSize: 13, color: 'var(--gold)' }}>
@@ -84,7 +84,7 @@ export default function PanierPage() {
                         className="flex items-center justify-center transition-colors hover:bg-[rgba(240,234,210,0.05)]"
                         style={{ width: 32, height: 32, color: 'var(--cream-muted)', fontSize: 16 }}
                       >
-                        âˆ’
+                        -
                       </button>
                       <span style={{ width: 32, textAlign: 'center', fontSize: 13, color: 'var(--cream)' }}>{item.quantity}</span>
                       <button

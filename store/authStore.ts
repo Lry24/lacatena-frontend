@@ -28,6 +28,20 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ token: res.access_token, isAuthenticated: true });
     const user = await api.getMe();
     set({ user });
+    // Merge anonymous cart if exists
+    if (typeof window !== 'undefined') {
+      const cartKey = localStorage.getItem('cart_session_key');
+      if (cartKey) {
+        try {
+          const { default: axios } = await import('axios');
+          await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/cart/merge`,
+            { session_key: cartKey },
+            { headers: { Authorization: `Bearer ${res.access_token}` } }
+          );
+        } catch {}
+      }
+    }
   },
 
   logout: () => {
