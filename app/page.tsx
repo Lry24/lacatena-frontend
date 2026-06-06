@@ -1,27 +1,96 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import ProductCard from '@/components/common/ProductCard';
-import { getProducts } from '@/lib/api';
-import type { ProductResponse } from '@/types';
 
 const CATEGORIES = [
-  { label: 'Femme', img: '/images/categories/categories-01.png', href: '/boutique?gender=femme' },
-  { label: 'Homme', img: '/images/categories/categories-02.png', href: '/boutique?gender=homme' },
-  { label: 'Accessoires', img: '/images/categories/categories-03.png', href: '/boutique?category=accessoires' },
+  { label: 'Femme', img: '/images/products/1762425403346.jpg', href: '/boutique?gender=femme' },
+  { label: 'Homme', img: '/images/products/IMG-20250909-WA0104.jpg', href: '/boutique?gender=homme' },
+  { label: 'Accessoires', img: '/images/products/IMG_20260202_130207.png', href: '/boutique?category=accessoires' },
   { label: 'Enfant', img: '/images/categories/categories-04.png', href: '/boutique?gender=enfant' },
-  { label: 'Nouveautés', img: '/images/categories/categories-05.png', href: '/boutique?is_new=true' },
+  { label: 'Nouveautés', img: '/images/products/1773304035061.png', href: '/boutique?is_new=true' },
   { label: 'Promos', img: '/images/categories/categories-06.png', href: '/boutique?is_promo=true' },
 ];
 
-const ARRIVALS_IMGS = [
-  '/images/arrivals/arrivals-01.png',
-  '/images/arrivals/arrivals-02.png',
-  '/images/arrivals/arrivals-03.png',
-  '/images/arrivals/arrivals-04.png',
+type StaticProduct = {
+  id: number;
+  brand: string;
+  name: string;
+  price: string;
+  main: string;
+  gallery: string[];
+};
+
+const STATIC_ARRIVALS: StaticProduct[] = [
+  {
+    id: 1,
+    brand: 'La Catena',
+    name: 'Robe Wax Soleil',
+    price: '45 000 FCFA',
+    main: '/images/products/IMG_5380.JPG',
+    gallery: ['/images/products/IMG_5380.JPG', '/images/products/IMG_5381.JPG', '/images/products/IMG_5385.JPG'],
+  },
+  {
+    id: 2,
+    brand: 'La Catena',
+    name: 'Robe Imprimée Premium',
+    price: '38 000 FCFA',
+    main: '/images/products/IMG_5394.JPG',
+    gallery: ['/images/products/IMG_5394.JPG', '/images/products/IMG_5399-1.JPG', '/images/products/IMG_5397.JPG'],
+  },
+  {
+    id: 3,
+    brand: 'La Catena',
+    name: 'Robe Tie-Dye Violette',
+    price: '52 000 FCFA',
+    main: '/images/products/IMG_20251107_113241.png',
+    gallery: ['/images/products/IMG_20251107_113241.png'],
+  },
+  {
+    id: 4,
+    brand: 'La Catena',
+    name: 'Combinaison Wax Violet',
+    price: '67 000 FCFA',
+    main: '/images/products/IMG-20250819-WA0000(1).jpg',
+    gallery: ['/images/products/IMG-20250819-WA0000(1).jpg'],
+  },
+];
+
+const STATIC_BESTSELLERS: StaticProduct[] = [
+  {
+    id: 5,
+    brand: 'La Catena',
+    name: 'Ensemble Bogolan Doré',
+    price: '58 000 FCFA',
+    main: '/images/products/1773304264476.png',
+    gallery: ['/images/products/1773304264476.png', '/images/products/1773304349484.png'],
+  },
+  {
+    id: 6,
+    brand: 'La Catena',
+    name: 'Robe Ankara Asymétrique',
+    price: '42 000 FCFA',
+    main: '/images/products/IMG-20250909-WA0075.jpg',
+    gallery: ['/images/products/IMG-20250909-WA0075.jpg', '/images/products/IMG-20250909-WA0074.jpg', '/images/products/IMG-20250909-WA0052.jpg'],
+  },
+  {
+    id: 7,
+    brand: 'La Catena',
+    name: 'Tenue Wax Élite',
+    price: '71 000 FCFA',
+    main: '/images/products/IMG_5793.PNG',
+    gallery: ['/images/products/IMG_5793.PNG', '/images/products/IMG_5794.PNG', '/images/products/IMG_5796.PNG'],
+  },
+  {
+    id: 8,
+    brand: 'La Catena',
+    name: 'Veste Kente Premium',
+    price: '63 000 FCFA',
+    main: '/images/products/1773304536903.png',
+    gallery: ['/images/products/1773304536903.png', '/images/products/1770889588417.png'],
+  },
 ];
 
 const TESTIMONIALS = [
@@ -43,60 +112,89 @@ const TESTIMONIALS = [
 ];
 
 export default function HomePage() {
-  const [newArrivals, setNewArrivals] = useState<ProductResponse[]>([]);
-  const [bestsellers, setBestsellers] = useState<ProductResponse[]>([]);
-  const [heroIndex, setHeroIndex] = useState(0);
   const [newsEmail, setNewsEmail] = useState('');
   const [newsDone, setNewsDone] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<StaticProduct | null>(null);
+  const [activeImg, setActiveImg] = useState(0);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [wished, setWished] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [qty, setQty] = useState(1);
 
-  const heroImages = ['/images/hero/hero-01.png', '/images/hero/hero-02.png', '/images/hero/hero-03.png'];
+  const openProduct = (p: StaticProduct) => {
+    setSelectedProduct(p);
+    setActiveImg(0);
+    setSelectedSize(null);
+    setWished(false);
+    setAddedToCart(false);
+    setQty(1);
+  };
 
-  useEffect(() => {
-    getProducts({ is_new: true, size: 4 }).then((d) => setNewArrivals(d.items)).catch(() => {});
-    getProducts({ is_featured: true, size: 4 }).then((d) => setBestsellers(d.items)).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    const t = setInterval(() => setHeroIndex((i) => (i + 1) % heroImages.length), 5000);
-    return () => clearInterval(t);
-  }, [heroImages.length]);
+  const handleAddToCart = () => {
+    if (!selectedSize) return;
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
+  };
 
   return (
     <>
       <Header />
       <main>
-        {/* ── Hero ─────────────────────────────────────────────────────────── */}
-        <section className="relative flex items-end overflow-hidden" style={{ minHeight: '100vh' }}>
-          {heroImages.map((src, i) => (
-            <div key={src} className="absolute inset-0 transition-opacity duration-1000" style={{ opacity: i === heroIndex ? 1 : 0 }}>
-              <Image src={src} alt="Hero" fill className="object-cover" priority={i === 0} />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(26,31,14,0.85) 0%, rgba(26,31,14,0.3) 60%, transparent 100%)' }} />
-            </div>
-          ))}
-          <div className="relative z-10 animate-fade-up" style={{ padding: '0 40px 80px', maxWidth: 680 }}>
-            <span className="inline-block mb-6" style={{ fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.35)', padding: '5px 16px', borderRadius: 20 }}>
-              Boutique Multibrand
-            </span>
-            <h1 className="font-serif mb-6" style={{ fontSize: 'clamp(36px, 6vw, 72px)', lineHeight: 1.1, color: 'var(--cream)', letterSpacing: '-1px' }}>
-              Chaque pièce,<br /><span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>choisie pour vous.</span>
-            </h1>
-            <p className="mb-10" style={{ color: 'var(--cream-muted)', fontSize: 15, lineHeight: 1.7, maxWidth: 460 }}>
-              Une sélection de marques premium, pensée pour celles et ceux qui savent ce qu&apos;ils veulent.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Link href="/boutique" className="inline-flex items-center gap-2 font-medium uppercase tracking-widest transition-colors hover:bg-[#f5cb85]" style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '14px 28px', borderRadius: 2, fontSize: 10, letterSpacing: '2px' }}>
-                Découvrir la collection
-              </Link>
-              <Link href="/boutique?sort=brand" className="inline-flex items-center gap-2 uppercase tracking-widest transition-colors" style={{ border: '0.5px solid rgba(240,234,210,0.3)', color: 'var(--cream)', padding: '14px 28px', borderRadius: 2, fontSize: 10, letterSpacing: '2px' }}>
-                Nos marques
-              </Link>
+        {/* ── Hero split — style Ozma of California ────────────────────── */}
+        <section className="relative overflow-hidden" style={{ height: '100vh', display: 'flex' }}>
+
+          {/* Panneau gauche */}
+          <div className="relative overflow-hidden" style={{ flex: 1 }}>
+            <Image
+              src="/images/hero/hero-split-01.jpg"
+              alt="La Catena — Collection"
+              fill
+              className="object-cover object-top"
+              priority
+            />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(26,31,14,0.15) 0%, rgba(26,31,14,0.45) 100%)' }} />
+          </div>
+
+          {/* Séparateur central + texte superposé */}
+          <div
+            className="absolute inset-0 z-10 flex flex-col items-center justify-end"
+            style={{ pointerEvents: 'none', paddingBottom: 64 }}
+          >
+            {/* Ligne verticale dorée */}
+            <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '0.5px', height: '100%', background: 'linear-gradient(to bottom, transparent 0%, rgba(232,185,106,0.25) 20%, rgba(232,185,106,0.25) 80%, transparent 100%)' }} />
+
+            {/* Contenu centré */}
+            <div className="flex flex-col items-center text-center" style={{ pointerEvents: 'auto', maxWidth: 420, padding: '0 24px' }}>
+              <span style={{ fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.35)', padding: '5px 16px', borderRadius: 20, marginBottom: 20, display: 'inline-block' }}>
+                Boutique Multibrand
+              </span>
+              <h1 className="font-serif" style={{ fontSize: 'clamp(32px, 4.5vw, 60px)', lineHeight: 1.1, color: 'var(--cream)', letterSpacing: '-0.5px', marginBottom: 24, textShadow: '0 2px 20px rgba(26,31,14,0.8)' }}>
+                Chaque pièce,<br />
+                <em style={{ color: 'var(--gold)' }}>choisie pour vous.</em>
+              </h1>
+              <div className="flex gap-3" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
+                <Link href="/boutique" style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '13px 28px', fontSize: 9, letterSpacing: '2.5px', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Découvrir
+                </Link>
+                <Link href="/boutique?sort=brand" style={{ border: '0.5px solid rgba(240,234,210,0.4)', color: 'var(--cream)', padding: '13px 28px', fontSize: 9, letterSpacing: '2.5px', textTransform: 'uppercase' }}>
+                  Nos marques
+                </Link>
+              </div>
             </div>
           </div>
-          <div className="absolute bottom-8 right-10 flex gap-2 z-10">
-            {heroImages.map((_, i) => (
-              <button key={i} onClick={() => setHeroIndex(i)} style={{ width: i === heroIndex ? 24 : 6, height: 6, borderRadius: 3, background: i === heroIndex ? 'var(--gold)' : 'rgba(240,234,210,0.3)', transition: 'all 0.3s ease' }} />
-            ))}
+
+          {/* Panneau droit */}
+          <div className="relative overflow-hidden" style={{ flex: 1 }}>
+            <Image
+              src="/images/hero/hero-split-02.jpg"
+              alt="La Catena — Nouvelle collection"
+              fill
+              className="object-cover object-top"
+              priority
+            />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(26,31,14,0.15) 0%, rgba(26,31,14,0.45) 100%)' }} />
           </div>
+
         </section>
 
         {/* ── Labels ───────────────────────────────────────────────────────── */}
@@ -170,40 +268,44 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Section éditoriale split (inspiré African Avenue "since 2014") ── */}
-        <section className="relative overflow-hidden" style={{ minHeight: 420 }}>
-          {/* Image pleine largeur */}
-          <Image
-            src="/images/hero/hero-02.png"
-            alt="La Catena — Boutique Multibrand"
-            fill
-            className="object-cover"
-            style={{ objectPosition: 'center 30%' }}
-          />
-          {/* Voile gauche → droite */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(26,31,14,0.92) 0%, rgba(26,31,14,0.6) 50%, transparent 100%)' }} />
-          {/* Contenu texte */}
-          <div
-            className="relative z-10 flex flex-col justify-center"
-            style={{ maxWidth: 520, padding: '80px 40px 80px 72px' }}
-          >
-            <p style={{ fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 20, opacity: 0.8 }}>
-              Notre identité
-            </p>
-            <h2 className="font-serif mb-5" style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', color: 'var(--cream)', lineHeight: 1.15, letterSpacing: '-0.5px' }}>
-              Une boutique pensée<br />
-              <em style={{ color: 'var(--gold)' }}>pour l&apos;Afrique d&apos;aujourd&apos;hui.</em>
-            </h2>
-            <p style={{ color: 'rgba(240,234,210,0.6)', fontSize: 14, lineHeight: 1.8, marginBottom: 32, maxWidth: 420 }}>
-              La Catena réunit des marques contemporaines soigneusement sélectionnées — des pièces qui racontent une histoire et s&apos;inscrivent dans un style de vie singulier.
-            </p>
-            <Link
-              href="/boutique"
-              className="inline-flex items-center gap-3 uppercase tracking-widest transition-colors hover:text-[#f5cb85]"
-              style={{ fontSize: 10, letterSpacing: '2.5px', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.35)', padding: '11px 24px', alignSelf: 'flex-start' }}
-            >
-              Découvrir la boutique
-            </Link>
+        {/* ── Section éditoriale 2 colonnes ────────────────────────────── */}
+        <section style={{ background: 'rgba(255,255,255,0.015)', borderTop: '0.5px solid var(--border)', borderBottom: '0.5px solid var(--border)' }}>
+          <div className="grid md:grid-cols-2" style={{ maxWidth: 1440, margin: '0 auto' }}>
+
+            {/* Colonne texte */}
+            <div className="flex flex-col justify-center" style={{ padding: '80px 64px 80px 40px' }}>
+              <p style={{ fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 20, opacity: 0.8 }}>
+                Notre identité
+              </p>
+              <h2 className="font-serif mb-5" style={{ fontSize: 'clamp(28px, 3vw, 44px)', color: 'var(--cream)', lineHeight: 1.15, letterSpacing: '-0.5px' }}>
+                Une boutique pensée<br />
+                <em style={{ color: 'var(--gold)' }}>pour l&apos;Afrique d&apos;aujourd&apos;hui.</em>
+              </h2>
+              <p style={{ color: 'rgba(240,234,210,0.6)', fontSize: 14, lineHeight: 1.8, marginBottom: 40, maxWidth: 400 }}>
+                La Catena réunit des marques contemporaines soigneusement sélectionnées — des pièces qui racontent une histoire et s&apos;inscrivent dans un style de vie singulier.
+              </p>
+              <Link
+                href="/boutique"
+                className="inline-flex items-center gap-3 uppercase tracking-widest transition-colors hover:text-[#f5cb85]"
+                style={{ fontSize: 10, letterSpacing: '2.5px', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.35)', padding: '11px 24px', alignSelf: 'flex-start' }}
+              >
+                Découvrir la boutique
+              </Link>
+            </div>
+
+            {/* Colonne image — portant boutique */}
+            <div className="relative overflow-hidden" style={{ minHeight: 480 }}>
+              <Image
+                src="/images/products/1773303836013.png"
+                alt="La Catena — Sélection boutique"
+                fill
+                className="object-cover"
+                style={{ objectPosition: 'center top' }}
+                sizes="50vw"
+              />
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(to left, transparent 60%, rgba(26,31,14,0.3) 100%)' }} />
+            </div>
+
           </div>
         </section>
 
@@ -217,17 +319,29 @@ export default function HomePage() {
             <Link href="/boutique?is_new=true" style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}>Tout voir →</Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {newArrivals.length > 0
-              ? newArrivals.map((p) => <ProductCard key={p.uuid} product={p} />)
-              : ARRIVALS_IMGS.map((img, i) => (
-                <div key={i} className="flex flex-col gap-3">
-                  <div className="relative overflow-hidden" style={{ aspectRatio: '3/4', borderRadius: 4, background: 'rgba(255,255,255,0.03)' }}>
-                    <Image src={img} alt={`Arrivée ${i + 1}`} fill className="object-cover" sizes="25vw" />
+            {STATIC_ARRIVALS.map((p) => (
+                <div
+                  key={p.id}
+                  className="group flex flex-col gap-3 cursor-pointer"
+                  onClick={() => openProduct(p)}
+                >
+                  <div className="relative overflow-hidden" style={{ aspectRatio: '3/4', background: 'rgba(255,255,255,0.025)', border: '0.5px solid rgba(240,234,210,0.07)' }}>
+                    <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
+                      <Image src={p.main} alt={p.name} fill className="object-cover object-top" sizes="25vw" />
+                    </div>
+                    <span className="absolute top-3 left-3 z-10" style={{ background: 'var(--gold)', color: '#2D3A0F', fontSize: 8, letterSpacing: '2px', textTransform: 'uppercase', padding: '3px 9px', borderRadius: 20, fontWeight: 600 }}>
+                      Nouveau
+                    </span>
+                    <div className="absolute inset-0 z-10 flex items-end justify-center pb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(to top, rgba(26,31,14,0.75) 0%, transparent 60%)' }}>
+                      <span style={{ fontSize: 9, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.5)', padding: '8px 20px', backdropFilter: 'blur(4px)', background: 'rgba(26,31,14,0.7)' }}>
+                        Voir le produit →
+                      </span>
+                    </div>
                   </div>
                   <div>
-                    <p style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--cream-muted)', textTransform: 'uppercase' }}>Marque</p>
-                    <p className="text-sm" style={{ color: 'var(--cream)' }}>Nouvelle pièce</p>
-                    <p className="text-sm font-medium" style={{ color: 'var(--gold)' }}>— FCFA</p>
+                    <p style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginBottom: 4 }}>{p.brand}</p>
+                    <p style={{ fontSize: 13, color: 'var(--cream)', marginBottom: 6, lineHeight: 1.3 }}>{p.name}</p>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--gold)' }}>{p.price}</p>
                   </div>
                 </div>
               ))}
@@ -263,15 +377,29 @@ export default function HomePage() {
             <Link href="/boutique?is_featured=true" style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}>Tout voir →</Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {bestsellers.length > 0
-              ? bestsellers.map((p) => <ProductCard key={p.uuid} product={p} />)
-              : Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex flex-col gap-3">
-                  <div style={{ aspectRatio: '3/4', borderRadius: 4, background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(240,234,210,0.07)' }} />
-                  <div className="space-y-1">
-                    <div style={{ height: 8, width: '40%', background: 'rgba(240,234,210,0.08)', borderRadius: 4 }} />
-                    <div style={{ height: 12, width: '70%', background: 'rgba(240,234,210,0.05)', borderRadius: 4 }} />
-                    <div style={{ height: 12, width: '30%', background: 'rgba(232,185,106,0.15)', borderRadius: 4 }} />
+            {STATIC_BESTSELLERS.map((p) => (
+                <div
+                  key={p.id}
+                  className="group flex flex-col gap-3 cursor-pointer"
+                  onClick={() => openProduct(p)}
+                >
+                  <div className="relative overflow-hidden" style={{ aspectRatio: '3/4', background: 'rgba(255,255,255,0.025)', border: '0.5px solid rgba(240,234,210,0.07)' }}>
+                    <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
+                      <Image src={p.main} alt={p.name} fill className="object-cover object-top" sizes="25vw" />
+                    </div>
+                    <span className="absolute top-3 left-3 z-10" style={{ background: '#4A6020', color: 'var(--gold)', fontSize: 8, letterSpacing: '2px', textTransform: 'uppercase', padding: '3px 9px', borderRadius: 20, border: '0.5px solid rgba(232,185,106,0.3)' }}>
+                      Best-seller
+                    </span>
+                    <div className="absolute inset-0 z-10 flex items-end justify-center pb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(to top, rgba(26,31,14,0.75) 0%, transparent 60%)' }}>
+                      <span style={{ fontSize: 9, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.5)', padding: '8px 20px', backdropFilter: 'blur(4px)', background: 'rgba(26,31,14,0.7)' }}>
+                        Voir le produit →
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginBottom: 4 }}>{p.brand}</p>
+                    <p style={{ fontSize: 13, color: 'var(--cream)', marginBottom: 6, lineHeight: 1.3 }}>{p.name}</p>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--gold)' }}>{p.price}</p>
                   </div>
                 </div>
               ))}
@@ -324,6 +452,200 @@ export default function HomePage() {
           )}
         </section>
       </main>
+
+      {/* ── Fiche produit plein écran ────────────────────────────────── */}
+      {selectedProduct && (
+        <div
+          className="fixed inset-0 z-[100] overflow-y-auto"
+          style={{ background: '#1A1F0E' }}
+        >
+          {/* Header de la fiche */}
+          <div className="flex items-center justify-between sticky top-0 z-10" style={{ padding: '0 40px', height: 60, background: 'rgba(26,31,14,0.97)', backdropFilter: 'blur(12px)', borderBottom: '0.5px solid rgba(240,234,210,0.08)' }}>
+            <button
+              onClick={() => setSelectedProduct(null)}
+              className="flex items-center gap-2 transition-opacity hover:opacity-60"
+              style={{ fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}
+            >
+              ← Retour
+            </button>
+            <p style={{ fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}>
+              La Catena — {selectedProduct.brand}
+            </p>
+            {/* Wishlist dans le header */}
+            <button
+              onClick={() => setWished(w => !w)}
+              className="flex items-center gap-2 transition-opacity hover:opacity-70"
+              style={{ fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: wished ? 'var(--gold)' : 'var(--cream-muted)' }}
+            >
+              {wished ? '♥' : '♡'} Favoris
+            </button>
+          </div>
+
+          {/* Corps — 2 colonnes */}
+          <div className="grid md:grid-cols-2" style={{ maxWidth: 1200, margin: '0 auto', minHeight: 'calc(100vh - 60px)' }}>
+
+            {/* ── Colonne gauche : galerie ── */}
+            <div style={{ padding: '32px 24px 32px 40px' }}>
+              {/* Image principale */}
+              <div className="relative overflow-hidden" style={{ aspectRatio: '3/4', borderRadius: 4, background: 'rgba(255,255,255,0.02)' }}>
+                <Image
+                  src={selectedProduct.gallery[activeImg]}
+                  alt={selectedProduct.name}
+                  fill
+                  className="object-cover object-top"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
+              {/* Miniatures */}
+              {selectedProduct.gallery.length > 1 && (
+                <div className="flex gap-2 mt-3">
+                  {selectedProduct.gallery.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveImg(i)}
+                      className="relative overflow-hidden flex-shrink-0 transition-all duration-200"
+                      style={{ width: 64, height: 80, borderRadius: 2, border: i === activeImg ? '1.5px solid var(--gold)' : '0.5px solid rgba(240,234,210,0.12)', opacity: i === activeImg ? 1 : 0.5 }}
+                    >
+                      <Image src={img} alt="" fill className="object-cover object-top" sizes="64px" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── Colonne droite : infos ── */}
+            <div className="flex flex-col" style={{ padding: '48px 40px 48px 24px' }}>
+              {/* Marque */}
+              <p style={{ fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>
+                {selectedProduct.brand}
+              </p>
+
+              {/* Nom */}
+              <h1 className="font-serif" style={{ fontSize: 'clamp(28px, 3vw, 40px)', color: 'var(--cream)', lineHeight: 1.15, marginBottom: 20, letterSpacing: '-0.5px' }}>
+                {selectedProduct.name}
+              </h1>
+
+              {/* Prix */}
+              <p style={{ fontSize: 22, fontWeight: 500, color: 'var(--gold)', marginBottom: 8 }}>
+                {selectedProduct.price}
+              </p>
+              <p style={{ fontSize: 11, color: 'rgba(240,234,210,0.35)', letterSpacing: '1px', marginBottom: 32 }}>
+                TTC · Livraison calculée à la commande
+              </p>
+
+              <div style={{ height: '0.5px', background: 'var(--border)', marginBottom: 28 }} />
+
+              {/* Description */}
+              <p style={{ fontSize: 13, color: 'rgba(240,234,210,0.6)', lineHeight: 1.8, marginBottom: 32 }}>
+                Pièce sélectionnée avec soin par notre équipe de style. Confectionnée dans un tissu premium, cette création allie élégance contemporaine et savoir-faire artisanal. Coupe ajustée, finitions soignées — une pièce qui s&apos;inscrit dans la durée.
+              </p>
+
+              {/* Composition fictive */}
+              <div className="flex flex-col gap-2 mb-32" style={{ fontSize: 11, color: 'rgba(240,234,210,0.4)', letterSpacing: '0.5px' }}>
+                <span>🪡 Composition : 70% Coton, 30% Polyester</span>
+                <span>🧺 Entretien : Lavage à 30°C, ne pas essorer</span>
+                <span>📦 Référence : LC-{String(selectedProduct.id).padStart(4, '0')}</span>
+              </div>
+
+              {/* Tailles */}
+              <p style={{ fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 12 }}>
+                Taille {selectedSize ? `— ${selectedSize} sélectionnée` : ''}
+              </p>
+              <div className="flex gap-2 flex-wrap mb-8">
+                {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSelectedSize(s === selectedSize ? null : s)}
+                    className="transition-all duration-200"
+                    style={{
+                      width: 48, height: 48, fontSize: 11, letterSpacing: '1px',
+                      border: s === selectedSize ? '1.5px solid var(--gold)' : '0.5px solid rgba(240,234,210,0.15)',
+                      color: s === selectedSize ? 'var(--gold)' : 'rgba(240,234,210,0.55)',
+                      background: s === selectedSize ? 'rgba(232,185,106,0.08)' : 'transparent',
+                      borderRadius: 2,
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              {/* Quantité + Panier */}
+              <div className="flex gap-3 mb-4">
+                {/* Stepper */}
+                <div className="flex items-center" style={{ border: '0.5px solid rgba(240,234,210,0.15)', borderRadius: 2 }}>
+                  <button
+                    onClick={() => setQty(q => Math.max(1, q - 1))}
+                    className="flex items-center justify-center transition-colors hover:text-[var(--gold)]"
+                    style={{ width: 44, height: 52, color: 'rgba(240,234,210,0.5)', fontSize: 18 }}
+                  >
+                    −
+                  </button>
+                  <span style={{ width: 36, textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--cream)', borderLeft: '0.5px solid rgba(240,234,210,0.1)', borderRight: '0.5px solid rgba(240,234,210,0.1)' }}>
+                    {qty}
+                  </span>
+                  <button
+                    onClick={() => setQty(q => Math.min(10, q + 1))}
+                    className="flex items-center justify-center transition-colors hover:text-[var(--gold)]"
+                    style={{ width: 44, height: 52, color: 'rgba(240,234,210,0.5)', fontSize: 18 }}
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Bouton panier */}
+                <button
+                  onClick={handleAddToCart}
+                  disabled={!selectedSize}
+                  className="flex-1 transition-all duration-200"
+                  style={{
+                    height: 52, fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', fontWeight: 600,
+                    background: addedToCart ? '#4A6020' : selectedSize ? 'var(--gold)' : 'rgba(232,185,106,0.15)',
+                    color: addedToCart ? 'var(--gold)' : selectedSize ? '#2D3A0F' : 'rgba(232,185,106,0.4)',
+                    border: addedToCart ? '0.5px solid rgba(232,185,106,0.3)' : 'none',
+                    borderRadius: 2,
+                    cursor: selectedSize ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  {addedToCart ? '✓ Ajouté au panier' : selectedSize ? 'Ajouter au panier' : 'Sélectionner une taille'}
+                </button>
+              </div>
+
+              {/* Wishlist bouton */}
+              <button
+                onClick={() => setWished(w => !w)}
+                className="flex items-center justify-center gap-2 transition-all duration-200 mb-8"
+                style={{
+                  height: 48, fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase',
+                  border: '0.5px solid ' + (wished ? 'rgba(232,185,106,0.5)' : 'rgba(240,234,210,0.12)'),
+                  color: wished ? 'var(--gold)' : 'var(--cream-muted)',
+                  background: wished ? 'rgba(232,185,106,0.05)' : 'transparent',
+                  borderRadius: 2,
+                }}
+              >
+                {wished ? '♥ Retiré des favoris' : '♡ Ajouter aux favoris'}
+              </button>
+
+              {/* Infos livraison */}
+              <div style={{ background: 'rgba(255,255,255,0.025)', border: '0.5px solid rgba(240,234,210,0.07)', borderRadius: 4, padding: '20px 24px' }}>
+                <div className="flex flex-col gap-3">
+                  {[
+                    { icon: '✦', text: 'Livraison gratuite dès 50 000 FCFA' },
+                    { icon: '↩', text: 'Retours acceptés sous 14 jours' },
+                    { icon: '◎', text: 'Service client Lun–Sam, 9h–18h' },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <span style={{ color: 'var(--gold)', fontSize: 12 }}>{item.icon}</span>
+                      <span style={{ fontSize: 12, color: 'rgba(240,234,210,0.5)' }}>{item.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );

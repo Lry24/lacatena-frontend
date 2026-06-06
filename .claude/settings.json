@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(claude mcp *)",
+      "Bash(mkdir -p \"/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/products\")",
+      "Bash(cp \"/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/image chercher/\"* \"/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/products/\")",
+      "Bash(cp '/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/products/IMG_20260125_125420.png' '/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/hero/hero-01.png')",
+      "Bash(cp '/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/products/IMG_20260125_125444.png' '/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/hero/hero-02.png')",
+      "Bash(cp '/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/products/IMG_20260202_130207.png' '/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/hero/hero-03.png')",
+      "Bash(cp '/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/products/product-1-bg-1.png' '/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/categories/categories-01.png')",
+      "Bash(cp '/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/products/product-2-bg-1.png' '/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/categories/categories-02.png')",
+      "Bash(curl -s http://localhost:8000)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/api/products/)",
+      "WebFetch(domain:ozmaofcalifornia.com)",
+      "Bash(cp \"/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/products/IMG_5376.JPG\" \"/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/hero/hero-split-01.jpg\")",
+      "Bash(cp \"/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/products/IMG_5377.JPG\" \"/c/Users/tcheo/OneDrive - IPNET INSTITUTE OF TECHNOLOGY/Bureau/LACATENA/lacatena-frontend/public/images/hero/hero-split-02.jpg\")",
+      "Bash(git checkout *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\tcheo\\.claude\\mcp-servers\\image-gen"
+    ]
+  }
+}
