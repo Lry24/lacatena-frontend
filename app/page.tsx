@@ -160,8 +160,8 @@ export default function HomePage() {
             className="absolute inset-0 z-10 flex flex-col items-center justify-end"
             style={{ pointerEvents: 'none', paddingBottom: 64 }}
           >
-            {/* Ligne verticale dorée */}
-            <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '0.5px', height: '100%', background: 'linear-gradient(to bottom, transparent 0%, rgba(232,185,106,0.25) 20%, rgba(232,185,106,0.25) 80%, transparent 100%)' }} />
+            {/* Ligne verticale dorée — visible tablette/PC seulement */}
+            <div className="hidden md:block" style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '0.5px', height: '100%', background: 'linear-gradient(to bottom, transparent 0%, rgba(232,185,106,0.25) 20%, rgba(232,185,106,0.25) 80%, transparent 100%)' }} />
 
             {/* Contenu centré */}
             <div className="flex flex-col items-center text-center" style={{ pointerEvents: 'auto', maxWidth: 420, padding: '0 24px' }}>
@@ -183,8 +183,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Panneau droit */}
-          <div className="relative overflow-hidden" style={{ flex: 1 }}>
+          {/* Panneau droit — caché sur mobile */}
+          <div className="hidden md:block relative overflow-hidden" style={{ flex: 1 }}>
             <Image
               src="/images/hero/hero-split-02.jpg"
               alt="La Catena — Nouvelle collection"
