@@ -138,6 +138,28 @@ export default function ContactPage() {
                 </form>
               </>
             )}
+
+            {/* Carte de localisation */}
+            <div
+              style={{
+                marginTop: 32,
+                borderRadius: 4,
+                overflow: 'hidden',
+                border: '0.5px solid rgba(232,185,106,0.15)',
+                background: 'rgba(240,234,210,0.02)',
+                boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)',
+              }}
+            >
+              <iframe
+                src="https://maps.google.com/maps?q=Boulevard%20de%20la%20Republique,%20Lome,%20Togo&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                width="100%"
+                height="280"
+                style={{ border: 0, display: 'block', filter: 'grayscale(15%) contrast(1.05)' }}
+                allowFullScreen
+                loading="lazy"
+                title="Localisation de La Catena"
+              />
+            </div>
           </div>
 
           {/* Coordonnees */}

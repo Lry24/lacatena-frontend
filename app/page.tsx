@@ -150,6 +150,7 @@ export default function HomePage() {
               alt="La Catena — Collection"
               fill
               className="object-cover object-top"
+              sizes="(max-width: 768px) 100vw, 50vw"
               priority
             />
             <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(26,31,14,0.15) 0%, rgba(26,31,14,0.45) 100%)' }} />
@@ -190,6 +191,7 @@ export default function HomePage() {
               alt="La Catena — Nouvelle collection"
               fill
               className="object-cover object-top"
+              sizes="50vw"
               priority
             />
             <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(26,31,14,0.15) 0%, rgba(26,31,14,0.45) 100%)' }} />
@@ -351,7 +353,7 @@ export default function HomePage() {
         {/* ── Bannière promo ───────────────────────────────────────────────── */}
         <section className="relative overflow-hidden flex items-center" style={{ background: '#4A6020', minHeight: 280, padding: '0 40px' }}>
           <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '45%', opacity: 0.15 }}>
-            <Image src="/images/hero/hero-bg.png" alt="" fill className="object-cover" />
+            <Image src="/images/hero/hero-bg.png" alt="" fill className="object-cover" sizes="45vw" />
           </div>
           <div className="relative z-10" style={{ maxWidth: 560, padding: '56px 0' }}>
             <p style={{ fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: 'rgba(232,185,106,0.7)', marginBottom: 16 }}>Offre limitée</p>

@@ -44,6 +44,7 @@ function BoutiqueContent() {
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 12;
 
@@ -59,6 +60,7 @@ function BoutiqueContent() {
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getProducts({
         page,
@@ -74,6 +76,10 @@ function BoutiqueContent() {
       });
       setProducts(data.items);
       setTotal(data.total);
+    } catch {
+      setProducts([]);
+      setTotal(0);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -273,6 +279,16 @@ function BoutiqueContent() {
                     </div>
                   </div>
                 ))}
+              </div>
+            ) : loadError ? (
+              <div className="flex flex-col items-center justify-center text-center" style={{ minHeight: 400, gap: 16 }}>
+                <p className="font-serif text-2xl" style={{ color: 'var(--cream-muted)' }}>Catalogue indisponible</p>
+                <p style={{ color: 'var(--cream-muted)', fontSize: 13, maxWidth: 360, lineHeight: 1.6 }}>
+                  Impossible de charger les produits pour le moment.
+                </p>
+                <button onClick={fetchProducts} style={{ fontSize: 10, letterSpacing: '2px', color: 'var(--gold)', textTransform: 'uppercase' }}>
+                  Réessayer &#8594;
+                </button>
               </div>
             ) : products.length === 0 ? (
               <div className="flex flex-col items-center justify-center" style={{ minHeight: 400, gap: 16 }}>

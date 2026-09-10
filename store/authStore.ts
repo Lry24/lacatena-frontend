@@ -51,9 +51,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   fetchMe: async () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    if (!token) {
+      set({ user: null, token: null, isAuthenticated: false });
+      return;
+    }
+
     try {
       const user = await api.getMe();
-      set({ user, isAuthenticated: true });
+      set({ user, token, isAuthenticated: true });
     } catch {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('access_token');

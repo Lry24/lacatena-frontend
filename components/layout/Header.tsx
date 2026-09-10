@@ -72,13 +72,13 @@ export default function Header() {
 
         {/* CENTER — Logo */}
         <div className="flex-1 flex justify-center md:flex-none">
-          <Link href="/" className="group">
+          <Link href="/" className="group relative block" style={{ width: 160, height: 70 }}>
             <Image
               src="/images/noBack.png"
               alt="La Catena"
-              width={160}
-              height={70}
+              fill
               className="object-contain transition-all duration-300 group-hover:opacity-80"
+              sizes="160px"
               style={{ filter: 'brightness(1.1) drop-shadow(0 0 10px rgba(232,185,106,0.2))' }}
               priority
             />
