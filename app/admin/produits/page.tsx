@@ -22,7 +22,7 @@ interface Product {
   total_stock?: number;
 }
 
-const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n);
+const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(n);
 
 export default function ProduitsPage() {
   const router = useRouter();

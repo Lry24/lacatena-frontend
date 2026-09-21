@@ -1,18 +1,20 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 
 export default function StoreInitializer() {
   const { fetchCart } = useCartStore();
   const { fetchMe } = useAuthStore();
+  const initialized = useRef(false);
 
   useEffect(() => {
-    // Auth d'abord (synchronise isAuthenticated), puis cart
+    if (initialized.current) return;
+    initialized.current = true;
     fetchMe()
       .catch(() => {})
       .finally(() => fetchCart());
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchCart, fetchMe]);
 
   return null;
 }

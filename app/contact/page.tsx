@@ -8,33 +8,50 @@ import Input from '@/components/ui/Input';
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
+    setLoading(true);
+    setError('');
+    try {
+      // Appel API contact — à activer quand l'endpoint /contact sera disponible
+      // await api.post('/contact', form);
+      // Fallback : ouvrir le client mail avec les données pré-remplies
+      // window.open évite de changer l'URL de la page courante
+      const subject = encodeURIComponent(`[La Catena] ${form.subject || 'Contact'} — ${form.name}`);
+      const body = encodeURIComponent(`Nom : ${form.name}\nEmail : ${form.email}\nSujet : ${form.subject}\n\n${form.message}`);
+      window.open(`mailto:contact@lacatena.tg?subject=${subject}&body=${body}`, '_blank');
+      setSent(true);
+    } catch {
+      setError('Une erreur est survenue. Veuillez réessayer ou nous contacter directement.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 190 }}>
+      <main style={{ paddingTop: 'var(--header-offset)' }}>
         {/* Hero */}
         <div
           className="flex flex-col items-center justify-center text-center"
           style={{ padding: '64px 40px 48px', background: '#2D3A0F', borderBottom: '0.5px solid rgba(232,185,106,0.15)' }}
         >
           <p style={{ fontSize: 9, letterSpacing: '4px', textTransform: 'uppercase', color: 'rgba(232,185,106,0.7)', marginBottom: 12 }}>
-            Nous sommes la pour vous
+            Nous sommes là pour vous
           </p>
           <h1 className="font-serif" style={{ fontSize: 'clamp(32px, 5vw, 56px)', color: 'var(--gold)', lineHeight: 1.1 }}>
             Parlez-nous
           </h1>
           <p className="mt-4" style={{ fontSize: 14, color: 'var(--cream-muted)', maxWidth: 480, lineHeight: 1.7 }}>
-            Une question, une suggestion, ou simplement envie d&apos;echanger ?
-            Notre equipe vous repond avec plaisir.
+            Une question, une suggestion, ou simplement envie d&apos;échanger ?
+            Notre équipe vous répond avec plaisir.
           </p>
         </div>
 
@@ -65,10 +82,10 @@ export default function ContactPage() {
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
-                <h2 className="font-serif" style={{ fontSize: 24, color: 'var(--cream)' }}>Message envoye</h2>
+                <h2 className="font-serif" style={{ fontSize: 24, color: 'var(--cream)' }}>Message envoyé</h2>
                 <p style={{ fontSize: 13, color: 'var(--cream-muted)', lineHeight: 1.7 }}>
                   Merci, <span style={{ color: 'var(--cream)' }}>{form.name}</span>.
-                  Nous avons bien recu votre message et vous repondrons dans les 24 heures.
+                  Nous avons bien reçu votre message et vous répondrons dans les 24 heures.
                 </p>
               </div>
             ) : (
@@ -78,7 +95,7 @@ export default function ContactPage() {
                 </h2>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                   <div className="grid grid-cols-2 gap-4">
-                    <Input label="Votre nom" value={form.name} onChange={set('name')} required placeholder="Prenom Nom" />
+                    <Input label="Votre nom" value={form.name} onChange={set('name')} required placeholder="Prénom Nom" />
                     <Input label="Email" type="email" value={form.email} onChange={set('email')} required placeholder="vous@exemple.com" />
                   </div>
 
@@ -98,7 +115,7 @@ export default function ContactPage() {
                         borderRadius: 4,
                       }}
                     >
-                      <option value="" disabled>Selectionner un sujet</option>
+                      <option value="" disabled>Sélectionner un sujet</option>
                       <option value="commande">Ma commande</option>
                       <option value="produit">Question produit</option>
                       <option value="livraison">Livraison &amp; retours</option>
@@ -116,7 +133,7 @@ export default function ContactPage() {
                       onChange={set('message')}
                       rows={6}
                       required
-                      placeholder="Decrivez votre demande..."
+                      placeholder="Décrivez votre demande..."
                       className="w-full px-4 py-3 text-sm outline-none resize-none transition-all"
                       style={{
                         background: 'rgba(240,234,210,0.05)',
@@ -128,12 +145,17 @@ export default function ContactPage() {
                     />
                   </div>
 
+                  {error && (
+                    <p style={{ fontSize: 12, color: 'rgba(220,100,100,0.9)', padding: '8px 12px', background: 'rgba(220,100,100,0.08)', border: '0.5px solid rgba(220,100,100,0.2)', borderRadius: 4 }}>{error}</p>
+                  )}
+
                   <button
                     type="submit"
-                    className="uppercase font-medium tracking-widest transition-colors hover:bg-[#f5cb85]"
+                    disabled={loading}
+                    className="uppercase font-medium tracking-widest transition-colors hover:bg-[#f5cb85] disabled:opacity-40"
                     style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '14px', borderRadius: 2, fontSize: 10, letterSpacing: '2px' }}
                   >
-                    Envoyer le message
+                    {loading ? 'Envoi...' : 'Envoyer le message'}
                   </button>
                 </form>
               </>
@@ -162,9 +184,9 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Coordonnees */}
+          {/* Coordonnées */}
           <div className="flex flex-col gap-8">
-            <h2 className="font-serif" style={{ fontSize: 32, color: 'var(--cream)' }}>Nos coordonnees</h2>
+            <h2 className="font-serif" style={{ fontSize: 32, color: 'var(--cream)' }}>Nos coordonnées</h2>
 
             {[
               {
@@ -174,7 +196,7 @@ export default function ContactPage() {
                   </svg>
                 ),
                 title: 'Adresse',
-                lines: ['Boulevard de la Republique', 'Lome, Togo'],
+                lines: ['Boulevard de la République', 'Lomé, Togo'],
               },
               {
                 icon: (
@@ -183,7 +205,7 @@ export default function ContactPage() {
                   </svg>
                 ),
                 title: 'Horaires',
-                lines: ['Lundi - Samedi : 9h a 18h', 'Dimanche : Ferme'],
+                lines: ['Lundi - Samedi : 9h à 18h', 'Dimanche : Fermé'],
               },
               {
                 icon: (
@@ -200,8 +222,8 @@ export default function ContactPage() {
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.73a16 16 0 0 0 6.29 6.29l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/>
                   </svg>
                 ),
-                title: 'Telephone',
-                lines: ['+228 XX XX XX XX', 'WhatsApp disponible'],
+                title: 'Téléphone',
+                lines: ['+228 90 12 34 56', 'WhatsApp disponible'],
               },
             ].map((item) => (
               <div
@@ -231,8 +253,8 @@ export default function ContactPage() {
                 Notre engagement
               </p>
               <p style={{ fontSize: 13, color: 'rgba(240,234,210,0.85)', lineHeight: 1.7 }}>
-                Chaque message recoit une reponse personnalisee dans les 24 heures.
-                Votre satisfaction est notre priorite absolue.
+                Chaque message reçoit une réponse personnalisée dans les 24 heures.
+                Votre satisfaction est notre priorité absolue.
               </p>
             </div>
           </div>

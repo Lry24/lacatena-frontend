@@ -23,7 +23,7 @@ interface ProductImage {
   is_primary: boolean;
 }
 
-const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n);
+const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(n);
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '9px 12px', boxSizing: 'border-box',

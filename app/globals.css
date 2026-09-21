@@ -13,13 +13,20 @@
   --border: rgba(248, 242, 228, 0.14);
   --surface: rgba(255, 255, 255, 0.055);     /* cartes légèrement plus claires */
   --surface-hover: rgba(255, 255, 255, 0.09);
-}
 
-/* Textes globaux plus nets */
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+  /* Variables CSS spécifiques admin */
+  --admin-bg:          #141a0b;
+  --admin-surface:     #1e2614;
+  --admin-surface-2:   #252e16;
+  --admin-border:      rgba(255, 255, 255, 0.11);
+  --admin-text:        rgba(255, 255, 255, 0.92);
+  --admin-text-muted:  rgba(255, 255, 255, 0.58);
+  --admin-text-faint:  rgba(255, 255, 255, 0.35);
+  --admin-gold:        #E8B96A;
+  --admin-gold-bg:     rgba(232, 185, 106, 0.12);
+
+  /* Offset du header fixe — utilisé comme paddingTop sur toutes les pages intérieures */
+  --header-offset: 100px;
 }
 
 @theme inline {
@@ -28,6 +35,9 @@ body {
 }
 
 body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
   background: var(--forest);
   color: var(--cream);
@@ -43,8 +53,7 @@ body {
   animation: fadeUp 0.6s ease forwards;
 }
 
-/* ── Admin — beaucoup plus de blanc ───────────────────────────────────────── */
-/* Toutes les couleurs de texte dans /admin remontées à near-white */
+/* ── Admin ────────────────────────────────────────────────────────────────── */
 
 /* Titres de page admin */
 .admin-title {
@@ -52,28 +61,6 @@ body {
   font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.3px;
-}
-
-/* Textes généraux dans l'admin plus blancs */
-main > div p,
-main > div span,
-main > div td,
-main > div th,
-main > div label {
-  /* héritage géré par les composants — override ici si besoin */
-}
-
-/* Variables CSS spécifiques admin */
-:root {
-  --admin-bg:          #141a0b;
-  --admin-surface:     #1e2614;
-  --admin-surface-2:   #252e16;
-  --admin-border:      rgba(255, 255, 255, 0.11);
-  --admin-text:        rgba(255, 255, 255, 0.92);
-  --admin-text-muted:  rgba(255, 255, 255, 0.58);
-  --admin-text-faint:  rgba(255, 255, 255, 0.35);
-  --admin-gold:        #E8B96A;
-  --admin-gold-bg:     rgba(232, 185, 106, 0.12);
 }
 
 /* Logo lévitation — footer */
@@ -158,4 +145,9 @@ main > div label {
   letter-spacing: 4px;
   color: var(--gold-dim);
   font-size: 12px;
+}
+
+/* Offset header fixe — à appliquer sur le <main> de chaque page intérieure */
+.page-top {
+  padding-top: var(--header-offset);
 }

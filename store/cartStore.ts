@@ -201,17 +201,32 @@ export const useCartStore = create<CartState>((set, get) => ({
       if (local) {
         try {
           const parsed = JSON.parse(local);
-          const items = parsed.items || [];
-          for (const item of items) {
+          const items: LocalCartItem[] = parsed.items || [];
+
+          // Dédupliquer : agréger les quantités par variant_uuid avant d'envoyer
+          const deduped = items.reduce<Record<string, { variant_uuid: string; quantity: number }>>(
+            (acc, item) => {
+              if (!item.variant_uuid) return acc;
+              if (acc[item.variant_uuid]) {
+                acc[item.variant_uuid].quantity += item.quantity;
+              } else {
+                acc[item.variant_uuid] = { variant_uuid: item.variant_uuid, quantity: item.quantity };
+              }
+              return acc;
+            },
+            {}
+          );
+
+          for (const entry of Object.values(deduped)) {
             try {
-              await api.addToCart({ variant_uuid: item.variant_uuid, quantity: item.quantity });
-            } catch (e) {
-              console.error("Failed to sync item", item);
+              await api.addToCart({ variant_uuid: entry.variant_uuid, quantity: entry.quantity });
+            } catch {
+              // Ignorer les erreurs individuelles (stock insuffisant, variante supprimée, etc.)
             }
           }
           localStorage.removeItem(LOCAL_CART_KEY);
-        } catch (e) {
-          console.error("Failed to parse local cart", e);
+        } catch {
+          // Ignorer les erreurs de parsing
         }
       }
     }

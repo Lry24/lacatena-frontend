@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${dmSans.variable} ${dmSerif.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#1a1f0e] text-[#f0ead2]">
+      <body className="min-h-full flex flex-col bg-[var(--forest)] text-[var(--cream)]">
         <StoreInitializer />
         {children}
       </body>

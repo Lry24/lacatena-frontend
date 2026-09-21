@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 
 export default function AdminConnexionPage() {
@@ -13,7 +14,7 @@ export default function AdminConnexionPage() {
 
   useEffect(() => {
     if (isAuthenticated) router.replace('/admin');
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +52,9 @@ export default function AdminConnexionPage() {
       }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <img src="/images/noBack.png" alt="La Catena" style={{ width: 90, height: 90, objectFit: 'contain', margin: '0 auto 8px' }} />
+          <div style={{ position: 'relative', width: 90, height: 90, margin: '0 auto 8px' }}>
+            <Image src="/images/noBack.png" alt="La Catena" fill className="object-contain" priority />
+          </div>
           <div style={{ fontSize: 10, color: 'rgba(240,234,210,0.45)', letterSpacing: '3px', textTransform: 'uppercase' }}>
             Espace Administration
           </div>

@@ -13,10 +13,10 @@ const NAV_LINKS = [
 
 const INFO_LINKS = [
   { label: 'Mon compte', href: '/mon-compte' },
-  { label: 'Mes commandes', href: '/mon-compte' },
+  { label: 'Mes commandes', href: '/mon-compte?tab=commandes' },
   { label: 'Mes favoris', href: '/favoris' },
-  { label: 'Livraison & retours', href: '/contact' },
-  { label: 'Mentions légales', href: '/contact' },
+  { label: 'Livraison & retours', href: '/livraison-retours' },
+  { label: 'Mentions légales', href: '/mentions-legales' },
 ];
 
 export default function Footer() {
@@ -58,14 +58,20 @@ export default function Footer() {
             Pièces sélectionnées. Marques choisies. Une seule adresse pour tout ce qui compte.
           </p>
           <div className="flex gap-3 mt-2">
-            {['Instagram', 'Facebook', 'TikTok'].map((social) => (
+            {[
+              { label: 'Instagram', href: 'https://www.instagram.com/lacatena.tg' },
+              { label: 'Facebook', href: 'https://www.facebook.com/lacatena.tg' },
+              { label: 'TikTok', href: 'https://www.tiktok.com/@lacatena.tg' },
+            ].map((social) => (
               <a
-                key={social}
-                href="#"
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-xs uppercase transition-colors hover:text-[#E8B96A]"
                 style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--cream-muted)' }}
               >
-                {social}
+                {social.label}
               </a>
             ))}
           </div>
@@ -110,7 +116,7 @@ export default function Footer() {
           <div className="mt-2 flex flex-col gap-2">
             <span className="flex items-center gap-2" style={{ color: 'var(--cream-muted)', fontSize: 12 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              Lome, Togo
+              Lomé, Togo
             </span>
             <span className="flex items-center gap-2" style={{ color: 'var(--cream-muted)', fontSize: 12 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>

@@ -83,13 +83,20 @@ export default function CommandePage() {
   };
 
   useEffect(() => {
-    fetchCart();
-    fetchMe().then(() => {
-      if (useAuthStore.getState().isAuthenticated) {
-        loadAddresses().then(() => setStage('checkout'));
-      } else {
-        setStage('gate');
+    fetchCart().then(() => {
+      // Rediriger si le panier est vide
+      const { items: cartItems } = useCartStore.getState();
+      if (cartItems.length === 0) {
+        window.location.replace('/panier');
+        return;
       }
+      fetchMe().then(() => {
+        if (useAuthStore.getState().isAuthenticated) {
+          loadAddresses().then(() => setStage('checkout'));
+        } else {
+          setStage('gate');
+        }
+      });
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -147,6 +154,16 @@ export default function CommandePage() {
   // ── Étape 1 → Étape 2
   const handleContinueToPayment = (e: React.FormEvent) => {
     e.preventDefault();
+    // Vérifier qu'une adresse est bien disponible avant de continuer
+    if (!useNew && !selectedAddr) {
+      setOrderError('Veuillez sélectionner une adresse de livraison.');
+      return;
+    }
+    if (useNew && (!form.recipient_name || !form.street || !form.city || !form.country)) {
+      setOrderError('Veuillez compléter tous les champs obligatoires de l\'adresse.');
+      return;
+    }
+    setOrderError('');
     setCheckoutStep('payment');
   };
 
@@ -182,7 +199,7 @@ export default function CommandePage() {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 190, minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main style={{ paddingTop: 'var(--header-offset)', minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <p style={{ color: 'var(--cream-muted)', fontSize: 13 }}>Chargement...</p>
         </main>
         <Footer />
@@ -195,7 +212,7 @@ export default function CommandePage() {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 190, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main style={{ paddingTop: 'var(--header-offset)', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="text-center" style={{ maxWidth: 520, padding: '0 24px' }}>
             <div style={{ fontSize: 28, letterSpacing: '6px', color: 'rgba(232,185,106,0.35)', marginBottom: 32 }}>⊙⊙⊙⊙⊙⊙</div>
             <h1 className="font-serif mb-4" style={{ fontSize: 40, color: 'var(--gold)' }}>Commande confirmée</h1>
@@ -232,7 +249,7 @@ export default function CommandePage() {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 190 }}>
+        <main style={{ paddingTop: 'var(--header-offset)' }}>
           <div style={{ padding: '40px 40px 80px', maxWidth: 1200, margin: '0 auto' }}>
             <div className="flex flex-col lg:flex-row gap-12 items-start">
 
@@ -385,7 +402,7 @@ export default function CommandePage() {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 190 }}>
+        <main style={{ paddingTop: 'var(--header-offset)' }}>
           <div style={{ padding: '40px 40px 80px', maxWidth: 1200, margin: '0 auto' }}>
             {/* Progress */}
             <div className="flex items-center gap-3 mb-8">
@@ -460,7 +477,7 @@ export default function CommandePage() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 190 }}>
+      <main style={{ paddingTop: 'var(--header-offset)' }}>
         <div style={{ padding: '40px 40px 80px', maxWidth: 1200, margin: '0 auto' }}>
           {/* Progress */}
           <div className="flex items-center gap-3 mb-8">

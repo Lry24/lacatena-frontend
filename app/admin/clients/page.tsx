@@ -27,7 +27,7 @@ interface CustomerOrder {
   created_at: string;
 }
 
-const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n);
+const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(n);
 const fmtDate = (s: string) => new Date(s).toLocaleDateString('fr-FR');
 
 export default function ClientsPage() {

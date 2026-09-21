@@ -1,10 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/common/ProductCard';
+import LoadingScreen from '@/components/common/LoadingScreen';
 import Input from '@/components/ui/Input';
 import { useAuthStore } from '@/store/authStore';
 import { useWishlistStore } from '@/store/wishlistStore';
@@ -37,11 +38,15 @@ interface OrderDetail {
   items: { product_name: string; variant_sku?: string; variant_size?: string; variant_color?: string; quantity: number; unit_price_ttc: number; subtotal_ttc: number }[];
 }
 
-export default function MonComptePage() {
+function MonCompteContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated, fetchMe, logout } = useAuthStore();
   const { items: wishlistItems } = useWishlistStore();
-  const [tab, setTab] = useState<Tab>('profil');
+  // Lire le tab initial depuis l'URL (ex: /mon-compte?tab=commandes)
+  const initialTab = (searchParams.get('tab') as Tab | null);
+  const [tab, setTab] = useState<Tab>(initialTab && ['profil','commandes','adresses','favoris'].includes(initialTab) ? initialTab : 'profil');
+
 
   // ── Addresses
   const [addresses, setAddresses] = useState<AddressResponse[]>([]);
@@ -180,7 +185,7 @@ export default function MonComptePage() {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 190, minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main style={{ paddingTop: 'var(--header-offset)', minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <p style={{ color: 'var(--cream-muted)', fontSize: 13 }}>Chargement...</p>
         </main>
         <Footer />
@@ -191,7 +196,7 @@ export default function MonComptePage() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 190 }}>
+      <main style={{ paddingTop: 'var(--header-offset)' }}>
         <div style={{ padding: '40px 40px 80px', maxWidth: 1440, margin: '0 auto' }}>
 
           {/* Bandeau admin */}
@@ -212,7 +217,7 @@ export default function MonComptePage() {
               <p style={{ fontSize: 13, color: 'var(--cream-muted)', marginTop: 4 }}>Bonjour, <span style={{ color: 'var(--cream)' }}>{user.full_name}</span></p>
             </div>
             <button onClick={handleLogout} style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)', border: '0.5px solid rgba(240,234,210,0.15)', padding: '8px 16px', borderRadius: 2 }}>
-              Deconnexion
+              Déconnexion
             </button>
           </div>
 
@@ -240,7 +245,7 @@ export default function MonComptePage() {
               {!editProfile ? (
                 <>
                   <div className="flex flex-col gap-5">
-                    {[{ label: 'Prenom', value: user.first_name }, { label: 'Nom', value: user.last_name }, { label: 'Email', value: user.email }, { label: 'Telephone', value: user.phone || '—' }, { label: 'Statut', value: user.is_verified ? 'Verifie' : 'Non verifie' }].map((field) => (
+                    {[{ label: 'Prénom', value: user.first_name }, { label: 'Nom', value: user.last_name }, { label: 'Email', value: user.email }, { label: 'Téléphone', value: user.phone || '—' }, { label: 'Statut', value: user.is_verified ? 'Vérifié' : 'Non vérifié' }].map((field) => (
                       <div key={field.label}>
                         <p style={{ fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 4 }}>{field.label}</p>
                         <p style={{ fontSize: 14, color: field.label === 'Statut' && user.is_verified ? 'var(--gold)' : 'var(--cream)' }}>{field.value}</p>
@@ -268,9 +273,9 @@ export default function MonComptePage() {
               ) : (
                 <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
                   <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 4 }}>Modifier le profil</p>
-                  <Input label="Prenom" value={profileForm.first_name || ''} onChange={(e) => setProfileForm((f) => ({ ...f, first_name: e.target.value }))} required />
+                  <Input label="Prénom" value={profileForm.first_name || ''} onChange={(e) => setProfileForm((f) => ({ ...f, first_name: e.target.value }))} required />
                   <Input label="Nom" value={profileForm.last_name || ''} onChange={(e) => setProfileForm((f) => ({ ...f, last_name: e.target.value }))} required />
-                  <Input label="Telephone" value={profileForm.phone || ''} onChange={(e) => setProfileForm((f) => ({ ...f, phone: e.target.value }))} type="tel" placeholder="+228 ..." />
+                  <Input label="Téléphone" value={profileForm.phone || ''} onChange={(e) => setProfileForm((f) => ({ ...f, phone: e.target.value }))} type="tel" placeholder="+228 ..." />
                   {profileError && <p style={{ fontSize: 12, color: 'rgba(220,100,100,0.9)' }}>{profileError}</p>}
                   <div className="flex gap-3 mt-2">
                     <button type="submit" disabled={profileLoading} className="flex-1 uppercase font-medium tracking-widest transition-colors hover:bg-[#f5cb85] disabled:opacity-40" style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '12px', borderRadius: 2, fontSize: 10, letterSpacing: '2px' }}>{profileLoading ? '...' : 'Enregistrer'}</button>
@@ -286,7 +291,19 @@ export default function MonComptePage() {
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-serif" style={{ fontSize: 22, color: 'var(--cream)' }}>Historique des commandes</h2>
-                {orders.length > 0 && <span style={{ fontSize: 11, color: 'var(--cream-muted)' }}>{orders.length} commande{orders.length > 1 ? 's' : ''}</span>}
+                <div className="flex items-center gap-3">
+                  {orders.length > 0 && <span style={{ fontSize: 11, color: 'var(--cream-muted)' }}>{orders.length} commande{orders.length > 1 ? 's' : ''}</span>}
+                  <button
+                    onClick={() => {
+                      setOrdersLoaded(false);
+                    }}
+                    disabled={ordersLoading}
+                    className="transition-colors hover:text-[var(--gold)] disabled:opacity-40"
+                    style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)', border: '0.5px solid rgba(240,234,210,0.15)', padding: '5px 10px', borderRadius: 2 }}
+                  >
+                    {ordersLoading ? '...' : '↻ Actualiser'}
+                  </button>
+                </div>
               </div>
 
               {ordersLoading ? (
@@ -412,13 +429,13 @@ export default function MonComptePage() {
                   <div key={addr.uuid} style={{ padding: '20px 24px', background: 'rgba(240,234,210,0.04)', border: `0.5px solid ${addr.is_default ? 'rgba(232,185,106,0.4)' : 'rgba(240,234,210,0.1)'}`, borderRadius: 4 }}>
                     <div className="flex items-start justify-between mb-2">
                       <p style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}>{addr.label || '—'}</p>
-                      {addr.is_default && <span style={{ fontSize: 9, letterSpacing: '1px', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.3)', padding: '1px 8px', borderRadius: 20 }}>Par defaut</span>}
+                      {addr.is_default && <span style={{ fontSize: 9, letterSpacing: '1px', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.3)', padding: '1px 8px', borderRadius: 20 }}>Par défaut</span>}
                     </div>
                     <p style={{ fontSize: 13, color: 'var(--cream)', fontWeight: 500 }}>{addr.recipient_name}</p>
                     <p style={{ fontSize: 12, color: 'var(--cream-muted)', marginTop: 4, lineHeight: 1.6 }}>{addr.street}<br />{addr.city}{addr.state ? `, ${addr.state}` : ''}<br />{addr.country}</p>
                     {addr.phone && <p style={{ fontSize: 12, color: 'var(--cream-muted)', marginTop: 4 }}>{addr.phone}</p>}
                     <div className="flex gap-2 mt-4">
-                      {!addr.is_default && <button onClick={() => handleSetDefault(addr.uuid)} style={{ fontSize: 9, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.3)', padding: '4px 10px', borderRadius: 2 }}>Definir par defaut</button>}
+                      {!addr.is_default && <button onClick={() => handleSetDefault(addr.uuid)} style={{ fontSize: 9, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.3)', padding: '4px 10px', borderRadius: 2 }}>Définir par défaut</button>}
                       <button onClick={() => handleDeleteAddress(addr.uuid)} style={{ fontSize: 9, letterSpacing: '1px', textTransform: 'uppercase', color: 'rgba(210,80,80,0.8)', border: '0.5px solid rgba(210,80,80,0.25)', padding: '4px 10px', borderRadius: 2 }}>Supprimer</button>
                     </div>
                   </div>
@@ -448,7 +465,7 @@ export default function MonComptePage() {
                     </div>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input type="checkbox" checked={addrForm.is_default} onChange={(e) => setAddrForm((f) => ({ ...f, is_default: e.target.checked }))} className="accent-[#E8B96A]" />
-                      <span style={{ fontSize: 12, color: 'var(--cream-muted)' }}>Definir comme adresse par defaut</span>
+                      <span style={{ fontSize: 12, color: 'var(--cream-muted)' }}>Définir comme adresse par défaut</span>
                     </label>
                     {addrError && <p style={{ fontSize: 12, color: 'rgba(220,100,100,0.9)' }}>{addrError}</p>}
                     <div className="flex gap-3">
@@ -479,5 +496,13 @@ export default function MonComptePage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function MonComptePage() {
+  return (
+    <Suspense fallback={<LoadingScreen message="Chargement du compte" />}>
+      <MonCompteContent />
+    </Suspense>
   );
 }

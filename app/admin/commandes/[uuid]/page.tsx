@@ -9,7 +9,7 @@ import * as adminApi from '@/lib/adminApi';
 const fmt = (n: number | string | null | undefined) => {
   const num = Number(n);
   if (isNaN(num)) return '—';
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(num);
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(num);
 };
 const fmtDate = (s: string) => new Date(s).toLocaleString('fr-FR');
 

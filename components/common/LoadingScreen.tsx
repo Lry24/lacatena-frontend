@@ -85,22 +85,6 @@ export default function LoadingScreen({ message = 'Chargement', fullscreen = tru
           ))}
         </span>
       </div>
-
-      {/* Keyframes injectés inline pour garantir leur exécution */}
-      <style>{`
-        @keyframes spinRing {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-        @keyframes logoPulse {
-          0%, 100% { opacity: 0.75; filter: drop-shadow(0 0 8px rgba(232,185,106,0.2)) brightness(1); }
-          50%       { opacity: 1;    filter: drop-shadow(0 0 28px rgba(232,185,106,0.7)) brightness(1.2); }
-        }
-        @keyframes dotBounce {
-          0%, 80%, 100% { transform: translateY(0);    opacity: 0.4; }
-          40%           { transform: translateY(-5px); opacity: 1;   }
-        }
-      `}</style>
     </div>
   );
 }

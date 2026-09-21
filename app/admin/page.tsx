@@ -1,5 +1,5 @@
 ﻿'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import StatCard from '@/components/admin/StatCard';
 import StatusBadge from '@/components/admin/StatusBadge';
@@ -21,7 +21,7 @@ interface DashboardData {
 }
 
 const fmt = (n: number) =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n);
+  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(n);
 const fmtDate = (s: string) =>
   new Date(s).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
@@ -36,27 +36,29 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [exportOpen, setExportOpen] = useState(false);
   const { toasts, showToast, removeToast } = useToast();
+  // Ref pour suivre pending_orders sans recréer l'interval à chaque changement
+  const prevPendingRef = useRef<number>(0);
 
   useEffect(() => {
     adminApi.getDashboard()
-      .then(setData)
+      .then((d) => { setData(d); prevPendingRef.current = d.pending_orders ?? 0; })
       .catch(() => showToast('Erreur chargement tableau de bord.', 'error'))
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    if (!data) return;
     const interval = setInterval(async () => {
       try {
         const fresh = await adminApi.getDashboard();
-        if (fresh.pending_orders > (data?.pending_orders ?? 0)) {
+        if ((fresh.pending_orders ?? 0) > prevPendingRef.current) {
           showToast('Nouvelle commande en attente !', 'success');
         }
+        prevPendingRef.current = fresh.pending_orders ?? 0;
         setData(fresh);
       } catch {}
     }, 30000);
     return () => clearInterval(interval);
-  }, [data?.pending_orders]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleExport = async (type: 'orders' | 'products' | 'customers') => {
     setExportOpen(false);

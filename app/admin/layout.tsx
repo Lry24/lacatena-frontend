@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 
 const NAV = [
@@ -42,13 +43,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     setHydrated(true);
     fetchMe().then(() => {
-      if (!useAuthStore.getState().isAuthenticated) router.replace('/admin/connexion');
+      const state = useAuthStore.getState();
+      if (!state.isAuthenticated) {
+        router.replace('/admin/connexion');
+      } else if (state.user && !['admin', 'staff'].includes(state.user.role)) {
+        // Utilisateur connecté mais sans les droits admin → retour au site
+        router.replace('/');
+      }
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (hydrated && !isAuthenticated && pathname !== '/admin/connexion') {
+    if (!hydrated) return;
+    if (!isAuthenticated && pathname !== '/admin/connexion') {
       router.replace('/admin/connexion');
+      return;
+    }
+    // Vérifier le rôle une fois l'utilisateur chargé
+    const state = useAuthStore.getState();
+    if (isAuthenticated && state.user && !['admin', 'staff'].includes(state.user.role)) {
+      router.replace('/');
     }
   }, [hydrated, isAuthenticated, pathname]);
 
@@ -102,18 +116,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           overflow: 'hidden',
           transition: 'padding 0.22s ease',
         }}>
-          <img
-            src="/images/noBack.png"
-            alt="La Catena"
-            style={{
-              width: expanded ? 90 : 38,
-              height: expanded ? 90 : 38,
-              objectFit: 'contain',
-              filter: 'brightness(1.1) drop-shadow(0 0 10px rgba(232,185,106,0.18))',
-              transition: 'width 0.22s ease, height 0.22s ease',
-              flexShrink: 0,
-            }}
-          />
+          <div style={{
+            position: 'relative',
+            width: expanded ? 90 : 38,
+            height: expanded ? 90 : 38,
+            transition: 'width 0.22s ease, height 0.22s ease',
+            flexShrink: 0,
+          }}>
+            <Image
+              src="/images/noBack.png"
+              alt="La Catena"
+              fill
+              className="object-contain"
+              sizes={expanded ? "90px" : "38px"}
+              style={{ filter: 'brightness(1.1) drop-shadow(0 0 10px rgba(232,185,106,0.18))' }}
+              priority
+            />
+          </div>
           {expanded && (
             <div style={{
               fontSize: 8, color: 'rgba(255,255,255,0.4)',

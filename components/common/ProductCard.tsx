@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import type { ProductResponse } from '@/types';
@@ -18,6 +19,7 @@ export default function ProductCard({ product, variantUuid }: Props) {
   const [qty, setQty] = useState(1);
   const { addItem } = useCartStore();
   const { toggle, isInWishlist } = useWishlistStore();
+  const router = useRouter();
   const wished = isInWishlist(product.uuid);
 
   const displayPrice = product.is_promo && product.promo_price != null
@@ -220,17 +222,28 @@ export default function ProductCard({ product, variantUuid }: Props) {
               </div>
             </div>
           ) : (
-            <div style={{
-              background: 'rgba(26,31,14,0.85)',
-              border: '0.5px solid rgba(232,185,106,0.3)',
-              padding: '10px',
-              textAlign: 'center',
-              fontSize: 9, letterSpacing: '2.5px',
-              textTransform: 'uppercase', color: 'var(--gold)',
-              backdropFilter: 'blur(4px)',
-            }}>
-              Voir le produit →
-            </div>
+            /* Pas de variantUuid : CTA redirige vers la fiche produit */
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                router.push(`/produits/${product.slug}`);
+              }}
+              style={{
+                width: '100%',
+                background: 'var(--gold)',
+                color: '#2D3A0F',
+                border: 'none',
+                padding: '10px',
+                textAlign: 'center',
+                fontSize: 9, letterSpacing: '2.5px',
+                textTransform: 'uppercase', fontWeight: 700,
+                borderRadius: 2,
+                cursor: 'pointer',
+                boxShadow: '0 2px 12px rgba(232,185,106,0.25)',
+              }}
+            >
+              Voir &amp; choisir →
+            </button>
           )}
         </div>
       </div>

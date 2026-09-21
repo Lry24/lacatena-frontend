@@ -29,13 +29,22 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
 
   useEffect(() => {
     setLoading(true);
+    setQty(1); // Réinitialiser la quantité à chaque nouveau produit
+    setSelectedVariant(null);
+    setMainImage(null);
     getProduct(slug)
       .then((p) => {
         setProduct(p);
         setMainImage(p.primary_image_url || (p.images?.[0]?.url ?? null));
         const firstActive = p.variants?.find((v) => v.is_active);
         if (firstActive) setSelectedVariant(firstActive);
-        getProducts({ size: 4 }).then((d) => setSimilar(d.items.filter((x) => x.uuid !== p.uuid).slice(0, 4))).catch(() => {});
+        // Produits similaires : même catégorie si possible, sinon fallback global
+        const similarParams = p.category?.slug
+          ? { size: 5, category_slug: p.category.slug }
+          : { size: 5 };
+        getProducts(similarParams)
+          .then((d) => setSimilar(d.items.filter((x) => x.uuid !== p.uuid).slice(0, 4)))
+          .catch(() => {});
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -49,7 +58,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
     return (
       <>
         <Header />
-        <main style={{ paddingTop: 190, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main style={{ paddingTop: 'var(--header-offset)', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="text-center">
             <p className="font-serif text-2xl" style={{ color: 'var(--gold)' }}>Produit introuvable</p>
             <Link href="/boutique" style={{ fontSize: 10, letterSpacing: '2px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginTop: 16, display: 'block' }}>← Retour boutique</Link>
@@ -88,14 +97,22 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
     }
   };
 
-  // Group variants by size
+  // Variantes actives avec stock
   const activeSizes = product.variants?.filter((v) => v.is_active && v.stock > 0) ?? [];
-  const activeColors = [...new Set(activeSizes.map((v) => v.color).filter(Boolean))];
+
+  // Tailles uniques disponibles
+  const uniqueSizes = [...new Set(activeSizes.map((v) => v.size))];
+
+  // Couleurs disponibles pour la taille sélectionnée (ou toutes si aucune taille choisie)
+  const colorsForSelectedSize = selectedVariant
+    ? activeSizes.filter((v) => v.size === selectedVariant.size).map((v) => v.color).filter(Boolean)
+    : activeSizes.map((v) => v.color).filter(Boolean);
+  const activeColors = [...new Set(colorsForSelectedSize)];
 
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 190 }}>
+      <main style={{ paddingTop: 'var(--header-offset)' }}>
         {/* Breadcrumb */}
         <div style={{ padding: '24px 40px', maxWidth: 1440, margin: '0 auto' }}>
           <Breadcrumb items={[
@@ -119,12 +136,14 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
               ) : (
                 <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--cream-muted)' }}>Aucune image</div>
               )}
-              {product.is_new && (
-                <span className="absolute top-4 left-4" style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '3px 12px', borderRadius: 20, fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase' }}>Nouveau</span>
-              )}
-              {product.is_promo && (
-                <span className="absolute top-4 left-4" style={{ background: '#4A6020', color: 'var(--gold)', padding: '3px 12px', borderRadius: 20, fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', border: '0.5px solid rgba(232,185,106,0.3)' }}>Promo</span>
-              )}
+              <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                {product.is_new && (
+                  <span style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '3px 12px', borderRadius: 20, fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>Nouveau</span>
+                )}
+                {product.is_promo && (
+                  <span style={{ background: '#4A6020', color: 'var(--gold)', padding: '3px 12px', borderRadius: 20, fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', border: '0.5px solid rgba(232,185,106,0.3)', fontWeight: 600 }}>Promo</span>
+                )}
+              </div>
             </div>
 
             {/* Thumbnails */}
@@ -171,12 +190,15 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
             <div style={{ height: '0.5px', background: 'var(--border)' }} />
 
             {/* Size selector */}
-            {activeSizes.length > 0 && (
+            {uniqueSizes.length > 0 && (
               <div>
                 <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 12 }}>Taille</p>
                 <div className="flex flex-wrap gap-2">
-                  {[...new Set(activeSizes.map((v) => v.size))].map((size) => {
-                    const variantForSize = activeSizes.find((v) => v.size === size);
+                  {uniqueSizes.map((size) => {
+                    // Choisir la variante qui correspond à la taille ET à la couleur actuellement sélectionnée, sinon la première dispo
+                    const variantForSize =
+                      activeSizes.find((v) => v.size === size && v.color === selectedVariant?.color) ||
+                      activeSizes.find((v) => v.size === size);
                     const isSelected = selectedVariant?.size === size;
                     return (
                       <button
@@ -206,7 +228,10 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                 <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 12 }}>Couleur</p>
                 <div className="flex flex-wrap gap-2">
                   {activeColors.map((color) => {
-                    const variantForColor = activeSizes.find((v) => v.color === color);
+                    // Trouver la variante qui correspond à la couleur ET à la taille sélectionnée
+                    const variantForColor =
+                      activeSizes.find((v) => v.color === color && v.size === selectedVariant?.size) ||
+                      activeSizes.find((v) => v.color === color);
                     const isSelected = selectedVariant?.color === color;
                     return (
                       <button
@@ -232,7 +257,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
             {/* Actions */}
             <div className="flex flex-col gap-3 mt-2">
               {/* Sélecteur de quantité */}
-              {activeSizes.length > 0 && (
+              {uniqueSizes.length > 0 && (
                 <div className="flex items-center gap-4">
                   <span style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}>Quantité</span>
                   <div
@@ -271,7 +296,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
 
               <button
                 onClick={handleAddToCart}
-                disabled={adding || !selectedVariant || activeSizes.length === 0}
+                disabled={adding || !selectedVariant || uniqueSizes.length === 0}
                 className="w-full uppercase font-medium tracking-widest transition-all duration-200 hover:bg-[#f5cb85] disabled:opacity-40 btn-gold"
                 style={{
                   background: addedMsg ? '#4A6020' : 'var(--gold)',
@@ -284,7 +309,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                   boxShadow: addedMsg ? 'none' : '0 4px 20px rgba(232,185,106,0.2)',
                 }}
               >
-                {activeSizes.length === 0
+                {uniqueSizes.length === 0
                   ? 'Rupture de stock'
                   : addedMsg
                   ? `✓ ${qty > 1 ? qty + ' articles ajoutés' : 'Ajouté au panier'}`

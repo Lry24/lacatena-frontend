@@ -47,7 +47,7 @@ function ConnexionForm() {
         <Image src="/images/hero/hero-02.png" alt="La Catena" fill className="object-cover" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(26,31,14,0.1) 0%, rgba(26,31,14,0.6) 100%)' }} />
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <img src="/images/highQuality.png" alt="La Catena" style={{ width: 160, height: 160, objectFit: 'contain', filter: 'drop-shadow(0 0 40px rgba(232,185,106,0.25))' }} />
+          <Image src="/images/highQuality.png" alt="La Catena" width={160} height={160} className="object-contain" style={{ filter: 'drop-shadow(0 0 40px rgba(232,185,106,0.25))' }} />
           <p style={{ fontSize: 10, letterSpacing: '3px', color: 'rgba(240,234,210,0.5)', textTransform: 'uppercase', marginTop: 20 }}>Boutique Multibrand</p>
         </div>
       </div>

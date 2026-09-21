@@ -29,10 +29,21 @@ export default function PanierPage() {
     router.push('/commande');
   };
 
+  // Helpers sûrs : ne font rien si l'id est absent
+  const safeUpdate = (id: number | string | undefined, quantity: number) => {
+    if (id == null) return;
+    updateItem(id, quantity);
+  };
+
+  const safeRemove = (id: number | string | undefined) => {
+    if (id == null) return;
+    removeItem(id);
+  };
+
   return (
     <>
       <Header />
-      <main style={{ paddingTop: 190, minHeight: '80vh' }}>
+      <main style={{ paddingTop: 'var(--header-offset)', minHeight: '80vh' }}>
         <div style={{ padding: '40px 40px 80px', maxWidth: 1440, margin: '0 auto' }}>
           <Breadcrumb items={[{ label: 'Accueil', href: '/' }, { label: 'Panier' }]} />
           <h1 className="font-serif mt-4 mb-2" style={{ fontSize: 40, color: 'var(--gold)' }}>Mon panier</h1>
@@ -79,9 +90,9 @@ export default function PanierPage() {
 
                     {/* Info — nom cliquable uniquement */}
                     <div className="flex-1 min-w-0">
-                      {(item as any).product_slug ? (
+                      {item.product_slug ? (
                         <Link
-                          href={`/produits/${(item as any).product_slug}`}
+                          href={`/produits/${item.product_slug}`}
                           className="inline-block transition-colors hover:text-[var(--gold)]"
                           style={{ color: 'var(--cream)', fontSize: 14, fontWeight: 500 }}
                         >
@@ -103,7 +114,10 @@ export default function PanierPage() {
                     {/* Quantity */}
                     <div className="flex items-center gap-0 flex-shrink-0" style={{ border: '0.5px solid rgba(240,234,210,0.15)', borderRadius: 2 }}>
                       <button
-                        onClick={() => item.id && (item.quantity > 1 ? updateItem(item.id, item.quantity - 1) : removeItem(item.id))}
+                        onClick={() => item.quantity > 1
+                          ? safeUpdate(item.id, item.quantity - 1)
+                          : safeRemove(item.id)
+                        }
                         className="flex items-center justify-center transition-colors hover:bg-[rgba(240,234,210,0.05)]"
                         style={{ width: 32, height: 32, color: 'var(--cream-muted)', fontSize: 16 }}
                       >
@@ -111,7 +125,7 @@ export default function PanierPage() {
                       </button>
                       <span style={{ width: 32, textAlign: 'center', fontSize: 13, color: 'var(--cream)' }}>{item.quantity}</span>
                       <button
-                        onClick={() => item.id && updateItem(item.id, item.quantity + 1)}
+                        onClick={() => safeUpdate(item.id, item.quantity + 1)}
                         className="flex items-center justify-center transition-colors hover:bg-[rgba(240,234,210,0.05)]"
                         style={{ width: 32, height: 32, color: 'var(--cream-muted)', fontSize: 16 }}
                       >
@@ -125,7 +139,7 @@ export default function PanierPage() {
                         {(item.subtotal || 0).toLocaleString('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 })}
                       </p>
                       <button
-                        onClick={() => item.id && removeItem(item.id)}
+                        onClick={() => safeRemove(item.id)}
                         className="mt-2 transition-colors hover:text-red-400"
                         style={{ fontSize: 10, letterSpacing: '1px', color: 'var(--cream-muted)', textTransform: 'uppercase' }}
                       >
@@ -234,7 +248,7 @@ export default function PanierPage() {
             {/* Séparateur doré */}
             <div className="flex items-center gap-3 w-full mb-6" style={{ maxWidth: 240 }}>
               <div style={{ flex: 1, height: '0.5px', background: 'linear-gradient(to right, transparent, rgba(232,185,106,0.4))' }} />
-              <span style={{ fontSize: 8, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(232,185,106,0.5)' }}>exclusive</span>
+              <span style={{ fontSize: 8, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(232,185,106,0.5)' }}>exclusif</span>
               <div style={{ flex: 1, height: '0.5px', background: 'linear-gradient(to left, transparent, rgba(232,185,106,0.4))' }} />
             </div>
 
@@ -287,13 +301,6 @@ export default function PanierPage() {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes logoPulse {
-          0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 10px rgba(232,185,106,0.25)) brightness(1); }
-          50%       { opacity: 1;   filter: drop-shadow(0 0 30px rgba(232,185,106,0.65)) brightness(1.2); }
-        }
-      `}</style>
     </>
   );
 }
