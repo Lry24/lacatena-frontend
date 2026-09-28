@@ -278,8 +278,8 @@ export default function HomePage() {
                 Notre identité
               </p>
               <h2 className="font-serif mb-5" style={{ fontSize: 'clamp(28px, 3vw, 44px)', color: 'var(--cream)', lineHeight: 1.15, letterSpacing: '-0.5px' }}>
-                Une boutique pensée<br />
-                <em style={{ color: 'var(--gold)' }}>pour l&apos;Afrique d&apos;aujourd&apos;hui.</em>
+                Une boutique africaine,<br />
+                <em style={{ color: 'var(--gold)' }}>pensée pour le monde.</em>
               </h2>
               <p style={{ color: 'rgba(240,234,210,0.6)', fontSize: 14, lineHeight: 1.8, marginBottom: 40, maxWidth: 400 }}>
                 La Catena réunit des marques contemporaines soigneusement sélectionnées — des pièces qui racontent une histoire et s&apos;inscrivent dans un style de vie singulier.
