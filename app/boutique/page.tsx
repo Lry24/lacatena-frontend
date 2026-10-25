@@ -1,328 +1,250 @@
-﻿'use client';
-import { useEffect, useState, useCallback, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import ProductCard from '@/components/common/ProductCard';
-import Breadcrumb from '@/components/common/Breadcrumb';
-import LoadingScreen from '@/components/common/LoadingScreen';
-import { getProducts, getCategories } from '@/lib/api';
-import type { ProductResponse, CategoryResponse } from '@/types';
+'use client';
+import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import ShopShell from '@/components/layout/ShopShell';
+import ProductCard, { ProductGridSkeleton } from '@/components/shop/ProductCard';
+import { Button, EmptyState, ErrorNote, label } from '@/components/ui';
+import { api } from '@/lib/api';
+import type { Category, Page, ProductCard as Card } from '@/lib/types';
 
-/* Swatches circulaires fixes pour accès rapide — inspiré African Avenue */
-const QUICK_FILTERS: { label: string; img: string; gender: string; category: string; isNew?: boolean; isPromo?: boolean }[] = [
-  { label: 'Tous', img: '/images/categories/categories-01.png', gender: '', category: '' },
-  { label: 'Femme', img: '/images/categories/categories-01.png', gender: 'femme', category: '' },
-  { label: 'Homme', img: '/images/categories/categories-02.png', gender: 'homme', category: '' },
-  { label: 'Accessoires', img: '/images/categories/categories-03.png', gender: '', category: 'accessoires' },
-  { label: 'Enfant', img: '/images/categories/categories-04.png', gender: 'enfant', category: '' },
-  { label: 'Nouveautés', img: '/images/categories/categories-05.png', gender: '', category: '', isNew: true },
-  { label: 'Promos', img: '/images/categories/categories-06.png', gender: '', category: '', isPromo: true },
-];
-
-const SORT_OPTIONS = [
-  { value: '', label: 'Trier par défaut' },
+const SORTS = [
+  { value: 'new', label: 'Nouveautés' },
+  { value: 'popular', label: 'Meilleures ventes' },
   { value: 'price_asc', label: 'Prix croissant' },
   { value: 'price_desc', label: 'Prix décroissant' },
-  { value: 'newest', label: 'Nouveautés' },
-  { value: 'brand', label: 'Marque' },
+  { value: 'name', label: 'Nom (A → Z)' },
 ];
 
-const GENDERS = [
-  { value: '', label: 'Tous' },
-  { value: 'femme', label: 'Femme' },
-  { value: 'homme', label: 'Homme' },
-  { value: 'enfant', label: 'Enfant' },
+const PRICES = [
+  { value: '', label: 'Tous les prix' },
+  { value: '0-30000', label: 'Moins de 30 000 FCFA' },
+  { value: '30000-80000', label: '30 000 – 80 000 FCFA' },
+  { value: '80000-200000', label: '80 000 – 200 000 FCFA' },
+  { value: '200000-', label: 'Plus de 200 000 FCFA' },
 ];
 
-function BoutiqueContent() {
-  const searchParams = useSearchParams();
+function findPath(cats: Category[], slug: string, trail: Category[] = []): Category[] | null {
+  for (const c of cats) {
+    if (c.slug === slug) return [...trail, c];
+    const found = findPath(c.children, slug, [...trail, c]);
+    if (found) return found;
+  }
+  return null;
+}
+
+function Catalogue() {
+  const params = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [facets, setFacets] = useState<{ brands: string[]; sizes: string[] }>({ brands: [], sizes: [] });
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const [products, setProducts] = useState<ProductResponse[]>([]);
-  const [categories, setCategories] = useState<CategoryResponse[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const PAGE_SIZE = 12;
-
-  // Filters state (initialised from URL)
-  const [gender, setGender] = useState(searchParams.get('gender') || '');
-  const [categorySlug, setCategorySlug] = useState(searchParams.get('category') || '');
-  const [minPrice, setMinPrice] = useState(searchParams.get('min_price') || '');
-  const [maxPrice, setMaxPrice] = useState(searchParams.get('max_price') || '');
-  const [sort, setSort] = useState(searchParams.get('sort') || '');
-  const [isNew, setIsNew] = useState(searchParams.get('is_new') === 'true');
-  const [isPromo, setIsPromo] = useState(searchParams.get('is_promo') === 'true');
-  const [isFeatured] = useState(searchParams.get('is_featured') === 'true');
-
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getProducts({
-        page,
-        size: PAGE_SIZE,
-        gender: gender || undefined,
-        category_slug: categorySlug || undefined,
-        min_price: minPrice ? Number(minPrice) : undefined,
-        max_price: maxPrice ? Number(maxPrice) : undefined,
-        sort: sort || undefined,
-        is_new: isNew || undefined,
-        is_promo: isPromo || undefined,
-        is_featured: isFeatured || undefined,
-      });
-      setProducts(data.items);
-      setTotal(data.total);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, gender, categorySlug, minPrice, maxPrice, sort, isNew, isPromo, isFeatured]);
+  const categorie = params.get('categorie') || '';
+  const q = params.get('q') || '';
+  const marque = params.get('marque') || '';
+  const taille = params.get('taille') || '';
+  const promo = params.get('promo') === '1';
+  const nouveau = params.get('nouveau') === '1';
+  const tri = params.get('tri') || 'new';
+  const prix = params.get('prix') || '';
+  const page = Math.max(1, Number(params.get('page')) || 1);
 
   useEffect(() => {
-    getCategories().then(setCategories).catch(() => {});
+    api<Category[]>('/api/v1/categories').then(setCategories).catch(() => {});
+    api<{ brands: string[]; sizes: string[] }>('/api/v1/products/facets').then(setFacets).catch(() => {});
   }, []);
 
+  // Le résultat garde la recherche qui l'a produit : tant qu'il ne correspond pas aux filtres affichés, on montre le chargement
+  const queryKey = JSON.stringify([categorie, q, marque, taille, promo, nouveau, tri, prix, page]);
+  const [result, setResult] = useState<{ key: string; data: Page<Card> | null; error: string } | null>(null);
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    const [min, max] = prix.split('-');
+    api<Page<Card>>('/api/v1/products', {
+      query: { category: categorie, q, brand: marque, taille, promo, new: nouveau, sort: tri, page, size: 12,
+        min_price: min || undefined, max_price: max || undefined },
+    }).then((d) => setResult({ key: queryKey, data: d, error: '' }))
+      .catch((e) => setResult({ key: queryKey, data: null, error: e.message }));
+  }, [queryKey, categorie, q, marque, taille, promo, nouveau, tri, prix, page]);
+  const data = result?.key === queryKey ? result.data : null;
+  const error = result?.key === queryKey ? result.error : '';
 
-  const updateUrl = (params: Record<string, string>) => {
-    const sp = new URLSearchParams();
-    Object.entries(params).forEach(([k, v]) => { if (v) sp.set(k, v); });
-    router.replace(`/boutique?${sp.toString()}`, { scroll: false });
+  const set = (changes: Record<string, string | null>) => {
+    const next = new URLSearchParams(params.toString());
+    for (const [k, v] of Object.entries(changes)) {
+      if (v) next.set(k, v); else next.delete(k);
+    }
+    const paging = 'page' in changes;
+    if (!paging) next.delete('page');
+    router.push(`${pathname}?${next.toString()}`, { scroll: paging });
   };
 
-  const applyFilters = () => {
-    setPage(1);
-    updateUrl({ gender, category: categorySlug, min_price: minPrice, max_price: maxPrice, sort, is_new: isNew ? 'true' : '', is_promo: isPromo ? 'true' : '' });
-  };
+  const trail = useMemo(() => (categorie ? findPath(categories, categorie) || [] : []), [categories, categorie]);
+  const current = trail[trail.length - 1];
+  const root = trail[0];
+  const title = q ? `« ${q} »` : current ? current.name : promo ? 'Promotions' : nouveau ? 'Nouveautés' : 'Toute la boutique';
+  const activeCount = [marque, taille, prix, promo ? '1' : '', nouveau ? '1' : ''].filter(Boolean).length;
 
-  const resetFilters = () => {
-    setGender(''); setCategorySlug(''); setMinPrice(''); setMaxPrice('');
-    setSort(''); setIsNew(false); setIsPromo(false); setPage(1);
-    router.replace('/boutique', { scroll: false });
-  };
+  const chip = (active: boolean): React.CSSProperties => ({
+    fontSize: 11, letterSpacing: '1px', padding: '7px 12px', borderRadius: 2, cursor: 'pointer', transition: 'all .2s',
+    border: active ? '0.5px solid var(--gold)' : '0.5px solid rgba(240,234,210,0.15)',
+    color: active ? 'var(--gold)' : 'var(--cream-muted)', background: active ? 'rgba(232,185,106,0.08)' : 'transparent',
+  });
 
-  const pages = Math.ceil(total / PAGE_SIZE);
+  const filters = (
+    <div className="flex flex-col gap-10">
+      <div>
+        <p style={{ ...label, marginBottom: 16 }}>Univers</p>
+        <div className="flex flex-col gap-1">
+          <button onClick={() => set({ categorie: null })} className="text-left hover:text-[#E8B96A] transition-colors" style={{ fontSize: 14, color: !categorie ? 'var(--gold)' : 'var(--cream)', padding: '4px 0' }}>Tout voir</button>
+          {categories.map((c) => (
+            <div key={c.id}>
+              <button onClick={() => set({ categorie: c.slug })} className="text-left hover:text-[#E8B96A] transition-colors w-full flex justify-between"
+                style={{ fontSize: 14, color: root?.id === c.id ? 'var(--gold)' : 'var(--cream)', padding: '4px 0' }}>
+                <span>{c.name}</span><span style={{ fontSize: 11, color: 'rgba(248,242,228,0.4)' }}>{c.product_count}</span>
+              </button>
+              {root?.id === c.id && (
+                <div className="flex flex-col gap-1 animate-fade-up" style={{ borderLeft: '0.5px solid var(--border)', paddingLeft: 14, margin: '4px 0 8px' }}>
+                  {c.children.map((ch) => (
+                    <button key={ch.id} onClick={() => set({ categorie: ch.slug })} className="text-left hover:text-[#E8B96A] transition-colors flex justify-between"
+                      style={{ fontSize: 13, color: current?.id === ch.id ? 'var(--gold)' : 'var(--cream-muted)', padding: '3px 0' }}>
+                      <span>{ch.name}</span><span style={{ fontSize: 11, color: 'rgba(248,242,228,0.4)' }}>{ch.product_count}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p style={{ ...label, marginBottom: 16 }}>Sélection</p>
+        <div className="flex flex-wrap gap-2">
+          <button style={chip(nouveau)} onClick={() => set({ nouveau: nouveau ? null : '1' })}>Nouveautés</button>
+          <button style={chip(promo)} onClick={() => set({ promo: promo ? null : '1' })}>Promotions</button>
+        </div>
+      </div>
+
+      {facets.sizes.length > 0 && (
+        <div>
+          <p style={{ ...label, marginBottom: 16 }}>Taille</p>
+          <div className="flex flex-wrap gap-2">
+            {facets.sizes.map((s) => <button key={s} style={chip(taille === s)} onClick={() => set({ taille: taille === s ? null : s })}>{s}</button>)}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <p style={{ ...label, marginBottom: 16 }}>Prix</p>
+        <div className="flex flex-col gap-2">
+          {PRICES.map((p) => (
+            <button key={p.value} onClick={() => set({ prix: p.value || null })} className="text-left flex items-center gap-3" style={{ fontSize: 13, color: prix === p.value ? 'var(--gold)' : 'var(--cream-muted)' }}>
+              <span style={{ width: 12, height: 12, borderRadius: '50%', border: `0.5px solid ${prix === p.value ? 'var(--gold)' : 'rgba(240,234,210,0.3)'}`, background: prix === p.value ? 'var(--gold)' : 'transparent' }} />
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {facets.brands.length > 0 && (
+        <div>
+          <p style={{ ...label, marginBottom: 16 }}>Marques</p>
+          <div className="flex flex-col gap-2">
+            {facets.brands.map((b) => (
+              <button key={b} onClick={() => set({ marque: marque === b ? null : b })} className="text-left font-serif transition-colors hover:text-[#E8B96A]"
+                style={{ fontSize: 16, color: marque === b ? 'var(--gold)' : 'var(--cream-muted)' }}>{b}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeCount > 0 && (
+        <button onClick={() => set({ marque: null, taille: null, prix: null, promo: null, nouveau: null })}
+          style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', textAlign: 'left' }}>
+          Effacer les filtres ({activeCount})
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <>
-      <Header />
-      <main style={{ paddingTop: 190 }}>{/* 36px annonce + 64px nav */}
-        {/* ── Quick filter swatches circulaires — African Avenue style ── */}
-        <div style={{ borderBottom: '0.5px solid var(--border)', padding: '28px 40px' }}>
-          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10" style={{ maxWidth: 1440, margin: '0 auto' }}>
-            {QUICK_FILTERS.map((f) => {
-              const active = gender === f.gender && categorySlug === (f.category || '') && isNew === (f.isNew || false) && isPromo === (f.isPromo || false);
-              return (
-                <button
-                  key={f.label}
-                  onClick={() => {
-                    setGender(f.gender); setCategorySlug(f.category || '');
-                    setIsNew(f.isNew || false); setIsPromo(f.isPromo || false);
-                    setPage(1);
-                  }}
-                  className="flex flex-col items-center gap-2 group"
-                >
-                  <div style={{
-                    width: 64, height: 64, borderRadius: '50%', overflow: 'hidden',
-                    border: active ? '2px solid var(--gold)' : '1px solid rgba(232,185,106,0.15)',
-                    boxShadow: active ? '0 0 0 3px rgba(232,185,106,0.12)' : 'none',
-                    transition: 'all 0.2s',
-                    flexShrink: 0,
-                  }}>
-                    <Image src={f.img} alt={f.label} width={64} height={64} className="object-cover w-full h-full" />
-                  </div>
-                  <span style={{
-                    fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase',
-                    color: active ? 'var(--gold)' : 'var(--cream-muted)',
-                    transition: 'color 0.2s',
-                  }}>{f.label}</span>
-                </button>
-              );
-            })}
-          </div>
+      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-2 mb-6" style={{ fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(248,242,228,0.45)' }}>
+        <Link href="/" className="hover:text-[#E8B96A]">Accueil</Link><span>/</span>
+        <Link href="/boutique" className="hover:text-[#E8B96A]">Boutique</Link>
+        {trail.map((c) => <span key={c.id} className="flex gap-2"><span>/</span><Link href={`/boutique?categorie=${c.slug}`} className="hover:text-[#E8B96A]" style={{ color: c === current ? 'var(--gold)' : undefined }}>{c.name}</Link></span>)}
+      </nav>
+
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div>
+          <h1 className="font-serif" style={{ fontSize: 'clamp(34px, 4.5vw, 56px)', color: 'var(--cream)', lineHeight: 1.05, letterSpacing: '-0.5px' }}>{title}</h1>
+          <p style={{ color: 'var(--cream-muted)', fontSize: 14, marginTop: 10, maxWidth: 520, lineHeight: 1.7 }}>
+            {(root && root.description) || 'Une sélection pensée, chaque pièce choisie avec intention.'}
+          </p>
         </div>
-
-        {/* Page header */}
-        <div style={{ padding: '40px 40px 32px', borderBottom: '0.5px solid var(--border)' }}>
-          <div style={{ maxWidth: 1440, margin: '0 auto' }}>
-            <Breadcrumb items={[{ label: 'Accueil', href: '/' }, { label: 'Boutique' }]} />
-            <h1 className="font-serif mt-4" style={{ fontSize: 40, color: 'var(--gold)', letterSpacing: '-0.5px' }}>Boutique</h1>
-            <p style={{ color: 'var(--cream-muted)', fontSize: 13, marginTop: 8 }}>
-              {loading ? '...' : `${total} produit${total !== 1 ? 's' : ''}`}
-            </p>
-          </div>
+        <div className="flex items-center gap-3">
+          <button className="lg:hidden" onClick={() => setFiltersOpen(true)} style={{ ...chip(activeCount > 0), padding: '11px 16px' }}>
+            Filtres{activeCount ? ` (${activeCount})` : ''}
+          </button>
+          <select value={tri} onChange={(e) => set({ tri: e.target.value })} aria-label="Trier"
+            style={{ background: '#1A1F0E', border: '0.5px solid rgba(240,234,210,0.15)', color: 'var(--cream)', fontSize: 12, padding: '11px 14px', borderRadius: 2 }}>
+            {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
         </div>
+      </div>
 
-        <div className="flex" style={{ maxWidth: 1440, margin: '0 auto', padding: '40px 40px' }}>
-          {/* Sidebar */}
-          <aside
-            className="hidden md:flex flex-col gap-8 flex-shrink-0"
-            style={{ width: 240, marginRight: 48 }}
-          >
-            {/* Sort */}
-            <div>
-              <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>Trier</p>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="w-full px-3 py-2 text-sm outline-none"
-                style={{ background: 'rgba(240,234,210,0.05)', border: '0.5px solid rgba(240,234,210,0.1)', color: 'var(--cream)', borderRadius: 2 }}
-              >
-                {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
+      <div className="grid lg:grid-cols-[240px_1fr] gap-12">
+        <aside className="hidden lg:block" style={{ position: 'sticky', top: 128, alignSelf: 'start' }}>{filters}</aside>
 
-            {/* Gender */}
-            <div>
-              <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>Genre</p>
-              <div className="flex flex-col gap-2">
-                {GENDERS.map((g) => (
-                  <label key={g.value} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio" name="gender" value={g.value} checked={gender === g.value}
-                      onChange={() => setGender(g.value)}
-                      className="accent-[#E8B96A]"
-                    />
-                    <span style={{ fontSize: 13, color: gender === g.value ? 'var(--cream)' : 'var(--cream-muted)' }}>{g.label}</span>
-                  </label>
-                ))}
+        <section aria-live="polite">
+          {error ? <ErrorNote>{error}</ErrorNote> : !data ? <ProductGridSkeleton count={12} /> : data.items.length === 0 ? (
+            <EmptyState title="Aucune pièce ne correspond" text="Essayez d'élargir vos filtres ou explorez un autre univers."
+              action={<Button variant="outline" onClick={() => router.push('/boutique')}>Voir toute la boutique</Button>} />
+          ) : (
+            <>
+              <p style={{ ...label, marginBottom: 24 }}>{data.total} pièce{data.total > 1 ? 's' : ''}</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-12 md:gap-x-6">
+                {data.items.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
-            </div>
-
-            {/* Categories */}
-            {categories.length > 0 && (
-              <div>
-                <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>Catégories</p>
-                <div className="flex flex-col gap-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="category" value="" checked={categorySlug === ''} onChange={() => setCategorySlug('')} className="accent-[#E8B96A]" />
-                    <span style={{ fontSize: 13, color: categorySlug === '' ? 'var(--cream)' : 'var(--cream-muted)' }}>Toutes</span>
-                  </label>
-                  {categories.map((c) => (
-                    <label key={c.uuid} className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="category" value={c.slug} checked={categorySlug === c.slug} onChange={() => setCategorySlug(c.slug)} className="accent-[#E8B96A]" />
-                      <span style={{ fontSize: 13, color: categorySlug === c.slug ? 'var(--cream)' : 'var(--cream-muted)' }}>{c.name}</span>
-                    </label>
+              {data.pages > 1 && (
+                <div className="flex flex-wrap justify-center items-center gap-2 mt-16">
+                  <button disabled={page <= 1} onClick={() => set({ page: String(page - 1) })} style={{ ...chip(false), opacity: page <= 1 ? 0.3 : 1 }} aria-label="Page précédente">←</button>
+                  {Array.from({ length: data.pages }, (_, i) => i + 1).map((n) => (
+                    <button key={n} onClick={() => set({ page: String(n) })} style={{ ...chip(n === page), minWidth: 40 }} aria-current={n === page ? 'page' : undefined}>{n}</button>
                   ))}
+                  <button disabled={page >= data.pages} onClick={() => set({ page: String(page + 1) })} style={{ ...chip(false), opacity: page >= data.pages ? 0.3 : 1 }} aria-label="Page suivante">→</button>
                 </div>
-              </div>
-            )}
+              )}
+            </>
+          )}
+        </section>
+      </div>
 
-            {/* Prix */}
-            <div>
-              <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>Prix (FCFA)</p>
-              <div className="flex items-center gap-2">
-                <input type="number" placeholder="Min" value={minPrice} onChange={(e) => setMinPrice(e.target.value)}
-                  className="w-full px-2 py-2 text-sm outline-none"
-                  style={{ background: 'rgba(240,234,210,0.05)', border: '0.5px solid rgba(240,234,210,0.1)', color: 'var(--cream)', borderRadius: 2 }}
-                />
-                <span style={{ color: 'var(--cream-muted)', fontSize: 12 }}>—</span>
-                <input type="number" placeholder="Max" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)}
-                  className="w-full px-2 py-2 text-sm outline-none"
-                  style={{ background: 'rgba(240,234,210,0.05)', border: '0.5px solid rgba(240,234,210,0.1)', color: 'var(--cream)', borderRadius: 2 }}
-                />
-              </div>
+      {filtersOpen && (
+        <div className="fixed inset-0 z-[90] lg:hidden" role="dialog" aria-modal="true" aria-label="Filtres">
+          <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={() => setFiltersOpen(false)} />
+          <div className="absolute right-0 top-0 bottom-0 overflow-y-auto" style={{ width: 'min(360px, 88vw)', background: '#1A1F0E', borderLeft: '0.5px solid var(--border)', padding: '28px 24px 40px' }}>
+            <div className="flex justify-between items-center mb-8">
+              <p className="font-serif" style={{ fontSize: 24, color: 'var(--cream)' }}>Filtres</p>
+              <button onClick={() => setFiltersOpen(false)} aria-label="Fermer" style={{ color: 'var(--cream-muted)', fontSize: 20 }}>✕</button>
             </div>
-
-            {/* Specials */}
-            <div className="flex flex-col gap-3">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={isNew} onChange={(e) => setIsNew(e.target.checked)} className="accent-[#E8B96A]" />
-                <span style={{ fontSize: 13, color: 'var(--cream-muted)' }}>Nouveautés seulement</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={isPromo} onChange={(e) => setIsPromo(e.target.checked)} className="accent-[#E8B96A]" />
-                <span style={{ fontSize: 13, color: 'var(--cream-muted)' }}>En promotion</span>
-              </label>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <button onClick={applyFilters} className="w-full uppercase text-xs font-medium tracking-widest py-3 transition-colors hover:bg-[#f5cb85]" style={{ background: 'var(--gold)', color: '#2D3A0F', borderRadius: 2, letterSpacing: '2px', fontSize: 10 }}>
-                Appliquer
-              </button>
-              <button onClick={resetFilters} className="w-full uppercase text-xs tracking-widest py-2 transition-colors" style={{ border: '0.5px solid rgba(240,234,210,0.15)', color: 'var(--cream-muted)', borderRadius: 2, fontSize: 10, letterSpacing: '2px' }}>
-                Réinitialiser
-              </button>
-            </div>
-          </aside>
-
-          {/* Grid */}
-          <div className="flex-1 min-w-0">
-            {/* Mobile sort */}
-            <div className="flex items-center justify-between mb-8 md:hidden">
-              <select value={sort} onChange={(e) => { setSort(e.target.value); applyFilters(); }}
-                className="px-3 py-2 text-sm outline-none"
-                style={{ background: 'rgba(240,234,210,0.05)', border: '0.5px solid rgba(240,234,210,0.1)', color: 'var(--cream)', borderRadius: 2 }}
-              >
-                {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
-
-            {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="flex flex-col gap-3">
-                    <div className="shimmer" style={{ aspectRatio: '3/4', borderRadius: 4, border: '0.5px solid rgba(240,234,210,0.07)' }} />
-                    <div className="space-y-2">
-                      <div className="shimmer" style={{ height: 8, width: '40%', borderRadius: 4 }} />
-                      <div className="shimmer" style={{ height: 12, width: '70%', borderRadius: 4 }} />
-                      <div className="shimmer" style={{ height: 10, width: '35%', borderRadius: 4 }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : products.length === 0 ? (
-              <div className="flex flex-col items-center justify-center" style={{ minHeight: 400, gap: 16 }}>
-                <p className="font-serif text-2xl" style={{ color: 'var(--cream-muted)' }}>Aucun produit trouvé</p>
-                <button onClick={resetFilters} style={{ fontSize: 10, letterSpacing: '2px', color: 'var(--gold)', textTransform: 'uppercase' }}>
-                  Voir tous les produits &#8594;
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {products.map((p) => <ProductCard key={p.uuid} product={p} />)}
-              </div>
-            )}
-
-            {/* Pagination */}
-            {pages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-12">
-                {Array.from({ length: pages }).map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setPage(i + 1)}
-                    className="transition-all duration-200"
-                    style={{
-                      width: 36, height: 36, borderRadius: 2,
-                      background: page === i + 1 ? 'var(--gold)' : 'transparent',
-                      border: `0.5px solid ${page === i + 1 ? 'var(--gold)' : 'rgba(240,234,210,0.15)'}`,
-                      color: page === i + 1 ? '#2D3A0F' : 'var(--cream-muted)',
-                      fontSize: 13,
-                    }}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-            )}
+            {filters}
+            <div className="mt-10"><Button full onClick={() => setFiltersOpen(false)}>Voir {data?.total ?? ''} pièces</Button></div>
           </div>
         </div>
-      </main>
-      <Footer />
+      )}
     </>
   );
 }
 
 export default function BoutiquePage() {
   return (
-    <Suspense fallback={
-      <LoadingScreen />
-    }>
-      <BoutiqueContent />
-    </Suspense>
+    <ShopShell>
+      <Suspense fallback={<ProductGridSkeleton count={12} />}>
+        <Catalogue />
+      </Suspense>
+    </ShopShell>
   );
 }
-

@@ -1,178 +1,201 @@
 'use client';
-import React from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import ProductImg from '@/components/shop/ProductImg';
+import { useToast } from '@/components/ui';
+import { api } from '@/lib/api';
+import type { Category, ProductDetail } from '@/lib/types';
+import { A, AField, AInput, ASelect, ATextarea, Alert, Btn, Card } from './kit';
 
-export interface ProductFormData {
-  name: string;
-  description: string;
-  brand: string;
-  supplier: string;
-  origin: string;
-  gender: string;
-  tags: string;
-  price_ttc: string;
-  tva_rate: string;
-  purchase_price_ht: string;
-  is_promo: boolean;
-  promo_price: string;
-  promo_start: string;
-  promo_end: string;
-  category_uuid: string;
-  is_active: boolean;
-  is_new: boolean;
-  is_featured: boolean;
-  weight: string;
-  material: string;
+interface VariantRow { id?: number; label: string; stock: number; active: boolean }
+
+const PRESETS: { name: string; sizes: string[] }[] = [
+  { name: 'XS → XL', sizes: ['XS', 'S', 'M', 'L', 'XL'] },
+  { name: 'M → XXL', sizes: ['M', 'L', 'XL', 'XXL'] },
+  { name: 'Enfant', sizes: ['2 ans', '4 ans', '6 ans', '8 ans', '10 ans'] },
+  { name: 'Pointures femme', sizes: ['36', '37', '38', '39', '40', '41'] },
+  { name: 'Pointures homme', sizes: ['40', '41', '42', '43', '44', '45'] },
+  { name: 'Taille unique', sizes: ['Taille unique'] },
+];
+
+function flatten(cats: Category[], depth = 0): { id: number; label: string }[] {
+  return cats.flatMap((c) => [{ id: c.id, label: `${'— '.repeat(depth)}${c.name}` }, ...flatten(c.children, depth + 1)]);
 }
 
-export const defaultProductForm = (): ProductFormData => ({
-  name: '', description: '', brand: '', supplier: '', origin: '', gender: '', tags: '',
-  price_ttc: '', tva_rate: '18', purchase_price_ht: '',
-  is_promo: false, promo_price: '', promo_start: '', promo_end: '',
-  category_uuid: '', is_active: true, is_new: false, is_featured: false,
-  weight: '', material: '',
-});
-
-interface FieldProps {
-  label: string;
-  children: React.ReactNode;
-  required?: boolean;
+/** Compresse une photo dans le navigateur avant l'envoi (bords de 1600 px max, JPEG). */
+async function compress(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  return new Promise((resolve) => canvas.toBlob((b) => resolve(b || file), 'image/jpeg', 0.85));
 }
 
-export function Field({ label, children, required }: FieldProps) {
+export default function ProductForm({ product }: { product?: ProductDetail }) {
+  const router = useRouter();
+  const toast = useToast((s) => s.show);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [cats, setCats] = useState<{ id: number; label: string }[]>([]);
+  const [name, setName] = useState(product?.name || '');
+  const [brand, setBrand] = useState(product?.brand || '');
+  const [categoryId, setCategoryId] = useState<number | ''>(product?.category?.id || '');
+  const [price, setPrice] = useState(product ? String(product.price) : '');
+  const [compare, setCompare] = useState(product?.compare_at_price ? String(product.compare_at_price) : '');
+  const [description, setDescription] = useState(product?.description || '');
+  const [details, setDetails] = useState(product?.details.join('\n') || '');
+  const [sku, setSku] = useState(product?.sku || '');
+  const [active, setActive] = useState(product?.active ?? true);
+  const [featured, setFeatured] = useState(product?.featured ?? false);
+  const [images, setImages] = useState<string[]>(product?.images.map((i) => i.url) || []);
+  const [imageUrl, setImageUrl] = useState('');
+  const [variants, setVariants] = useState<VariantRow[]>(
+    product?.variants.filter((v) => v.active).map((v) => ({ id: v.id, label: v.label, stock: v.stock, active: v.active })) || []);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => { api<Category[]>('/api/v1/admin/categories').then((c) => setCats(flatten(c))).catch(() => {}); }, []);
+
+  const applyPreset = (sizes: string[]) => {
+    setVariants((current) => {
+      const kept = new Map(current.map((v) => [v.label.toLowerCase(), v]));
+      return sizes.map((s) => kept.get(s.toLowerCase()) || { label: s, stock: 0, active: true });
+    });
+  };
+
+  const upload = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files).slice(0, 10 - images.length)) {
+        const form = new FormData();
+        form.append('file', await compress(file), file.name.replace(/\.\w+$/, '.jpg'));
+        const res = await api<{ url: string }>('/api/v1/admin/media', { method: 'POST', form });
+        setImages((imgs) => [...imgs, res.url]);
+      }
+    } catch (e) { setError((e as Error).message); } finally { setUploading(false); if (fileRef.current) fileRef.current.value = ''; }
+  };
+
+  const move = (i: number, d: number) => setImages((imgs) => {
+    const next = [...imgs];
+    const j = i + d;
+    if (j < 0 || j >= next.length) return imgs;
+    [next[i], next[j]] = [next[j], next[i]];
+    return next;
+  });
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!variants.length) { setError('Ajoutez au moins une taille (ou « Taille unique »).'); return; }
+    const p = Number(price);
+    if (!p) { setError('Indiquez un prix.'); return; }
+    if (compare && Number(compare) <= p) { setError('Le prix barré doit être supérieur au prix de vente.'); return; }
+    setSaving(true);
+    const body = {
+      name, brand: brand || null, description: description || null, details: details || null, sku: sku || null,
+      price: p, compare_at_price: compare ? Number(compare) : null, category_id: categoryId || null, active, featured, images,
+      variants: variants.map((v) => ({ id: v.id, label: v.label, stock: Number(v.stock) || 0, active: v.active })),
+    };
+    try {
+      const saved = await api<ProductDetail>(product ? `/api/v1/admin/products/${product.id}` : '/api/v1/admin/products', { method: product ? 'PUT' : 'POST', body });
+      toast(product ? 'Pièce mise à jour' : 'Pièce ajoutée au catalogue');
+      if (!product) router.replace(`/admin/produits/${saved.id}`);
+      // Les nouvelles tailles reçoivent leur identifiant : un second enregistrement les met à jour au lieu de les recréer
+      else setVariants(saved.variants.filter((v) => v.active).map((v) => ({ id: v.id, label: v.label, stock: v.stock, active: v.active })));
+    } catch (err) { setError((err as Error).message); } finally { setSaving(false); }
+  };
+
+  const totalStock = variants.reduce((n, v) => n + (Number(v.stock) || 0), 0);
+
   return (
-    <div>
-      <label style={{ display: 'block', fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.5)', marginBottom: 7 }}>
-        {label}{required && <span style={{ color: '#c9634a', marginLeft: 3 }}>*</span>}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '10px 12px', boxSizing: 'border-box',
-  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(240,234,210,0.1)',
-  borderRadius: 8, color: '#f0ead2', fontSize: 13, outline: 'none',
-};
-
-interface ProductFormProps {
-  form: ProductFormData;
-  setForm: React.Dispatch<React.SetStateAction<ProductFormData>>;
-  categories: { uuid: string; name: string }[];
-}
-
-export default function ProductForm({ form, setForm, categories }: ProductFormProps) {
-  const set = (k: keyof ProductFormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm((prev) => ({ ...prev, [k]: e.target.value }));
-  const setCheck = (k: keyof ProductFormData) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((prev) => ({ ...prev, [k]: e.target.checked }));
-
-  const section = (title: string) => (
-    <div style={{ fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(240,234,210,0.4)', marginBottom: 16, marginTop: 4, paddingBottom: 8, borderBottom: '1px solid rgba(240,234,210,0.06)' }}>
-      {title}
-    </div>
-  );
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Informations */}
-      <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, padding: 20 }}>
-        {section('Informations')}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <Field label="Nom" required>
-            <input value={form.name} onChange={set('name')} required style={inputStyle} placeholder="Nom du produit" />
-          </Field>
-          <Field label="Marque">
-            <input value={form.brand} onChange={set('brand')} style={inputStyle} placeholder="Marque" />
-          </Field>
-          <Field label="Genre">
-            <select value={form.gender} onChange={set('gender')} style={inputStyle}>
-              <option value="">Sélectionner…</option>
-              <option value="homme">Homme</option>
-              <option value="femme">Femme</option>
-              <option value="unisex">Unisexe</option>
-              <option value="enfant">Enfant</option>
-            </select>
-          </Field>
-          <Field label="Fournisseur">
-            <input value={form.supplier} onChange={set('supplier')} style={inputStyle} placeholder="Fournisseur" />
-          </Field>
-          <Field label="Origine">
-            <input value={form.origin} onChange={set('origin')} style={inputStyle} placeholder="Pays d'origine" />
-          </Field>
-          <Field label="Tags (séparés par virgule)">
-            <input value={form.tags} onChange={set('tags')} style={inputStyle} placeholder="ex: cuir, casual, été" />
-          </Field>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <Field label="Description">
-              <textarea value={form.description} onChange={set('description')} rows={4} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Description détaillée…" />
-            </Field>
+    <form onSubmit={save} className="grid xl:grid-cols-[1fr_380px] gap-4">
+      <div className="flex flex-col gap-4">
+        <Card title="Informations">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <AField label="Nom de la pièce" full><AInput value={name} onChange={(e) => setName(e.target.value)} required minLength={2} placeholder="Robe Wax Soleil" /></AField>
+            <AField label="Marque"><AInput value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="La Catena Atelier" /></AField>
+            <AField label="Catégorie">
+              <ASelect value={categoryId} onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : '')}>
+                <option value="">— Aucune —</option>
+                {cats.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+              </ASelect>
+            </AField>
+            <AField label="Description" full><ATextarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ce qui rend la pièce unique : coupe, matière, occasion…" /></AField>
+            <AField label="Composition & entretien" full hint="Une information par ligne"><ATextarea value={details} onChange={(e) => setDetails(e.target.value)} placeholder={'Pagne wax 100 % coton\nLavage à 30 °C'} /></AField>
           </div>
-        </div>
-      </div>
+        </Card>
 
-      {/* Tarification */}
-      <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, padding: 20 }}>
-        {section('Tarification')}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
-          <Field label="Prix TTC" required>
-            <input type="number" value={form.price_ttc} onChange={set('price_ttc')} required style={inputStyle} placeholder="0" min="0" step="0.01" />
-          </Field>
-          <Field label="Taux TVA (%)">
-            <input type="number" value={form.tva_rate} onChange={set('tva_rate')} style={inputStyle} placeholder="18" />
-          </Field>
-          <Field label="Prix achat HT">
-            <input type="number" value={form.purchase_price_ht} onChange={set('purchase_price_ht')} style={inputStyle} placeholder="0" />
-          </Field>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 24 }}>
-            <input type="checkbox" id="is_promo" checked={form.is_promo} onChange={setCheck('is_promo')} style={{ accentColor: '#E8B96A' }} />
-            <label htmlFor="is_promo" style={{ fontSize: 13, color: '#f0ead2', cursor: 'pointer' }}>En promotion</label>
+        <Card title={`Photos (${images.length}/10)`} action={<span style={{ fontSize: 12, color: A.faint }}>La première est la photo principale</span>}>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-4">
+            {images.map((url, i) => (
+              <div key={url} className="relative group" style={{ aspectRatio: '3/4', borderRadius: 6, overflow: 'hidden', border: `1px solid ${i === 0 ? A.gold : A.border}`, background: A.bg }}>
+                <ProductImg src={url} alt="" sizes="120px" />
+                <div className="absolute inset-x-0 bottom-0 flex justify-between opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'rgba(0,0,0,0.65)', padding: 4 }}>
+                  <button type="button" onClick={() => move(i, -1)} aria-label="Avant" style={{ color: '#fff', padding: '0 6px' }}>←</button>
+                  <button type="button" onClick={() => setImages(images.filter((u) => u !== url))} aria-label="Retirer" style={{ color: A.red, padding: '0 6px' }}>✕</button>
+                  <button type="button" onClick={() => move(i, 1)} aria-label="Après" style={{ color: '#fff', padding: '0 6px' }}>→</button>
+                </div>
+              </div>
+            ))}
+            {images.length < 10 && (
+              <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+                className="flex flex-col items-center justify-center gap-1" style={{ aspectRatio: '3/4', borderRadius: 6, border: `1px dashed ${A.border}`, color: A.muted, fontSize: 12 }}>
+                <span style={{ fontSize: 22, color: A.gold }}>+</span>{uploading ? 'Envoi…' : 'Ajouter'}
+              </button>
+            )}
           </div>
-          {form.is_promo && <>
-            <Field label="Prix promo TTC">
-              <input type="number" value={form.promo_price} onChange={set('promo_price')} style={inputStyle} placeholder="0" />
-            </Field>
-            <div />
-            <Field label="Début promo">
-              <input type="date" value={form.promo_start} onChange={set('promo_start')} style={inputStyle} />
-            </Field>
-            <Field label="Fin promo">
-              <input type="date" value={form.promo_end} onChange={set('promo_end')} style={inputStyle} />
-            </Field>
-          </>}
-        </div>
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => upload(e.target.files)} />
+          <div className="flex gap-2">
+            <AInput value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="… ou coller une adresse d'image (https://…)" />
+            <Btn variant="subtle" onClick={() => { if (imageUrl.trim()) { setImages([...images, imageUrl.trim()]); setImageUrl(''); } }}>Ajouter</Btn>
+          </div>
+        </Card>
+
+        <Card title={`Tailles & stock · ${totalStock} pièce${totalStock > 1 ? 's' : ''}`}>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {PRESETS.map((p) => <Btn key={p.name} small variant="ghost" onClick={() => applyPreset(p.sizes)}>{p.name}</Btn>)}
+          </div>
+          {variants.length === 0 && <p style={{ fontSize: 13, color: A.faint, marginBottom: 12 }}>Choisissez une grille ci-dessus ou ajoutez les tailles une à une.</p>}
+          <div className="flex flex-col gap-2">
+            {variants.map((v, i) => (
+              <div key={i} className="flex gap-2 items-center">
+                <AInput value={v.label} onChange={(e) => setVariants(variants.map((x, j) => j === i ? { ...x, label: e.target.value } : x))} style={{ maxWidth: 160 }} aria-label="Taille" />
+                <AInput type="number" min={0} value={v.stock} onChange={(e) => setVariants(variants.map((x, j) => j === i ? { ...x, stock: Number(e.target.value) } : x))} style={{ maxWidth: 110 }} aria-label="Stock" />
+                <span style={{ fontSize: 12, color: v.stock > 0 ? A.muted : A.red, flex: 1 }}>{v.stock > 0 ? 'en stock' : 'épuisé'}</span>
+                <button type="button" onClick={() => setVariants(variants.filter((_, j) => j !== i))} aria-label="Retirer la taille" style={{ color: A.red, padding: '0 8px' }}>✕</button>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3"><Btn small variant="subtle" onClick={() => setVariants([...variants, { label: '', stock: 0, active: true }])}>+ Ajouter une taille</Btn></div>
+          {product && <p style={{ fontSize: 11, color: A.faint, marginTop: 12 }}>Chaque modification de stock est tracée dans « Stock ». Pour une réception de marchandise, préférez l&apos;entrée de stock avec motif.</p>}
+        </Card>
       </div>
 
-      {/* Options */}
-      <div style={{ background: '#1e2411', border: '1px solid rgba(240,234,210,0.08)', borderRadius: 10, padding: 20 }}>
-        {section('Options & Classification')}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
-          <Field label="Catégorie">
-            <select value={form.category_uuid} onChange={set('category_uuid')} style={inputStyle}>
-              <option value="">Aucune catégorie</option>
-              {categories.map((c) => <option key={c.uuid} value={c.uuid}>{c.name}</option>)}
-            </select>
-          </Field>
-          <Field label="Matière">
-            <input value={form.material} onChange={set('material')} style={inputStyle} placeholder="Coton, cuir…" />
-          </Field>
-          <Field label="Poids (g)">
-            <input type="number" value={form.weight} onChange={set('weight')} style={inputStyle} placeholder="0" />
-          </Field>
-        </div>
-        <div style={{ display: 'flex', gap: 24, marginTop: 16, flexWrap: 'wrap' }}>
-          {[
-            { id: 'is_active', label: 'Actif', key: 'is_active' },
-            { id: 'is_new', label: 'Nouveau', key: 'is_new' },
-            { id: 'is_featured', label: 'Vedette', key: 'is_featured' },
-          ].map(({ id, label, key }) => (
-            <label key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: '#f0ead2' }}>
-              <input type="checkbox" id={id} checked={form[key as keyof ProductFormData] as boolean} onChange={setCheck(key as keyof ProductFormData)} style={{ accentColor: '#E8B96A' }} />
-              {label}
-            </label>
-          ))}
-        </div>
+      <div className="flex flex-col gap-4">
+        <Card title="Prix">
+          <div className="flex flex-col gap-4">
+            <AField label="Prix de vente (FCFA)"><AInput type="number" min={1} value={price} onChange={(e) => setPrice(e.target.value)} required /></AField>
+            <AField label="Prix barré (facultatif)" hint="Renseigné et supérieur au prix : la pièce apparaît dans « Promos »"><AInput type="number" min={0} value={compare} onChange={(e) => setCompare(e.target.value)} /></AField>
+            <AField label="Référence (SKU)"><AInput value={sku} onChange={(e) => setSku(e.target.value)} placeholder="LC-ROB-001" /></AField>
+          </div>
+        </Card>
+        <Card title="Visibilité">
+          <label className="flex items-center gap-3 mb-3 cursor-pointer" style={{ fontSize: 13 }}>
+            <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} style={{ accentColor: A.gold, width: 16, height: 16 }} />
+            En vente sur la boutique
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer" style={{ fontSize: 13 }}>
+            <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} style={{ accentColor: A.gold, width: 16, height: 16 }} />
+            Mise en avant (meilleures ventes, suggestions)
+          </label>
+        </Card>
+        {error && <Alert>{error}</Alert>}
+        <Btn type="submit" disabled={saving || uploading} style={{ padding: '12px 16px' }}>{saving ? 'Enregistrement…' : product ? 'Enregistrer les modifications' : 'Ajouter au catalogue'}</Btn>
+        {product && product.active && <Btn variant="ghost" href={`/produits/${product.slug}`}>Voir sur la boutique ↗</Btn>}
       </div>
-    </div>
+    </form>
   );
 }

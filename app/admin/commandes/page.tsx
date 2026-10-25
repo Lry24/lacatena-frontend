@@ -1,141 +1,75 @@
-﻿'use client';
-import React, { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import AdminTable, { Column } from '@/components/admin/AdminTable';
-import StatusBadge from '@/components/admin/StatusBadge';
-import { ToastContainer, useToast } from '@/components/admin/Toast';
-import * as adminApi from '@/lib/adminApi';
+'use client';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { A, AInput, Alert, Badge, Card, PageTitle, Pager, Spin, Table, td, useFetch } from '@/components/admin/kit';
+import { ORDER_STATUS, PAYMENT_STATUS, fcfa, formatDate } from '@/lib/format';
+import type { OrderRow, Page } from '@/lib/types';
 
-interface Order {
-  uuid: string;
-  order_number: string;
-  customer_name: string;
-  total_ttc: number;
-  status: string;
-  channel: string;
-  created_at: string;
-}
+const TABS = ['', 'PENDING', 'CONFIRMED', 'PROCESSING', 'READY', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
-const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n);
-const fmtDate = (s: string) => new Date(s).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-const STATUSES = ['', 'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
-const STATUS_LABELS: Record<string, string> = {
-  '': 'Tous les statuts',
-  pending: 'En attente',
-  paid: 'Payée',
-  processing: 'En traitement',
-  shipped: 'Expédiée',
-  delivered: 'Livrée',
-  cancelled: 'Annulée',
-  refunded: 'Remboursée',
-};
-
-export default function CommandesPage() {
+function Orders() {
+  const params = useSearchParams();
   const router = useRouter();
-  const { toasts, showToast, removeToast } = useToast();
+  const status = params.get('statut') || '';
+  const page = Number(params.get('page')) || 1;
+  const [q, setQ] = useState(params.get('q') || '');
+  const [debounced, setDebounced] = useState(q);
+  useEffect(() => { const t = setTimeout(() => setDebounced(q), 300); return () => clearTimeout(t); }, [q]);
 
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const { data, error } = useFetch<Page<OrderRow>>('/api/v1/admin/orders', { status, q: debounced, page, size: 20 });
+  const { data: counts } = useFetch<Record<string, number>>('/api/v1/admin/orders/counts');
 
-  const [status, setStatus] = useState('');
-  const [channel, setChannel] = useState('');
-  const [q, setQ] = useState('');
-  const [search, setSearch] = useState('');
-
-  const load = useCallback(() => {
-    setLoading(true);
-    adminApi.listOrders({ page, size: 20, status: status || undefined, channel: channel || undefined, q: search || undefined })
-      .then((r) => { setOrders(r.items ?? r); setTotal(r.total ?? r.length); })
-      .catch(() => showToast('Erreur chargement commandes.', 'error'))
-      .finally(() => setLoading(false));
-  }, [page, status, channel, search]);
-
-  useEffect(() => { load(); }, [load]);
-
-  const columns: Column<Order>[] = [
-    { key: 'order_number', label: 'N° Commande', render: (r) => <span style={{ color: '#E8B96A', fontWeight: 500 }}>{r.order_number}</span> },
-    { key: 'customer_name', label: 'Client' },
-    { key: 'total_ttc', label: 'Montant TTC', render: (r) => fmt(r.total_ttc) },
-    { key: 'status', label: 'Statut', render: (r) => <StatusBadge status={r.status} /> },
-    { key: 'channel', label: 'Canal', render: (r) => <StatusBadge status={r.channel} /> },
-    { key: 'created_at', label: 'Date', render: (r) => <span style={{ color: 'rgba(255,255,255,0.65)' }}>{fmtDate(r.created_at)}</span> },
-  ];
-
-  const pages = Math.ceil(total / 20);
+  const go = (next: Record<string, string | number>) => {
+    const s = new URLSearchParams(params.toString());
+    for (const [k, v] of Object.entries(next)) { if (v) s.set(k, String(v)); else s.delete(k); }
+    router.push(`/admin/commandes?${s.toString()}`);
+  };
 
   return (
-    <div>
-      <ToastContainer toasts={toasts} onClose={removeToast} />
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 600, color: 'rgba(255,255,255,0.92)', margin: 0 }}>Commandes</h1>
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.58)' }}>{total} commande{total !== 1 ? 's' : ''}</span>
+    <>
+      <PageTitle title="Commandes" subtitle="Confirmez par téléphone, préparez, remettez : chaque étape est visible par la cliente dans son suivi." />
+      <div className="flex gap-2 flex-wrap mb-4">
+        {TABS.map((t) => {
+          const on = t === status;
+          const n = t ? counts?.[t] : counts ? Object.values(counts).reduce((a, b) => a + b, 0) : undefined;
+          return (
+            <button key={t || 'all'} onClick={() => go({ statut: t, page: '' })}
+              style={{ fontSize: 12, padding: '7px 12px', borderRadius: 20, border: `1px solid ${on ? A.gold : A.border}`, background: on ? A.goldBg : 'transparent', color: on ? A.gold : A.muted }}>
+              {t ? ORDER_STATUS[t].label : 'Toutes'}{n != null ? ` · ${n}` : ''}
+            </button>
+          );
+        })}
       </div>
-
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { setSearch(q); setPage(1); } }}
-          placeholder="Rechercher…"
-          style={{
-            padding: '9px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none', width: 220,
-          }}
-        />
-        <select
-          value={status}
-          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          style={{ padding: '9px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none' }}
-        >
-          {STATUSES.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
-        </select>
-        <select
-          value={channel}
-          onChange={(e) => { setChannel(e.target.value); setPage(1); }}
-          style={{ padding: '9px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none' }}
-        >
-          <option value="">Tous les canaux</option>
-          <option value="store">Boutique</option>
-          <option value="online">En ligne</option>
-        </select>
-        {(q !== search || status || channel) && (
-          <button onClick={() => { setQ(''); setSearch(''); setStatus(''); setChannel(''); setPage(1); }}
-            style={{ padding: '9px 14px', background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.65)', fontSize: 13, cursor: 'pointer' }}>
-            Réinitialiser
-          </button>
-        )}
-      </div>
-
-      {/* Table */}
-      <div style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, overflow: 'hidden' }}>
-        <AdminTable
-          columns={columns}
-          data={orders}
-          loading={loading}
-          onRowClick={(r) => router.push(`/admin/commandes/${r.uuid}`)}
-          emptyMessage="Aucune commande trouvée."
-        />
-      </div>
-
-      {/* Pagination */}
-      {pages > 1 && (
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 20 }}>
-          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-            style={{ padding: '7px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: 'rgba(255,255,255,0.92)', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, fontSize: 13 }}>
-            ← Précédent
-          </button>
-          <span style={{ padding: '7px 14px', color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>Page {page} / {pages}</span>
-          <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages}
-            style={{ padding: '7px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: 'rgba(255,255,255,0.92)', cursor: page === pages ? 'not-allowed' : 'pointer', opacity: page === pages ? 0.4 : 1, fontSize: 13 }}>
-            Suivant →
-          </button>
+      <Card pad={12}>
+        <div className="mb-3" style={{ maxWidth: 380 }}>
+          <AInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher : n° de commande, nom, téléphone, ville…" aria-label="Rechercher une commande" />
         </div>
-      )}
-    </div>
+        {error && <Alert>{error}</Alert>}
+        {!data ? <Spin /> : (
+          <>
+            <Table head={['Commande', 'Client', 'Téléphone', 'Articles', 'Total', 'Paiement', 'Statut', 'Date']} empty={!data.items.length && 'Aucune commande ne correspond.'}>
+              {data.items.map((o) => (
+                <tr key={o.id} className="hover:bg-white/[0.03] cursor-pointer" onClick={() => router.push(`/admin/commandes/${o.id}`)}>
+                  <td style={td}><Link href={`/admin/commandes/${o.id}`} style={{ color: A.gold, fontWeight: 500 }} onClick={(e) => e.stopPropagation()}>{o.number}</Link></td>
+                  <td style={td}>{o.customer_name}<div style={{ fontSize: 11, color: A.faint }}>{o.city}</div></td>
+                  <td style={{ ...td, color: A.muted }}>{o.customer_phone}</td>
+                  <td style={{ ...td, color: A.muted }}>{o.item_count}</td>
+                  <td style={td}>{fcfa(o.total)}</td>
+                  <td style={td}><Badge tone={PAYMENT_STATUS[o.payment_status]?.tone}>{PAYMENT_STATUS[o.payment_status]?.label}</Badge></td>
+                  <td style={td}><Badge tone={ORDER_STATUS[o.status].tone}>{ORDER_STATUS[o.status].label}</Badge></td>
+                  <td style={{ ...td, color: A.muted, whiteSpace: 'nowrap' }}>{formatDate(o.created_at, true)}</td>
+                </tr>
+              ))}
+            </Table>
+            <Pager page={data.page} pages={data.pages} total={data.total} onPage={(p) => go({ page: p })} />
+          </>
+        )}
+      </Card>
+    </>
   );
+}
+
+export default function OrdersPage() {
+  return <Suspense fallback={<Spin />}><Orders /></Suspense>;
 }

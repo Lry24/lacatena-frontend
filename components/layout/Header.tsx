@@ -1,196 +1,150 @@
 'use client';
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
-import { useCartStore } from '@/store/cartStore';
-import { useWishlistStore } from '@/store/wishlistStore';
-import { useAuthStore } from '@/store/authStore';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { api } from '@/lib/api';
+import { cartCount, useCart } from '@/store/cart';
+import { useWishlist } from '@/store/wishlist';
+import { useMounted } from '@/components/ui';
 
 const NAV_LEFT = [
-  { label: 'Boutique', href: '/boutique' },
-  { label: 'Nouveautés', href: '/boutique?is_new=true' },
-  { label: 'Promos', href: '/boutique?is_promo=true' },
+  { label: 'Femme', href: '/boutique?categorie=femme' },
+  { label: 'Homme', href: '/boutique?categorie=homme' },
+  { label: 'Enfant', href: '/boutique?categorie=enfant' },
+  { label: 'Accessoires', href: '/boutique?categorie=accessoires' },
 ];
 
 const NAV_RIGHT = [
-  { label: 'Marques', href: '/boutique?sort=brand' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'Nouveautés', href: '/boutique?nouveau=1' },
+  { label: 'Promos', href: '/boutique?promo=1' },
 ];
 
-export default function Header() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const { totalItems } = useCartStore();
-  const { items: wishlistItems } = useWishlistStore();
-  const { isAuthenticated } = useAuthStore();
+const icon = 'rgba(245,237,216,0.85)';
 
-  useEffect(() => { setMounted(true); }, []);
+export default function Header({ transparent = false }: { transparent?: boolean }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [scrolled, setScrolled] = useState(false);
+  const [announcement, setAnnouncement] = useState<string | null>(null);
+  const mounted = useMounted();
+  const count = cartCount(useCart((s) => s.lines));
+  const wished = useWishlist((s) => s.items.length);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    api<{ announcement: string | null }>('/api/v1/store').then((s) => setAnnouncement(s.announcement)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const linkStyle: React.CSSProperties = {
-    fontSize: 16,
-    letterSpacing: '1px',
-    textTransform: 'uppercase',
-    color: scrolled ? 'rgba(245,237,216,0.75)' : 'rgba(245,237,216,0.9)',
-    whiteSpace: 'nowrap',
-    transition: 'color 0.2s',
+  // Changement de page : menus refermés
+  const [path, setPath] = useState(pathname);
+  if (path !== pathname) { setPath(pathname); setMenuOpen(false); setSearchOpen(false); }
+  useEffect(() => { if (searchOpen) searchRef.current?.focus(); }, [searchOpen]);
+
+  const solid = !transparent || scrolled || menuOpen || searchOpen;
+  const linkStyle: React.CSSProperties = { fontSize: 12, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(245,237,216,0.85)', whiteSpace: 'nowrap' };
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    router.push(`/boutique?q=${encodeURIComponent(query.trim())}`);
+    setSearchOpen(false);
   };
 
+  const badge = (n: number) => mounted && n > 0 ? (
+    <span className="absolute -top-1.5 -right-2 flex items-center justify-center" style={{ minWidth: 15, height: 15, padding: '0 3px', borderRadius: 8, background: 'var(--gold)', color: '#2D3A0F', fontSize: 9, fontWeight: 600 }}>{n}</span>
+  ) : null;
+
   return (
-    <header
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
-      style={{
-        background: scrolled ? 'rgba(26,31,14,0.97)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(14px)' : 'none',
-        borderBottom: scrolled ? '0.5px solid rgba(240,234,210,0.08)' : 'none',
-      }}
-    >
-      {/* ── Main nav ────────────────────────────────────────────────── */}
-      <div
-        className="flex items-center"
-        style={{ padding: '0 40px', height: 68, maxWidth: 1440, margin: '0 auto' }}
-      >
-        {/* LEFT */}
-        <nav className="hidden md:flex items-center gap-8 flex-1">
+    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
+      style={{ background: solid ? 'rgba(26,31,14,0.97)' : 'transparent', backdropFilter: solid ? 'blur(14px)' : 'none', borderBottom: solid ? '0.5px solid rgba(240,234,210,0.08)' : '0.5px solid transparent' }}>
+      {announcement && (
+        <div className="text-center truncate" style={{ background: '#4A6020', color: 'var(--gold)', fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', padding: '8px 16px', height: 32 }}>
+          {announcement}
+        </div>
+      )}
+      <div className="flex items-center px-4 md:px-10" style={{ height: 68, maxWidth: 1440, margin: '0 auto' }}>
+        <nav className="hidden lg:flex items-center gap-8 flex-1" aria-label="Univers">
           {NAV_LEFT.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              style={linkStyle}
-              className="hover:text-[#E8B96A] transition-colors"
-            >
-              {item.label}
-            </Link>
+            <Link key={item.href} href={item.href} style={linkStyle} className="hover:!text-[#E8B96A] transition-colors">{item.label}</Link>
           ))}
         </nav>
 
-        {/* CENTER — Logo */}
-        <div className="flex-1 flex justify-center md:flex-none">
-          <Link href="/" className="group">
-            <Image
-              src="/images/noBack.png"
-              alt="La Catena"
-              width={160}
-              height={70}
-              className="object-contain transition-all duration-300 group-hover:opacity-80"
-              style={{ filter: 'brightness(1.1) drop-shadow(0 0 10px rgba(232,185,106,0.2))' }}
-              priority
-            />
-          </Link>
-        </div>
-
-        {/* RIGHT */}
-        <div className="hidden md:flex items-center gap-8 flex-1 justify-end">
-          {NAV_RIGHT.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              style={linkStyle}
-              className="hover:text-[#E8B96A] transition-colors"
-            >
-              {item.label}
-            </Link>
-          ))}
-
-          <div style={{ width: '0.5px', height: 14, background: 'rgba(240,234,210,0.2)' }} />
-
-          {/* Search */}
-          <Link href="/boutique" aria-label="Rechercher" className="transition-opacity hover:opacity-60">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(245,237,216,0.8)" strokeWidth="1.5">
-              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-            </svg>
-          </Link>
-
-          {/* Wishlist */}
-          <Link href="/favoris" aria-label="Favoris" className="relative transition-opacity hover:opacity-60">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={wishlistItems.length > 0 ? 'var(--gold)' : 'rgba(245,237,216,0.8)'} strokeWidth="1.5">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill={wishlistItems.length > 0 ? 'var(--gold)' : 'none'} />
-            </svg>
-            {wishlistItems.length > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center text-[9px] font-medium"
-                style={{ width: 14, height: 14, borderRadius: '50%', background: 'var(--gold)', color: '#2D3A0F' }}>
-                {wishlistItems.length}
-              </span>
-            )}
-          </Link>
-
-          {/* Cart */}
-          <Link href="/panier" aria-label="Panier" className="relative transition-opacity hover:opacity-60">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(245,237,216,0.8)" strokeWidth="1.5">
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" />
-            </svg>
-            {totalItems > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center text-[9px] font-medium"
-                style={{ width: 14, height: 14, borderRadius: '50%', background: 'var(--gold)', color: '#2D3A0F' }}>
-                {totalItems}
-              </span>
-            )}
-          </Link>
-
-          {/* Account */}
-          <Link href={mounted && isAuthenticated ? '/mon-compte' : '/connexion'} aria-label="Compte" className="transition-opacity hover:opacity-60">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(245,237,216,0.8)" strokeWidth="1.5">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-            </svg>
-          </Link>
-        </div>
-
-        {/* Mobile icons */}
-        <div className="flex md:hidden items-center gap-4 ml-auto">
-          <Link href="/panier" className="relative">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(245,237,216,0.85)" strokeWidth="1.5">
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" />
-            </svg>
-            {totalItems > 0 && (
-              <span className="absolute -top-1 -right-1 flex items-center justify-center text-[8px]"
-                style={{ width: 13, height: 13, borderRadius: '50%', background: 'var(--gold)', color: '#2D3A0F' }}>
-                {totalItems}
-              </span>
-            )}
-          </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)} style={{ width: 22, display: 'flex', flexDirection: 'column', gap: 5 }} aria-label="Menu">
+        <div className="flex-1 lg:hidden">
+          <button className="flex flex-col" onClick={() => setMenuOpen(!menuOpen)} style={{ width: 22, gap: 5 }} aria-label="Menu" aria-expanded={menuOpen}>
             {[0, 1, 2].map((i) => (
               <span key={i} className="block transition-all duration-200" style={{
-                height: 1, background: 'rgba(245,237,216,0.85)', width: '100%',
+                height: 1, background: icon, width: '100%',
                 transform: menuOpen ? (i === 0 ? 'rotate(45deg) translateY(6px)' : i === 2 ? 'rotate(-45deg) translateY(-6px)' : 'none') : 'none',
                 opacity: menuOpen && i === 1 ? 0 : 1,
               }} />
             ))}
           </button>
         </div>
+
+        <div className="flex justify-center">
+          <Link href="/" className="group" aria-label="La Catena — accueil">
+            <Image src="/images/noBack.png" alt="La Catena" width={160} height={70} priority
+              className="object-contain transition-opacity duration-300 group-hover:opacity-80"
+              style={{ filter: 'brightness(1.1) drop-shadow(0 0 10px rgba(232,185,106,0.2))' }} />
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-5 md:gap-7 flex-1 justify-end">
+          <nav className="hidden lg:flex items-center gap-8" aria-label="Sélections">
+            {NAV_RIGHT.map((item) => (
+              <Link key={item.href} href={item.href} style={linkStyle} className="hover:!text-[#E8B96A] transition-colors">{item.label}</Link>
+            ))}
+          </nav>
+          <div className="hidden lg:block" style={{ width: '0.5px', height: 14, background: 'rgba(240,234,210,0.2)' }} />
+          <button onClick={() => setSearchOpen(!searchOpen)} aria-label="Rechercher" className="transition-opacity hover:opacity-60">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={icon} strokeWidth="1.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+          </button>
+          <Link href="/suivi" aria-label="Suivre une commande" title="Suivre une commande" className="hidden sm:block transition-opacity hover:opacity-60">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={icon} strokeWidth="1.5"><path d="M21 8 12 3 3 8v8l9 5 9-5z" /><path d="m3 8 9 5 9-5" /><path d="M12 13v8" /></svg>
+          </Link>
+          <Link href="/favoris" aria-label="Favoris" className="relative transition-opacity hover:opacity-60">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill={mounted && wished ? 'var(--gold)' : 'none'} stroke={mounted && wished ? 'var(--gold)' : icon} strokeWidth="1.5">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            {badge(wished)}
+          </Link>
+          <Link href="/panier" aria-label="Panier" className="relative transition-opacity hover:opacity-60">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={icon} strokeWidth="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
+            {badge(count)}
+          </Link>
+        </div>
       </div>
 
-      {/* ── Mobile menu ─────────────────────────────────────────────── */}
-      <div
-        className="md:hidden overflow-hidden transition-all duration-300"
-        style={{
-          maxHeight: menuOpen ? 400 : 0,
-          background: 'rgba(26,31,14,0.98)',
-          borderBottom: menuOpen ? '0.5px solid rgba(240,234,210,0.08)' : 'none',
-        }}
-      >
-        <div style={{ padding: '28px 32px 36px', display: 'flex', flexDirection: 'column', gap: 22 }}>
-          {[...NAV_LEFT, ...NAV_RIGHT].map((item) => (
-            <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}
-              style={{ fontSize: 13, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}>
-              {item.label}
-            </Link>
+      {/* Recherche */}
+      <div className="overflow-hidden transition-all duration-300" style={{ maxHeight: searchOpen ? 120 : 0 }} inert={!searchOpen}>
+        <form onSubmit={submitSearch} className="flex items-center gap-4" style={{ maxWidth: 900, margin: '0 auto', padding: '8px 16px 24px' }}>
+          <input ref={searchRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Une robe, une marque, un sac…" aria-label="Recherche"
+            className="flex-1 min-w-0 font-serif outline-none" style={{ background: 'transparent', borderBottom: '0.5px solid rgba(232,185,106,0.4)', color: 'var(--cream)', fontSize: 24, padding: '8px 0' }} />
+          <button type="submit" style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--gold)' }}>Rechercher →</button>
+        </form>
+      </div>
+
+      {/* Menu mobile */}
+      <div className="lg:hidden overflow-hidden transition-all duration-300" style={{ maxHeight: menuOpen ? 600 : 0 }} inert={!menuOpen}>
+        <div style={{ padding: '24px 32px 32px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {[...NAV_LEFT, ...NAV_RIGHT, { label: 'Toute la boutique', href: '/boutique' }].map((item) => (
+            <Link key={item.href} href={item.href} className="font-serif" style={{ fontSize: 22, color: 'var(--cream)' }}>{item.label}</Link>
           ))}
           <div style={{ height: '0.5px', background: 'var(--border)' }} />
-          <Link href="/favoris" onClick={() => setMenuOpen(false)}
-            style={{ fontSize: 13, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}>
-            Favoris
-          </Link>
-          <Link href={mounted && isAuthenticated ? '/mon-compte' : '/connexion'} onClick={() => setMenuOpen(false)}
-            style={{ fontSize: 11, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)' }}>
-            {mounted && isAuthenticated ? 'Mon compte' : 'Connexion'}
-          </Link>
+          {[{ label: 'Suivre une commande', href: '/suivi' }, { label: 'Mes commandes', href: '/mes-commandes' }, { label: 'Contact', href: '/contact' }].map((item) => (
+            <Link key={item.href} href={item.href} style={{ fontSize: 11, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--gold)' }}>{item.label}</Link>
+          ))}
         </div>
       </div>
     </header>

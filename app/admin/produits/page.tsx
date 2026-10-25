@@ -1,193 +1,97 @@
-﻿'use client';
-import React, { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import AdminTable, { Column } from '@/components/admin/AdminTable';
-import StatusBadge from '@/components/admin/StatusBadge';
-import { ToastContainer, useToast } from '@/components/admin/Toast';
-import * as adminApi from '@/lib/adminApi';
+'use client';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { A, AInput, ASelect, Alert, Badge, Btn, Card, PageTitle, Pager, Spin, Table, td, useFetch } from '@/components/admin/kit';
+import ProductImg from '@/components/shop/ProductImg';
+import { useToast } from '@/components/ui';
+import { api } from '@/lib/api';
+import { fcfa } from '@/lib/format';
+import type { Category, Page, ProductAdminRow } from '@/lib/types';
 
-interface Product {
-  uuid: string;
-  name: string;
-  reference: string;
-  brand: string;
-  price_ttc: number;
-  is_active: boolean;
-  is_new: boolean;
-  is_promo: boolean;
-  is_featured: boolean;
-  gender: string;
-  primary_image_url?: string;
-  category?: { name: string };
-  total_stock?: number;
-}
-
-const fmt = (n: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF', maximumFractionDigits: 0 }).format(n);
-
-export default function ProduitsPage() {
+function Products() {
+  const params = useSearchParams();
   const router = useRouter();
-  const { toasts, showToast, removeToast } = useToast();
-
-  const [products, setProducts] = useState<Product[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const toast = useToast((s) => s.show);
+  const page = Number(params.get('page')) || 1;
+  const stock = params.get('stock') || '';
+  const categoryId = params.get('categorie') || '';
   const [q, setQ] = useState('');
-  const [search, setSearch] = useState('');
-  const [gender, setGender] = useState('');
-  const [isNew, setIsNew] = useState('');
-  const [isPromo, setIsPromo] = useState('');
-  const [isFeatured, setIsFeatured] = useState('');
-  const [categories, setCategories] = useState<{ uuid: string; name: string }[]>([]);
-  const [catFilter, setCatFilter] = useState('');
+  const [debounced, setDebounced] = useState('');
+  useEffect(() => { const t = setTimeout(() => setDebounced(q), 300); return () => clearTimeout(t); }, [q]);
+  const { data, error, reload } = useFetch<Page<ProductAdminRow>>('/api/v1/admin/products', { q: debounced, stock, category_id: categoryId, page, size: 25 });
+  const { data: cats } = useFetch<Category[]>('/api/v1/admin/categories');
 
-  useEffect(() => {
-    adminApi.listCategories().then(setCategories).catch(() => {});
-  }, []);
-
-  const load = useCallback(() => {
-    setLoading(true);
-    const params: Record<string, unknown> = { page, size: 20, active_only: false };
-    if (search) params.q = search;
-    if (gender) params.gender = gender;
-    if (isNew) params.is_new = isNew === 'true';
-    if (isPromo) params.is_promo = isPromo === 'true';
-    if (isFeatured) params.is_featured = isFeatured === 'true';
-    if (catFilter) params.category_slug = catFilter;
-    adminApi.listProducts(params)
-      .then((r) => { setProducts(r.items ?? r); setTotal(r.total ?? r.length); })
-      .catch(() => showToast('Erreur chargement produits.', 'error'))
-      .finally(() => setLoading(false));
-  }, [page, search, gender, isNew, isPromo, isFeatured, catFilter]);
-
-  useEffect(() => { load(); }, [load]);
-
-  const handleToggle = async (uuid: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      await adminApi.toggleProduct(uuid);
-      setProducts((prev) => prev.map((p) => p.uuid === uuid ? { ...p, is_active: !p.is_active } : p));
-    } catch {
-      showToast('Erreur toggle produit.', 'error');
-    }
+  const go = (next: Record<string, string | number>) => {
+    const s = new URLSearchParams(params.toString());
+    for (const [k, v] of Object.entries(next)) { if (v) s.set(k, String(v)); else s.delete(k); }
+    if (!('page' in next)) s.delete('page');
+    router.push(`/admin/produits?${s.toString()}`);
   };
 
-  const columns: Column<Product>[] = [
-    {
-      key: 'image', label: '', width: 48,
-      render: (r) => r.primary_image_url
-        ? <img src={r.primary_image_url} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4 }} />
-        : <div style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.09)', borderRadius: 4 }} />,
-    },
-    { key: 'name', label: 'Nom', render: (r) => <span style={{ fontWeight: 500, color: 'rgba(255,255,255,0.92)' }}>{r.name}</span> },
-    { key: 'reference', label: 'Réf.', render: (r) => <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'rgba(255,255,255,0.65)' }}>{r.reference}</span> },
-    { key: 'brand', label: 'Marque', render: (r) => <span style={{ color: 'rgba(255,255,255,0.75)' }}>{r.brand}</span> },
-    { key: 'category', label: 'Catégorie', render: (r) => <span style={{ color: 'rgba(255,255,255,0.65)' }}>{(r.category as { name: string } | undefined)?.name ?? '—'}</span> },
-    { key: 'price_ttc', label: 'Prix TTC', render: (r) => <span style={{ color: '#E8B96A', fontWeight: 500 }}>{fmt(r.price_ttc)}</span> },
-    { key: 'total_stock', label: 'Stock', render: (r) => <span style={{ color: (r.total_stock ?? 0) <= 0 ? '#c9634a' : '#6faa30', fontWeight: 500 }}>{r.total_stock ?? 0}</span> },
-    {
-      key: 'badges', label: 'Badges',
-      render: (r) => (
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-          {r.is_new && <span style={{ fontSize: 10, padding: '2px 7px', background: 'rgba(74,143,201,0.15)', color: '#4a8fc9', borderRadius: 4 }}>Nouveau</span>}
-          {r.is_promo && <span style={{ fontSize: 10, padding: '2px 7px', background: 'rgba(201,99,74,0.15)', color: '#c9634a', borderRadius: 4 }}>Promo</span>}
-          {r.is_featured && <span style={{ fontSize: 10, padding: '2px 7px', background: 'rgba(232,185,106,0.15)', color: '#E8B96A', borderRadius: 4 }}>Vedette</span>}
-        </div>
-      ),
-    },
-    {
-      key: 'is_active', label: 'Statut',
-      render: (r) => <StatusBadge status={r.is_active ? 'active' : 'inactive'} />,
-    },
-    {
-      key: 'actions', label: '',
-      render: (r) => (
-        <div style={{ display: 'flex', gap: 6 }}>
-          <button
-            onClick={(e) => { e.stopPropagation(); router.push(`/admin/produits/${r.uuid}`); }}
-            style={{ padding: '5px 10px', background: 'rgba(232,185,106,0.1)', border: '1px solid rgba(232,185,106,0.2)', borderRadius: 6, color: '#E8B96A', cursor: 'pointer', fontSize: 11 }}>
-            Éditer
-          </button>
-          <button
-            onClick={(e) => handleToggle(r.uuid, e)}
-            style={{ padding: '5px 10px', background: r.is_active ? 'rgba(201,99,74,0.1)' : 'rgba(111,170,48,0.1)', border: `1px solid ${r.is_active ? 'rgba(201,99,74,0.2)' : 'rgba(111,170,48,0.2)'}`, borderRadius: 6, color: r.is_active ? '#c9634a' : '#6faa30', cursor: 'pointer', fontSize: 11 }}>
-            {r.is_active ? 'Désactiver' : 'Activer'}
-          </button>
-        </div>
-      ),
-    },
-  ];
+  const toggle = async (p: ProductAdminRow) => {
+    try {
+      await api(`/api/v1/admin/products/${p.id}/active`, { method: 'PATCH', body: { active: !p.active } });
+      toast(p.active ? `${p.name} retirée de la boutique` : `${p.name} remise en vente`);
+      reload();
+    } catch (e) { toast((e as Error).message, 'error'); }
+  };
 
-  const pages = Math.ceil(total / 20);
+  const options = (cats || []).flatMap((c) => [{ id: c.id, label: c.name }, ...c.children.map((ch) => ({ id: ch.id, label: `— ${ch.name}` }))]);
 
   return (
-    <div>
-      <ToastContainer toasts={toasts} onClose={removeToast} />
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 600, color: 'rgba(255,255,255,0.92)', margin: 0 }}>Produits</h1>
-        <button
-          onClick={() => router.push('/admin/produits/nouveau')}
-          style={{ padding: '9px 18px', background: '#E8B96A', border: 'none', borderRadius: 8, color: '#1c2310', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
-        >
-          + Nouveau produit
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { setSearch(q); setPage(1); } }}
-          placeholder="Rechercher…"
-          style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none', width: 200 }}
-        />
-        <select value={gender} onChange={(e) => { setGender(e.target.value); setPage(1); }}
-          style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none' }}>
-          <option value="">Genre</option>
-          <option value="homme">Homme</option>
-          <option value="femme">Femme</option>
-          <option value="unisex">Unisexe</option>
-        </select>
-        <select value={catFilter} onChange={(e) => { setCatFilter(e.target.value); setPage(1); }}
-          style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none' }}>
-          <option value="">Catégorie</option>
-          {categories.map((c) => <option key={c.uuid} value={c.uuid}>{c.name}</option>)}
-        </select>
-        {[{ label: 'Nouveau', val: isNew, set: setIsNew }, { label: 'Promo', val: isPromo, set: setIsPromo }, { label: 'Vedette', val: isFeatured, set: setIsFeatured }].map(({ label, val, set }) => (
-          <select key={label} value={val} onChange={(e) => { set(e.target.value); setPage(1); }}
-            style={{ padding: '8px 12px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 13, outline: 'none' }}>
-            <option value="">{label}</option>
-            <option value="true">Oui</option>
-            <option value="false">Non</option>
-          </select>
-        ))}
-      </div>
-
-      <div style={{ background: '#1e2614', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, overflow: 'hidden' }}>
-        <AdminTable
-          columns={columns}
-          data={products}
-          loading={loading}
-          onRowClick={(r) => router.push(`/admin/produits/${r.uuid}`)}
-          emptyMessage="Aucun produit trouvé."
-        />
-      </div>
-
-      {pages > 1 && (
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 20 }}>
-          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-            style={{ padding: '7px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: 'rgba(255,255,255,0.92)', cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.4 : 1, fontSize: 13 }}>
-            ← Précédent
-          </button>
-          <span style={{ padding: '7px 14px', color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>Page {page} / {pages}</span>
-          <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages}
-            style={{ padding: '7px 14px', background: '#1e2614', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: 'rgba(255,255,255,0.92)', cursor: page === pages ? 'not-allowed' : 'pointer', opacity: page === pages ? 0.4 : 1, fontSize: 13 }}>
-            Suivant →
-          </button>
+    <>
+      <PageTitle title="Produits" subtitle={data ? `${data.total} pièce${data.total > 1 ? 's' : ''} au catalogue` : undefined} actions={<Btn href="/admin/produits/nouveau">+ Nouvelle pièce</Btn>} />
+      <Card pad={12}>
+        <div className="flex flex-wrap gap-2 mb-3">
+          <AInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nom, marque, référence…" style={{ maxWidth: 300 }} aria-label="Rechercher" />
+          <ASelect value={categoryId} onChange={(e) => go({ categorie: e.target.value })} style={{ maxWidth: 220 }} aria-label="Catégorie">
+            <option value="">Toutes les catégories</option>
+            {options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+          </ASelect>
+          <ASelect value={stock} onChange={(e) => go({ stock: e.target.value })} style={{ maxWidth: 200 }} aria-label="Stock">
+            <option value="">Tous les stocks</option>
+            <option value="low">Stock bas (1 à 5)</option>
+            <option value="out">Épuisées</option>
+          </ASelect>
         </div>
-      )}
-    </div>
+        {error && <Alert>{error}</Alert>}
+        {!data ? <Spin /> : (
+          <>
+            <Table head={['', 'Pièce', 'Catégorie', 'Prix', 'Stock', 'Statut', '']} empty={!data.items.length && 'Aucune pièce ne correspond.'}>
+              {data.items.map((p) => (
+                <tr key={p.id} className="hover:bg-white/[0.03]">
+                  <td style={{ ...td, width: 56 }}>
+                    <div className="relative overflow-hidden" style={{ width: 40, height: 52, borderRadius: 4, background: A.bg }}><ProductImg src={p.image} alt="" sizes="40px" /></div>
+                  </td>
+                  <td style={td}>
+                    <Link href={`/admin/produits/${p.id}`} className="hover:text-[#E8B96A]" style={{ fontWeight: 500 }}>{p.name}</Link>
+                    <div style={{ fontSize: 11, color: A.faint }}>{[p.brand, p.sku].filter(Boolean).join(' · ')}</div>
+                  </td>
+                  <td style={{ ...td, color: A.muted }}>{p.category_name || '—'}</td>
+                  <td style={td}>{fcfa(p.price)}{p.compare_at_price && p.compare_at_price > p.price ? <div style={{ fontSize: 11, color: A.faint, textDecoration: 'line-through' }}>{fcfa(p.compare_at_price)}</div> : null}</td>
+                  <td style={td}><span style={{ color: p.stock === 0 ? A.red : p.stock <= 5 ? A.gold : A.text }}>{p.stock}</span> <span style={{ fontSize: 11, color: A.faint }}>· {p.variant_count} taille{p.variant_count > 1 ? 's' : ''}</span></td>
+                  <td style={td}>
+                    <div className="flex gap-1 flex-wrap">
+                      <Badge tone={p.active ? 'green' : 'red'}>{p.active ? 'En vente' : 'Masquée'}</Badge>
+                      {p.featured && <Badge tone="gold">Mise en avant</Badge>}
+                    </div>
+                  </td>
+                  <td style={{ ...td, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    <Btn small variant="ghost" onClick={() => toggle(p)}>{p.active ? 'Masquer' : 'Remettre en vente'}</Btn>{' '}
+                    <Btn small variant="subtle" href={`/admin/produits/${p.id}`}>Modifier</Btn>
+                  </td>
+                </tr>
+              ))}
+            </Table>
+            <Pager page={data.page} pages={data.pages} total={data.total} onPage={(n) => go({ page: n })} />
+          </>
+        )}
+      </Card>
+    </>
   );
+}
+
+export default function ProductsPage() {
+  return <Suspense fallback={<Spin />}><Products /></Suspense>;
 }

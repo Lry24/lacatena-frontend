@@ -1,139 +1,66 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { A, AField, AInput, Alert, Btn } from '@/components/admin/kit';
+import { api } from '@/lib/api';
+import type { AdminUser } from '@/lib/types';
+import { useAdmin } from '@/store/admin';
 
-export default function AdminConnexionPage() {
+function LoginForm() {
   const router = useRouter();
-  const { login, isAuthenticated } = useAuthStore();
-  const [email, setEmail] = useState('');
+  const params = useSearchParams();
+  const login = useAdmin((s) => s.login);
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [show, setShow] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated) router.replace('/admin');
-  }, [isAuthenticated]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) { setError('Veuillez remplir tous les champs.'); return; }
-    setLoading(true);
-    setError('');
+    setError(''); setLoading(true);
     try {
-      await login({ email, password });
-      const user = useAuthStore.getState().user;
-      if (!user || !['admin', 'staff'].includes(user.role)) {
-        useAuthStore.getState().logout();
-        setError('Accès non autorisé. Compte administrateur requis.');
-        return;
-      }
-      router.replace('/admin');
-    } catch (err: unknown) {
-      const e = err as { response?: { data?: { detail?: string } } };
-      setError(e?.response?.data?.detail || 'Identifiants incorrects.');
-    } finally {
+      const res = await api<{ token: string; user: AdminUser }>('/api/v1/admin/auth/login', { method: 'POST', body: { username, password } });
+      login(res.token, res.user);
+      const next = params.get('suite');
+      router.replace(next && next.startsWith('/admin') ? next : '/admin');
+    } catch (err) {
+      setError((err as Error).message);
       setLoading(false);
     }
   };
 
   return (
-    <div style={{
-      minHeight: '100vh', background: '#0f1209',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 16, fontFamily: 'var(--font-dm-sans)',
-    }}>
-      <div style={{
-        width: '100%', maxWidth: 420,
-        background: '#1e2614',
-        border: '1px solid rgba(255,255,255,0.11)',
-        borderRadius: 12, padding: '40px 36px',
-      }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <img src="/images/noBack.png" alt="La Catena" style={{ width: 90, height: 90, objectFit: 'contain', margin: '0 auto 8px' }} />
-          <div style={{ fontSize: 10, color: 'rgba(240,234,210,0.45)', letterSpacing: '3px', textTransform: 'uppercase' }}>
-            Espace Administration
-          </div>
+    <form onSubmit={submit} className="flex flex-col gap-4">
+      <AField label="Identifiant ou e-mail"><AInput value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoFocus required /></AField>
+      <AField label="Mot de passe">
+        <div className="relative">
+          <AInput type={show ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required style={{ paddingRight: 70 }} />
+          <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ fontSize: 11, color: A.muted }}>{show ? 'Masquer' : 'Afficher'}</button>
         </div>
+      </AField>
+      {error && <Alert>{error}</Alert>}
+      <Btn type="submit" disabled={loading} style={{ padding: '12px 16px', marginTop: 4 }}>{loading ? 'Connexion…' : 'Se connecter'}</Btn>
+    </form>
+  );
+}
 
-        <form onSubmit={handleSubmit}>
-          {error && (
-            <div style={{
-              background: 'rgba(201,99,74,0.1)',
-              border: '1px solid rgba(201,99,74,0.3)',
-              borderRadius: 8, padding: '10px 14px',
-              fontSize: 13, color: '#c9634a', marginBottom: 20,
-            }}>
-              {error}
-            </div>
-          )}
-
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.65)', marginBottom: 8 }}>
-              Adresse e-mail
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@lacatena.com"
-              required
-              style={{
-                width: '100%', padding: '11px 14px',
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 14,
-                outline: 'none', boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: 28 }}>
-            <label style={{ display: 'block', fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.65)', marginBottom: 8 }}>
-              Mot de passe
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              style={{
-                width: '100%', padding: '11px 14px',
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: 8, color: 'rgba(255,255,255,0.92)', fontSize: 14,
-                outline: 'none', boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%', padding: '13px',
-              background: loading ? 'rgba(232,185,106,0.4)' : '#E8B96A',
-              border: 'none', borderRadius: 8,
-              color: '#1c2310', fontSize: 14, fontWeight: 600,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'background 0.2s',
-              marginBottom: 16,
-            }}
-          >
-            {loading ? 'Connexion…' : 'Se connecter'}
-          </button>
-
-          <div style={{ textAlign: 'center' }}>
-            <a href="/" style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', textDecoration: 'none', letterSpacing: '1px' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#E8B96A')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
-            >
-              &larr; Retour au site
-            </a>
-          </div>
-        </form>
+export default function AdminLoginPage() {
+  return (
+    <div className="flex items-center justify-center p-4" style={{ minHeight: '100vh', background: `radial-gradient(ellipse at top, #2D3A0F 0%, ${A.bg} 60%)` }}>
+      <div className="w-full" style={{ maxWidth: 400 }}>
+        <div className="flex flex-col items-center mb-8">
+          <Image src="/images/noBack.png" alt="La Catena" width={180} height={80} priority style={{ objectFit: 'contain' }} />
+          <span className="chain-divider mt-3">⊙⊙⊙⊙⊙⊙⊙⊙</span>
+        </div>
+        <div style={{ background: A.surface, border: `1px solid ${A.border}`, borderRadius: 12, padding: 28 }}>
+          <h1 className="font-serif" style={{ fontSize: 26, color: '#fff', marginBottom: 4 }}>Espace équipe</h1>
+          <p style={{ fontSize: 13, color: A.muted, marginBottom: 24 }}>Commandes, catalogue et stock de la boutique.</p>
+          <Suspense fallback={null}><LoginForm /></Suspense>
+        </div>
+        <p className="text-center mt-6"><Link href="/" style={{ fontSize: 12, color: A.faint }}>← Retour à la boutique</Link></p>
       </div>
     </div>
   );

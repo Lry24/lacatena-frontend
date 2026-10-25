@@ -1,352 +1,216 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { use } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import Breadcrumb from '@/components/common/Breadcrumb';
-import ProductCard from '@/components/common/ProductCard';
-import LoadingScreen from '@/components/common/LoadingScreen';
-import { getProduct, getProducts } from '@/lib/api';
-import { useCartStore } from '@/store/cartStore';
-import { useWishlistStore } from '@/store/wishlistStore';
-import type { ProductDetailResponse, ProductResponse, VariantResponse } from '@/types';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import ShopShell from '@/components/layout/ShopShell';
+import ProductCard from '@/components/shop/ProductCard';
+import ProductImg from '@/components/shop/ProductImg';
+import { Button, EmptyState, Loading, Price, SectionTitle, label, useMounted, useToast } from '@/components/ui';
+import { api } from '@/lib/api';
+import type { ProductCard as Card, ProductDetail } from '@/lib/types';
+import { useCart } from '@/store/cart';
+import { useWishlist } from '@/store/wishlist';
 
-export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
-  const [product, setProduct] = useState<ProductDetailResponse | null>(null);
-  const [similar, setSimilar] = useState<ProductResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedVariant, setSelectedVariant] = useState<VariantResponse | null>(null);
-  const [mainImage, setMainImage] = useState<string | null>(null);
-  const [adding, setAdding] = useState(false);
-  const [addedMsg, setAddedMsg] = useState(false);
+export default function ProductPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [related, setRelated] = useState<Card[]>([]);
+  const [notFound, setNotFound] = useState(false);
+  const [active, setActive] = useState(0);
+  const [variantId, setVariantId] = useState<number | null>(null);
   const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
+  const [sizeError, setSizeError] = useState(false);
+  const add = useCart((s) => s.add);
+  const inCart = useCart((s) => s.lines.find((l) => l.variantId === variantId)?.qty ?? 0);
+  const toggle = useWishlist((s) => s.toggle);
+  const wished = useWishlist((s) => s.items.some((i) => i.id === product?.id));
+  const toast = useToast((s) => s.show);
+  const mounted = useMounted();
 
-  const { addItem } = useCartStore();
-  const { toggle, isInWishlist } = useWishlistStore();
+  // Navigation vers une autre pièce : la fiche repart de zéro
+  const [shown, setShown] = useState(slug);
+  if (shown !== slug) {
+    setShown(slug); setProduct(null); setNotFound(false); setActive(0); setQty(1); setVariantId(null);
+  }
 
   useEffect(() => {
-    setLoading(true);
-    getProduct(slug)
-      .then((p) => {
-        setProduct(p);
-        setMainImage(p.primary_image_url || (p.images?.[0]?.url ?? null));
-        const firstActive = p.variants?.find((v) => v.is_active);
-        if (firstActive) setSelectedVariant(firstActive);
-        getProducts({ size: 4 }).then((d) => setSimilar(d.items.filter((x) => x.uuid !== p.uuid).slice(0, 4))).catch(() => {});
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    api<ProductDetail>(`/api/v1/products/${slug}`).then((p) => {
+      setProduct(p);
+      document.title = `${p.name} · La Catena`;
+      const actives = p.variants.filter((v) => v.active);
+      if (actives.length === 1 && actives[0].stock > 0) setVariantId(actives[0].id);
+    }).catch(() => setNotFound(true));
+    api<Card[]>(`/api/v1/products/${slug}/related`).then(setRelated).catch(() => setRelated([]));
   }, [slug]);
 
-  if (loading) {
-    return <LoadingScreen message="Chargement du produit" />;
-  }
-
-  if (!product) {
+  if (notFound) {
     return (
-      <>
-        <Header />
-        <main style={{ paddingTop: 190, minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="text-center">
-            <p className="font-serif text-2xl" style={{ color: 'var(--gold)' }}>Produit introuvable</p>
-            <Link href="/boutique" style={{ fontSize: 10, letterSpacing: '2px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginTop: 16, display: 'block' }}>← Retour boutique</Link>
-          </div>
-        </main>
-        <Footer />
-      </>
+      <ShopShell narrow>
+        <EmptyState title="Pièce introuvable" text="Elle n'existe pas ou n'est plus en vente. D'autres trésors vous attendent."
+          action={<Button href="/boutique">Retour à la boutique</Button>} />
+      </ShopShell>
     );
   }
+  if (!product) return <ShopShell><Loading /></ShopShell>;
 
-  const displayPrice = product.is_promo && product.promo_price != null
-    ? (Number(product.promo_price) || 0)
-    : (Number(product.price_ttc) || 0);
+  const variants = product.variants.filter((v) => v.active);
+  const variant = variants.find((v) => v.id === variantId) || null;
+  const single = variants.length === 1;
+  const remaining = variant ? variant.stock - (mounted ? inCart : 0) : 0;
+  const soldOut = product.stock <= 0;
+  const images = product.images.length ? product.images : [{ id: 0, url: product.image || '', alt: product.name }];
 
-  const wished = isInWishlist(product.uuid);
-
-  const handleAddToCart = async () => {
-    if (!selectedVariant) return;
-    setAdding(true);
-    try {
-      await addItem(selectedVariant.uuid, qty, {
-        product_name: product.name,
-        product_slug: product.slug,
-        variant_sku: selectedVariant.sku,
-        unit_price: displayPrice,
-        subtotal: displayPrice,
-        product_image_url: mainImage ?? undefined,
-        variant_size: selectedVariant.size,
-        variant_color: selectedVariant.color,
-      });
-      setAddedMsg(true);
-      setQty(1);
-      setTimeout(() => setAddedMsg(false), 2500);
-    } finally {
-      setAdding(false);
-    }
+  const addToCart = () => {
+    if (!variant) { setSizeError(true); return; }
+    if (remaining <= 0) { toast('Vous avez déjà tout le stock disponible dans votre panier.', 'error'); return; }
+    add({
+      variantId: variant.id, productId: product.id, slug: product.slug, name: product.name, brand: product.brand,
+      size: variant.label, price: product.price, image: product.image, maxStock: variant.stock,
+    }, Math.min(qty, remaining));
+    setAdded(true);
+    toast(`${product.name}${single ? '' : ` (${variant.label})`} ajouté au panier`);
+    setTimeout(() => setAdded(false), 2400);
   };
 
-  // Group variants by size
-  const activeSizes = product.variants?.filter((v) => v.is_active && v.stock > 0) ?? [];
-  const activeColors = [...new Set(activeSizes.map((v) => v.color).filter(Boolean))];
-
   return (
-    <>
-      <Header />
-      <main style={{ paddingTop: 190 }}>
-        {/* Breadcrumb */}
-        <div style={{ padding: '24px 40px', maxWidth: 1440, margin: '0 auto' }}>
-          <Breadcrumb items={[
-            { label: 'Accueil', href: '/' },
-            { label: 'Boutique', href: '/boutique' },
-            { label: product.category?.name ?? 'Produits', href: `/boutique?category=${product.category?.slug ?? ''}` },
-            { label: product.name },
-          ]} />
-        </div>
+    <ShopShell>
+      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-2 mb-8" style={{ fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(248,242,228,0.45)' }}>
+        <Link href="/boutique" className="hover:text-[#E8B96A]">Boutique</Link>
+        {product.category?.parent && <><span>/</span><Link href={`/boutique?categorie=${product.category.parent.slug}`} className="hover:text-[#E8B96A]">{product.category.parent.name}</Link></>}
+        {product.category && <><span>/</span><Link href={`/boutique?categorie=${product.category.slug}`} className="hover:text-[#E8B96A]">{product.category.name}</Link></>}
+      </nav>
 
-        {/* Main product area */}
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 gap-12"
-          style={{ padding: '0 40px 80px', maxWidth: 1440, margin: '0 auto' }}
-        >
-          {/* Gallery */}
-          <div className="flex flex-col gap-4">
-            <div className="relative overflow-hidden" style={{ aspectRatio: '4/5', borderRadius: 4, background: 'rgba(255,255,255,0.03)' }}>
-              {mainImage ? (
-                <Image src={mainImage} alt={product.name} fill className="object-cover" priority sizes="50vw" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--cream-muted)' }}>Aucune image</div>
-              )}
-              {product.is_new && (
-                <span className="absolute top-4 left-4" style={{ background: 'var(--gold)', color: '#2D3A0F', padding: '3px 12px', borderRadius: 20, fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase' }}>Nouveau</span>
-              )}
-              {product.is_promo && (
-                <span className="absolute top-4 left-4" style={{ background: '#4A6020', color: 'var(--gold)', padding: '3px 12px', borderRadius: 20, fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', border: '0.5px solid rgba(232,185,106,0.3)' }}>Promo</span>
-              )}
+      <div className="grid md:grid-cols-2 gap-10 lg:gap-16">
+        {/* Galerie */}
+        <div className="flex flex-col-reverse lg:flex-row gap-3">
+          {images.length > 1 && (
+            <div className="flex lg:flex-col gap-2">
+              {images.map((img, i) => (
+                <button key={img.id} onClick={() => setActive(i)} aria-label={`Photo ${i + 1}`}
+                  className="relative overflow-hidden flex-shrink-0 transition-all duration-200"
+                  style={{ width: 72, height: 92, borderRadius: 2, border: i === active ? '1px solid var(--gold)' : '0.5px solid rgba(240,234,210,0.12)', opacity: i === active ? 1 : 0.55 }}>
+                  <ProductImg src={img.url} alt="" sizes="72px" />
+                </button>
+              ))}
             </div>
-
-            {/* Thumbnails */}
-            {product.images && product.images.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto">
-                {product.images.map((img) => (
-                  <button
-                    key={img.uuid}
-                    onClick={() => setMainImage(img.url)}
-                    className="flex-shrink-0 relative overflow-hidden transition-all duration-200"
-                    style={{
-                      width: 72, height: 72 * (5 / 4), borderRadius: 2,
-                      border: mainImage === img.url ? '1.5px solid var(--gold)' : '0.5px solid rgba(240,234,210,0.15)',
-                    }}
-                  >
-                    <Image src={img.url} alt={img.alt ?? product.name} fill className="object-cover" sizes="80px" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Product info */}
-          <div className="flex flex-col gap-6">
-            <div>
-              <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>{product.brand}</p>
-              <h1 className="font-serif" style={{ fontSize: 'clamp(24px, 3vw, 40px)', color: 'var(--cream)', lineHeight: 1.2, letterSpacing: '-0.5px' }}>{product.name}</h1>
-              <p style={{ fontSize: 11, color: 'var(--cream-muted)', marginTop: 8, letterSpacing: '1px' }}>Réf. {product.reference}</p>
-            </div>
-
-            {/* Price */}
-            <div className="flex items-baseline gap-3">
-              <span className="font-serif text-2xl" style={{ color: 'var(--gold)' }}>
-                {displayPrice.toLocaleString('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 })}
+          )}
+          <div className="relative overflow-hidden flex-1" style={{ aspectRatio: '3/4', borderRadius: 4, background: 'rgba(255,255,255,0.02)' }}>
+            <ProductImg key={images[active]?.url} src={images[active]?.url} alt={product.name} sizes="(max-width: 768px) 100vw, 50vw" priority />
+            {product.is_promo && product.compare_at_price && (
+              <span className="absolute top-4 left-4" style={{ background: 'var(--gold)', color: '#2D3A0F', fontSize: 9, letterSpacing: '2px', padding: '5px 12px', borderRadius: 20, fontWeight: 600 }}>
+                −{Math.round((1 - product.price / product.compare_at_price) * 100)} %
               </span>
-              {product.is_promo && product.promo_price != null && (
-                <span className="text-base line-through" style={{ color: 'var(--cream-muted)' }}>
-                  {product.price_ttc.toLocaleString('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 })}
-                </span>
-              )}
-              <span style={{ fontSize: 10, color: 'var(--cream-muted)', letterSpacing: '1px' }}>TTC</span>
-            </div>
-
-            <div style={{ height: '0.5px', background: 'var(--border)' }} />
-
-            {/* Size selector */}
-            {activeSizes.length > 0 && (
-              <div>
-                <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 12 }}>Taille</p>
-                <div className="flex flex-wrap gap-2">
-                  {[...new Set(activeSizes.map((v) => v.size))].map((size) => {
-                    const variantForSize = activeSizes.find((v) => v.size === size);
-                    const isSelected = selectedVariant?.size === size;
-                    return (
-                      <button
-                        key={size}
-                        onClick={() => { if (variantForSize) setSelectedVariant(variantForSize); }}
-                        style={{
-                          minWidth: 44, padding: '8px 12px',
-                          border: isSelected ? '1.5px solid var(--gold)' : '0.5px solid rgba(240,234,210,0.2)',
-                          borderRadius: 2,
-                          color: isSelected ? 'var(--gold)' : 'var(--cream-muted)',
-                          fontSize: 12,
-                          background: isSelected ? 'rgba(232,185,106,0.08)' : 'transparent',
-                          transition: 'all 0.15s ease',
-                        }}
-                      >
-                        {size}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Color selector */}
-            {activeColors.length > 1 && (
-              <div>
-                <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 12 }}>Couleur</p>
-                <div className="flex flex-wrap gap-2">
-                  {activeColors.map((color) => {
-                    const variantForColor = activeSizes.find((v) => v.color === color);
-                    const isSelected = selectedVariant?.color === color;
-                    return (
-                      <button
-                        key={color}
-                        onClick={() => { if (variantForColor) setSelectedVariant(variantForColor); }}
-                        style={{
-                          padding: '6px 14px', borderRadius: 2,
-                          border: isSelected ? '1.5px solid var(--gold)' : '0.5px solid rgba(240,234,210,0.2)',
-                          color: isSelected ? 'var(--gold)' : 'var(--cream-muted)',
-                          fontSize: 12,
-                          background: isSelected ? 'rgba(232,185,106,0.08)' : 'transparent',
-                          transition: 'all 0.15s ease',
-                        }}
-                      >
-                        {color}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex flex-col gap-3 mt-2">
-              {/* Sélecteur de quantité */}
-              {activeSizes.length > 0 && (
-                <div className="flex items-center gap-4">
-                  <span style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}>Quantité</span>
-                  <div
-                    className="flex items-center"
-                    style={{ border: '0.5px solid rgba(232,185,106,0.3)', borderRadius: 2, background: 'rgba(232,185,106,0.04)' }}
-                  >
-                    <button
-                      onClick={() => setQty((q) => Math.max(1, q - 1))}
-                      className="flex items-center justify-center transition-colors hover:text-[var(--gold)]"
-                      style={{ width: 40, height: 40, color: 'rgba(240,234,210,0.5)', fontSize: 18, lineHeight: 1 }}
-                    >
-                      −
-                    </button>
-                    <span
-                      style={{
-                        width: 44, textAlign: 'center',
-                        fontSize: 15, fontWeight: 600, color: 'var(--gold)',
-                        borderLeft: '0.5px solid rgba(232,185,106,0.2)',
-                        borderRight: '0.5px solid rgba(232,185,106,0.2)',
-                        lineHeight: '40px',
-                      }}
-                    >
-                      {qty}
-                    </span>
-                    <button
-                      onClick={() => setQty((q) => Math.min(10, q + 1))}
-                      className="flex items-center justify-center transition-colors hover:text-[var(--gold)]"
-                      style={{ width: 40, height: 40, color: 'rgba(240,234,210,0.5)', fontSize: 18, lineHeight: 1 }}
-                    >
-                      +
-                    </button>
-                  </div>
-                  <span style={{ fontSize: 12, color: 'rgba(240,234,210,0.35)' }}>/ 10 max</span>
-                </div>
-              )}
-
-              <button
-                onClick={handleAddToCart}
-                disabled={adding || !selectedVariant || activeSizes.length === 0}
-                className="w-full uppercase font-medium tracking-widest transition-all duration-200 hover:bg-[#f5cb85] disabled:opacity-40 btn-gold"
-                style={{
-                  background: addedMsg ? '#4A6020' : 'var(--gold)',
-                  color: addedMsg ? 'var(--gold)' : '#2D3A0F',
-                  padding: '16px',
-                  borderRadius: 2,
-                  fontSize: 11,
-                  letterSpacing: '2px',
-                  border: addedMsg ? '0.5px solid rgba(232,185,106,0.3)' : 'none',
-                  boxShadow: addedMsg ? 'none' : '0 4px 20px rgba(232,185,106,0.2)',
-                }}
-              >
-                {activeSizes.length === 0
-                  ? 'Rupture de stock'
-                  : addedMsg
-                  ? `✓ ${qty > 1 ? qty + ' articles ajoutés' : 'Ajouté au panier'}`
-                  : adding
-                  ? '...'
-                  : qty > 1 ? `Ajouter ${qty} au panier` : 'Ajouter au panier'}
-              </button>
-
-              <button
-                onClick={() => toggle(product as ProductResponse)}
-                className="w-full uppercase tracking-widest transition-colors duration-200"
-                style={{
-                  border: `1.5px solid ${wished ? 'var(--gold)' : 'rgba(240,234,210,0.2)'}`,
-                  color: wished ? 'var(--gold)' : 'var(--cream-muted)',
-                  padding: '14px',
-                  borderRadius: 2,
-                  fontSize: 11,
-                  letterSpacing: '2px',
-                  background: wished ? 'rgba(232,185,106,0.06)' : 'transparent',
-                }}
-              >
-                {wished ? '♥ Dans mes favoris' : '♡ Ajouter aux favoris'}
-              </button>
-            </div>
-
-            <div style={{ height: '0.5px', background: 'var(--border)' }} />
-
-            {/* Description */}
-            {product.description && (
-              <div>
-                <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 12 }}>Description</p>
-                <p style={{ fontSize: 13, color: 'rgba(240,234,210,0.65)', lineHeight: 1.8 }}>{product.description}</p>
-              </div>
-            )}
-
-            {/* Tags */}
-            {product.tags && (
-              <div className="flex flex-wrap gap-2">
-                {(Array.isArray(product.tags) ? product.tags : product.tags.split(',')).filter(Boolean).map((tag: string) => (
-                  <span key={tag.trim()} style={{ fontSize: 10, letterSpacing: '1px', padding: '3px 10px', border: '0.5px solid rgba(240,234,210,0.15)', borderRadius: 20, color: 'var(--cream-muted)' }}>
-                    {tag.trim()}
-                  </span>
-                ))}
-              </div>
             )}
           </div>
         </div>
 
-        {/* Similar products */}
-        {similar.length > 0 && (
-          <section style={{ padding: '0 40px 80px', maxWidth: 1440, margin: '0 auto' }}>
-            <div className="flex items-center gap-4 mb-12">
-              <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}>Vous aimerez aussi</p>
-              <div style={{ flex: 1, height: '0.5px', background: 'var(--border)' }} />
+        {/* Informations */}
+        <div className="flex flex-col md:py-4" style={{ maxWidth: 520 }}>
+          {product.brand && (
+            <Link href={`/boutique?marque=${encodeURIComponent(product.brand)}`} style={{ fontSize: 10, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>
+              {product.brand}
+            </Link>
+          )}
+          <h1 className="font-serif" style={{ fontSize: 'clamp(30px, 3.2vw, 44px)', color: 'var(--cream)', lineHeight: 1.1, marginBottom: 20, letterSpacing: '-0.5px' }}>{product.name}</h1>
+          <Price price={product.price} compare={product.compare_at_price} size={22} />
+          <p style={{ fontSize: 11, color: 'rgba(248,242,228,0.45)', letterSpacing: '1px', margin: '8px 0 28px' }}>TTC · Livraison calculée à la commande</p>
+
+          {product.description && <p style={{ fontSize: 14, color: 'rgba(240,234,210,0.72)', lineHeight: 1.8, marginBottom: 32 }}>{product.description}</p>}
+
+          {!single && (
+            <>
+              <div className="flex justify-between items-baseline mb-3">
+                <p style={{ ...label, color: sizeError ? '#E8A08A' : 'var(--cream-muted)' }}>
+                  {variant ? `Taille ${variant.label}` : sizeError ? 'Choisissez une taille' : 'Taille'}
+                </p>
+                {variant && variant.stock <= 3 && variant.stock > 0 && <p style={{ fontSize: 12, color: 'var(--gold)' }}>Plus que {variant.stock} en stock</p>}
+              </div>
+              <div className="flex gap-2 flex-wrap mb-8" role="radiogroup" aria-label="Taille">
+                {variants.map((v) => {
+                  const out = v.stock <= 0;
+                  const selected = v.id === variantId;
+                  return (
+                    <button key={v.id} role="radio" aria-checked={selected} disabled={out} onClick={() => { setVariantId(v.id); setSizeError(false); setQty(1); }}
+                      title={out ? 'Épuisé dans cette taille' : undefined}
+                      className="transition-all duration-200"
+                      style={{
+                        minWidth: 52, height: 48, padding: '0 12px', fontSize: 12, letterSpacing: '1px', borderRadius: 2,
+                        border: selected ? '1px solid var(--gold)' : '0.5px solid rgba(240,234,210,0.18)',
+                        color: out ? 'rgba(240,234,210,0.25)' : selected ? 'var(--gold)' : 'var(--cream)',
+                        background: selected ? 'rgba(232,185,106,0.08)' : 'transparent',
+                        textDecoration: out ? 'line-through' : 'none', cursor: out ? 'not-allowed' : 'pointer',
+                      }}>
+                      {v.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+          {single && variant && variant.stock <= 3 && <p style={{ fontSize: 12, color: 'var(--gold)', marginBottom: 16 }}>Plus que {variant.stock} en stock</p>}
+
+          <div className="flex gap-3 mb-4">
+            <div className="flex items-center" style={{ border: '0.5px solid rgba(240,234,210,0.18)', borderRadius: 2 }}>
+              <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Moins" className="hover:text-[#E8B96A]" style={{ width: 44, height: 52, color: 'var(--cream-muted)', fontSize: 18 }}>−</button>
+              <span aria-live="polite" style={{ width: 36, textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--cream)' }}>{qty}</span>
+              <button onClick={() => setQty((q) => Math.min(q + 1, variant ? Math.max(remaining, 1) : 10))} aria-label="Plus" className="hover:text-[#E8B96A]" style={{ width: 44, height: 52, color: 'var(--cream-muted)', fontSize: 18 }}>+</button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {similar.map((p) => <ProductCard key={p.uuid} product={p} />)}
+            <button onClick={addToCart} disabled={soldOut} className="btn-gold flex-1 transition-all duration-200"
+              style={{
+                height: 54, fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', fontWeight: 600, borderRadius: 2,
+                background: soldOut ? 'rgba(232,185,106,0.15)' : added ? '#4A6020' : 'var(--gold)',
+                color: soldOut ? 'rgba(232,185,106,0.5)' : added ? 'var(--gold)' : '#2D3A0F',
+                border: added ? '0.5px solid rgba(232,185,106,0.4)' : 'none', cursor: soldOut ? 'not-allowed' : 'pointer',
+              }}>
+              {soldOut ? 'Épuisé' : added ? '✓ Ajouté au panier' : 'Ajouter au panier'}
+            </button>
+          </div>
+          {added && <Link href="/panier" className="animate-fade-up text-center mb-4" style={{ fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}>Voir mon panier →</Link>}
+
+          <button onClick={() => { toggle(product); toast(wished ? 'Retiré de vos favoris' : 'Ajouté à vos favoris'); }}
+            className="flex items-center justify-center gap-2 transition-all duration-200 mb-10"
+            style={{ height: 48, fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', borderRadius: 2,
+              border: `0.5px solid ${mounted && wished ? 'rgba(232,185,106,0.5)' : 'rgba(240,234,210,0.14)'}`,
+              color: mounted && wished ? 'var(--gold)' : 'var(--cream-muted)' }}>
+            {mounted && wished ? '♥ Dans vos favoris' : '♡ Ajouter aux favoris'}
+          </button>
+
+          {product.details.length > 0 && (
+            <div className="mb-8">
+              <p style={{ ...label, marginBottom: 14 }}>Composition & entretien</p>
+              <ul className="flex flex-col gap-2">
+                {product.details.map((d) => (
+                  <li key={d} className="flex gap-3" style={{ fontSize: 13, color: 'var(--cream-muted)' }}><span style={{ color: 'var(--gold)' }}>—</span>{d}</li>
+                ))}
+              </ul>
+              {product.sku && <p style={{ fontSize: 11, color: 'rgba(248,242,228,0.4)', marginTop: 12, letterSpacing: '1px' }}>Réf. {product.sku}</p>}
             </div>
-          </section>
-        )}
-      </main>
-      <Footer />
-    </>
+          )}
+
+          <div style={{ background: 'rgba(255,255,255,0.025)', border: '0.5px solid rgba(240,234,210,0.08)', borderRadius: 4, padding: '20px 24px' }}>
+            {[
+              { icon: '✦', text: 'Livraison offerte à Lomé dès 50 000 FCFA' },
+              { icon: '◈', text: 'Paiement à la livraison ou par Mobile Money' },
+              { icon: '↩', text: 'Échange sous 7 jours, retrait gratuit en boutique' },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-3 py-1.5">
+                <span style={{ color: 'var(--gold)', fontSize: 12 }}>{item.icon}</span>
+                <span style={{ fontSize: 12, color: 'var(--cream-muted)' }}>{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {related.length > 0 && (
+        <section style={{ marginTop: 96 }}>
+          <SectionTitle>Vous aimerez aussi</SectionTitle>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6">
+            {related.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+      )}
+    </ShopShell>
   );
 }

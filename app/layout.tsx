@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { DM_Sans, DM_Serif_Display } from "next/font/google";
-import StoreInitializer from "@/components/StoreInitializer";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -17,8 +16,8 @@ const dmSerif = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "La Catena — Boutique Multibrand",
-  description: "Pièces sélectionnées. Marques choisies. Une seule adresse.",
+  title: { default: "La Catena — Boutique Multibrand", template: "%s · La Catena" },
+  description: "Mode et luxe pour femme, homme et enfant à Lomé. Pièces sélectionnées, marques choisies, paiement à la livraison.",
 };
 
 export default function RootLayout({
@@ -29,7 +28,6 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${dmSans.variable} ${dmSerif.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[#1a1f0e] text-[#f0ead2]">
-        <StoreInitializer />
         {children}
       </body>
     </html>

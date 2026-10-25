@@ -1,111 +1,66 @@
-import axios from 'axios';
-import type {
-  LoginData, LoginResponse, RegisterData, VerifyOtpData, ResetPasswordData,
-  ProductsParams, PaginatedProducts, ProductDetailResponse,
-  CategoryResponse, CartResponse, AddToCartData,
-  CreateOrderData, OrderResponse, PaginatedOrders,
-  UserResponse, UserUpdate, PasswordChangeData,
-  AddressCreate, AddressResponse,
-} from '@/types';
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
 
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-  headers: { 'Content-Type': 'application/json' },
-});
-
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+export class ApiError extends Error {
+  constructor(message: string, public status: number) {
+    super(message);
   }
-  return config;
-});
+}
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
+type Query = Record<string, string | number | boolean | null | undefined>;
 
-export const login = (data: LoginData) =>
-  api.post<LoginResponse>('/auth/login', data).then((r) => r.data);
+function qs(params?: Query): string {
+  if (!params) return '';
+  const s = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== '' && v !== false) s.set(k, String(v));
+  }
+  const out = s.toString();
+  return out ? `?${out}` : '';
+}
 
-export const register = (data: RegisterData) =>
-  api.post('/auth/register', data).then((r) => r.data);
+/** Jeton admin lu à chaque appel (le store le met à jour). */
+let tokenGetter: () => string | null = () => null;
+let onUnauthorized: () => void = () => {};
+export function configureAuth(getter: () => string | null, unauthorized: () => void) {
+  tokenGetter = getter;
+  onUnauthorized = unauthorized;
+}
 
-export const verifyOtp = (data: VerifyOtpData) =>
-  api.post('/auth/verify-otp', data).then((r) => r.data);
+export async function api<T>(path: string, opts: { method?: string; body?: unknown; query?: Query; form?: FormData } = {}): Promise<T> {
+  const headers: Record<string, string> = {};
+  const token = path.startsWith('/api/v1/admin') ? tokenGetter() : null;
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
 
-export const resendOtp = (email: string) =>
-  api.post('/auth/resend-otp', { email }).then((r) => r.data);
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}${qs(opts.query)}`, {
+      method: opts.method || 'GET',
+      headers,
+      body: opts.form ?? (opts.body !== undefined ? JSON.stringify(opts.body) : undefined),
+      cache: 'no-store',
+    });
+  } catch {
+    throw new ApiError('Connexion impossible. Vérifiez votre réseau puis réessayez.', 0);
+  }
+  if (res.status === 401 && token) onUnauthorized();
+  if (!res.ok) {
+    let message = 'Une erreur est survenue. Réessayez dans un instant.';
+    try {
+      const data = await res.json();
+      if (typeof data.detail === 'string') message = data.detail;
+    } catch { /* réponse non JSON */ }
+    throw new ApiError(message, res.status);
+  }
+  if (res.status === 204) return undefined as T;
+  return res.json() as Promise<T>;
+}
 
-export const forgotPassword = (email: string) =>
-  api.post('/auth/forgot-password', { email }).then((r) => r.data);
+/** Adresse affichable d'une image : les photos envoyées depuis l'admin sont servies par l'API. */
+export function imageUrl(url: string | null | undefined): string {
+  if (!url) return '/images/noBack.png';
+  return url.startsWith('/api/') ? `${API_URL}${url}` : url;
+}
 
-export const resetPassword = (data: ResetPasswordData) =>
-  api.post('/auth/reset-password', data).then((r) => r.data);
-
-export const getMe = () =>
-  api.get<UserResponse>('/auth/me').then((r) => r.data);
-
-// ─── Products ─────────────────────────────────────────────────────────────────
-
-export const getProducts = (params?: ProductsParams) =>
-  api.get<PaginatedProducts>('/products', { params }).then((r) => r.data);
-
-export const getProduct = (slug: string) =>
-  api.get<ProductDetailResponse>(`/products/${slug}`).then((r) => r.data);
-
-export const getCategories = () =>
-  api.get<CategoryResponse[]>('/categories').then((r) => r.data);
-
-// ─── Cart ─────────────────────────────────────────────────────────────────────
-
-export const getCart = () =>
-  api.get<CartResponse>(`/cart/me`).then((r) => r.data);
-
-export const addToCart = (item: AddToCartData) =>
-  api.post<CartResponse>(`/cart/me/items`, item).then((r) => r.data);
-
-export const updateCartItem = (itemId: number, quantity: number) =>
-  api.patch<CartResponse>(`/cart/me/items/${itemId}`, { quantity }).then((r) => r.data);
-
-export const removeCartItem = (itemId: number) =>
-  api.delete<CartResponse>(`/cart/me/items/${itemId}`).then((r) => r.data);
-
-export const clearCartServer = () =>
-  api.delete<CartResponse>(`/cart/me`).then((r) => r.data);
-
-// ─── Orders ───────────────────────────────────────────────────────────────────
-
-export const createOrderFromCart = (data: CreateOrderData) =>
-  api.post<OrderResponse>('/orders/from-cart', data).then((r) => r.data);
-
-export const getPaymentMethods = () =>
-  api.get<{ value: string; label: string }[]>('/orders/payment-methods').then((r) => r.data);
-
-// ─── Users ────────────────────────────────────────────────────────────────────
-
-export const getUserAddresses = () =>
-  api.get<AddressResponse[]>('/users/me/addresses').then((r) => r.data);
-
-export const createAddress = (data: AddressCreate) =>
-  api.post<AddressResponse>('/users/me/addresses', data).then((r) => r.data);
-
-export const deleteAddress = (uuid: string) =>
-  api.delete(`/users/me/addresses/${uuid}`).then((r) => r.data);
-
-export const setDefaultAddress = (uuid: string) =>
-  api.patch<AddressResponse>(`/users/me/addresses/${uuid}/set-default`).then((r) => r.data);
-
-export const updateProfile = (data: UserUpdate) =>
-  api.patch<UserResponse>('/users/me', data).then((r) => r.data);
-
-export const changePassword = (data: PasswordChangeData) =>
-  api.patch('/users/me/password', data).then((r) => r.data);
-
-export const getMyOrders = (page = 1, size = 20) =>
-  api.get<PaginatedOrders>('/users/me/orders', { params: { page, size } }).then((r) => r.data);
-
-export const getOrderDetail = (uuid: string) =>
-  api.get('/orders/' + uuid).then((r) => r.data);
-
-export default api;
+export const invoiceUrl = (number: string, phone: string) =>
+  `${API_URL}/api/v1/orders/${encodeURIComponent(number)}/invoice${qs({ phone })}`;

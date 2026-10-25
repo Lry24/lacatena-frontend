@@ -1,260 +1,116 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/authStore';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState, type ReactNode } from 'react';
+import { A } from '@/components/admin/kit';
+import { Toaster, useMounted } from '@/components/ui';
+import { api } from '@/lib/api';
+import type { AdminUser } from '@/lib/types';
+import { useAdmin } from '@/store/admin';
 
-const NAV = [
-  { href: '/admin', label: 'Dashboard', exact: true, icon: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-  ) },
-  { href: '/admin/commandes', label: 'Commandes', icon: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-  ) },
-  { href: '/admin/produits', label: 'Produits', icon: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-  ) },
-  { href: '/admin/categories', label: 'Catégories', icon: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M14 14h7v7h-7z"/><path d="M3 14h7v7H3z"/></svg>
-  ) },
-  { href: '/admin/stock', label: 'Stock', icon: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-  ) },
-  { href: '/admin/clients', label: 'Clients', icon: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-  ) },
-  { href: '/admin/utilisateurs', label: 'Utilisateurs', icon: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-  ) },
+const ico = (d: ReactNode) => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
+
+const NAV: { href: string; label: string; icon: ReactNode; exact?: boolean; admin?: boolean; badge?: 'pending' }[] = [
+  { href: '/admin', label: 'Tableau de bord', exact: true, icon: ico(<><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>) },
+  { href: '/admin/commandes', label: 'Commandes', badge: 'pending', icon: ico(<><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></>) },
+  { href: '/admin/produits', label: 'Produits', icon: ico(<><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><circle cx="7" cy="7" r="1" /></>) },
+  { href: '/admin/categories', label: 'Catégories', icon: ico(<><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" /></>) },
+  { href: '/admin/stock', label: 'Stock', icon: ico(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" /></>) },
+  { href: '/admin/clients', label: 'Clients', icon: ico(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>) },
+  { href: '/admin/paiements', label: 'Paiements', icon: ico(<><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></>) },
+  { href: '/admin/livraison', label: 'Frais de livraison', icon: ico(<><rect x="1" y="3" width="15" height="13" /><path d="M16 8h4l3 3v5h-7V8z" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></>) },
+  { href: '/admin/comptes', label: 'Comptes équipe', admin: true, icon: ico(<><circle cx="12" cy="8" r="4" /><path d="M20 21a8 8 0 1 0-16 0" /></>) },
+  { href: '/admin/reglages', label: 'Réglages', icon: ico(<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></>) },
 ];
 
-const SIDEBAR_EXPANDED = 240;
-const SIDEBAR_COLLAPSED = 64;
-
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const router   = useRouter();
+export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { user, isAuthenticated, fetchMe, logout } = useAuthStore();
-
-  const [expanded, setExpanded] = useState(true);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-    fetchMe().then(() => {
-      if (!useAuthStore.getState().isAuthenticated) router.replace('/admin/connexion');
-    });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const router = useRouter();
+  const mounted = useMounted();
+  const { token, user, login, logout } = useAdmin();
+  const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState(0);
+  const isLogin = pathname === '/admin/connexion';
 
   useEffect(() => {
-    if (hydrated && !isAuthenticated && pathname !== '/admin/connexion') {
-      router.replace('/admin/connexion');
-    }
-  }, [hydrated, isAuthenticated, pathname]);
+    if (!mounted || isLogin) return;
+    if (!token) { router.replace(`/admin/connexion?suite=${encodeURIComponent(pathname)}`); return; }
+    // Vérifie la session et rafraîchit le profil (rôle modifié, compte désactivé...)
+    api<AdminUser>('/api/v1/admin/auth/me').then((u) => login(token, u)).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, token, isLogin]);
 
-  if (pathname === '/admin/connexion') return <>{children}</>;
+  const [path, setPath] = useState(pathname);
+  if (path !== pathname) { setPath(pathname); setOpen(false); }
 
-  if (!hydrated || !isAuthenticated) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#0f1209', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: 32, height: 32, border: '2px solid #E8B96A', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
+  useEffect(() => {
+    if (!token || isLogin) return;
+    api<Record<string, number>>('/api/v1/admin/orders/counts').then((c) => setPending(c.PENDING || 0)).catch(() => {});
+  }, [pathname, token, isLogin]);
+
+  if (isLogin) return <>{children}<Toaster /></>;
+  if (!mounted || !token || !user) {
+    return <div style={{ minHeight: '100vh', background: A.bg }} className="flex items-center justify-center"><span className="spin-ring" style={{ width: 30, height: 30, borderRadius: '50%', border: '2px solid rgba(232,185,106,0.25)', borderTopColor: A.gold }} /></div>;
   }
 
-  const handleLogout = () => { logout(); router.replace('/'); };
+  const active = (href: string, exact?: boolean) => (exact ? pathname === href : pathname.startsWith(href));
 
-  const isActive = (href: string, exact?: boolean) =>
-    exact ? pathname === href : pathname.startsWith(href);
-
-  const initials = user
-    ? `${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase()
-    : 'A';
-
-  const sidebarW = expanded ? SIDEBAR_EXPANDED : SIDEBAR_COLLAPSED;
+  const sidebar = (
+    <aside className="flex flex-col h-full" style={{ background: '#1c2310', borderRight: `1px solid ${A.border}`, width: 240 }}>
+      <Link href="/admin" className="flex flex-col items-center" style={{ padding: '20px 16px 16px', borderBottom: `1px solid rgba(255,255,255,0.08)` }}>
+        <Image src="/images/noBack.png" alt="La Catena" width={120} height={52} style={{ objectFit: 'contain' }} />
+        <span style={{ fontSize: 9, letterSpacing: '3px', textTransform: 'uppercase', color: A.faint, marginTop: 6 }}>Administration</span>
+      </Link>
+      <nav className="flex-1 overflow-y-auto" style={{ padding: '12px 10px' }}>
+        {NAV.filter((n) => !n.admin || user.role === 'ADMIN').map((n) => {
+          const on = active(n.href, n.exact);
+          return (
+            <Link key={n.href} href={n.href} className="flex items-center gap-3 transition-colors hover:bg-white/5"
+              style={{ padding: '10px 12px', borderRadius: 7, marginBottom: 2, fontSize: 13, color: on ? A.gold : 'rgba(255,255,255,0.82)', background: on ? A.goldBg : undefined, fontWeight: on ? 500 : 400 }}>
+              <span style={{ opacity: on ? 1 : 0.8 }}>{n.icon}</span>
+              <span className="flex-1">{n.label}</span>
+              {n.badge === 'pending' && pending > 0 && <span style={{ fontSize: 10, fontWeight: 600, minWidth: 20, textAlign: 'center', padding: '2px 6px', borderRadius: 10, background: A.gold, color: '#2D3A0F' }}>{pending}</span>}
+            </Link>
+          );
+        })}
+      </nav>
+      <div style={{ padding: 14, borderTop: `1px solid rgba(255,255,255,0.08)` }}>
+        <div className="flex items-center gap-3 mb-3">
+          <span className="flex items-center justify-center" style={{ width: 34, height: 34, borderRadius: '50%', background: A.olive, color: A.gold, fontSize: 13, fontWeight: 600 }}>
+            {(user.full_name || user.username).split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate" style={{ fontSize: 13, color: A.text }}>{user.full_name || user.username}</p>
+            <p style={{ fontSize: 11, color: A.faint }}>{user.role === 'ADMIN' ? 'Administrateur' : 'Gestionnaire'}</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Link href="/" target="_blank" style={{ flex: 1, textAlign: 'center', fontSize: 12, padding: '7px 0', borderRadius: 6, border: `1px solid ${A.border}`, color: A.muted }}>Voir la boutique</Link>
+          <button onClick={() => { logout(); router.replace('/admin/connexion'); }} style={{ fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid rgba(232,160,138,0.3)', color: A.red }}>Quitter</button>
+        </div>
+      </div>
+    </aside>
+  );
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#141a0b', fontFamily: 'var(--font-dm-sans)' }}>
-
-      {/* ── Sidebar ──────────────────────────────────────────────────── */}
-      <aside style={{
-        width: sidebarW,
-        minWidth: sidebarW,
-        background: '#1c2310',
-        borderRight: '1px solid rgba(255,255,255,0.1)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        top: 0, bottom: 0, left: 0,
-        zIndex: 50,
-        transition: 'width 0.22s ease, min-width 0.22s ease',
-        overflow: 'hidden',
-      }}>
-
-        {/* Logo */}
-        <div style={{
-          padding: expanded ? '18px 16px 14px' : '18px 0 14px',
-          borderBottom: '1px solid rgba(255,255,255,0.09)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          overflow: 'hidden',
-          transition: 'padding 0.22s ease',
-        }}>
-          <img
-            src="/images/noBack.png"
-            alt="La Catena"
-            style={{
-              width: expanded ? 90 : 38,
-              height: expanded ? 90 : 38,
-              objectFit: 'contain',
-              filter: 'brightness(1.1) drop-shadow(0 0 10px rgba(232,185,106,0.18))',
-              transition: 'width 0.22s ease, height 0.22s ease',
-              flexShrink: 0,
-            }}
-          />
-          {expanded && (
-            <div style={{
-              fontSize: 8, color: 'rgba(255,255,255,0.4)',
-              letterSpacing: '3px', textTransform: 'uppercase', marginTop: 6,
-              whiteSpace: 'nowrap',
-            }}>
-              Administration
-            </div>
-          )}
+    <div className="admin-root flex" style={{ minHeight: '100vh', background: A.bg, color: A.text }}>
+      <div className="hidden lg:block fixed inset-y-0 left-0 z-40">{sidebar}</div>
+      {open && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={() => setOpen(false)} />
+          <div className="relative">{sidebar}</div>
         </div>
-
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '12px 8px', overflowY: 'auto', overflowX: 'hidden' }}>
-          {NAV.map((item) => {
-            const active = isActive(item.href, item.exact);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                title={!expanded ? item.label : undefined}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: expanded ? 'flex-start' : 'center',
-                  gap: expanded ? 10 : 0,
-                  padding: expanded ? '10px 12px' : '11px 0',
-                  borderRadius: 7,
-                  marginBottom: 2,
-                  color: active ? '#E8B96A' : 'rgba(255,255,255,0.82)',
-                  background: active ? 'rgba(232,185,106,0.12)' : 'transparent',
-                  textDecoration: 'none',
-                  fontSize: 13,
-                  fontWeight: active ? 500 : 400,
-                  transition: 'all 0.15s',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                }}
-              >
-                <span style={{ opacity: active ? 1 : 0.8, flexShrink: 0 }}>{item.icon}</span>
-                {expanded && (
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Déconnexion */}
-        <div style={{ padding: '12px 8px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <button
-            onClick={handleLogout}
-            title={!expanded ? 'Déconnexion' : undefined}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: expanded ? 'flex-start' : 'center',
-              gap: expanded ? 10 : 0,
-              width: '100%',
-              padding: expanded ? '10px 12px' : '11px 0',
-              borderRadius: 7,
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'rgba(255,255,255,0.6)', fontSize: 13, textAlign: 'left',
-              transition: 'color 0.15s',
-              whiteSpace: 'nowrap', overflow: 'hidden',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#e07070')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style={{ flexShrink: 0 }}>
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            {expanded && 'Déconnexion'}
-          </button>
-        </div>
-      </aside>
-
-      {/* ── Main ─────────────────────────────────────────────────────── */}
-      <div style={{
-        marginLeft: sidebarW,
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        minWidth: 0,
-        transition: 'margin-left 0.22s ease',
-      }}>
-
-        {/* Top header */}
-        <header style={{
-          height: 58,
-          background: '#1c2310',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 24px',
-          position: 'sticky', top: 0, zIndex: 30,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {/* Bouton toggle sidebar */}
-            <button
-              onClick={() => setExpanded((v) => !v)}
-              aria-label={expanded ? 'Réduire le menu' : 'Développer le menu'}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: 'rgba(255,255,255,0.75)',
-                display: 'flex', flexDirection: 'column', gap: 5, padding: 4, borderRadius: 4,
-              }}
-            >
-              <span style={{ display: 'block', width: 20, height: 1.5, background: 'currentColor', borderRadius: 2 }} />
-              <span style={{ display: 'block', width: expanded ? 14 : 20, height: 1.5, background: 'currentColor', borderRadius: 2, transition: 'width 0.2s' }} />
-              <span style={{ display: 'block', width: 20, height: 1.5, background: 'currentColor', borderRadius: 2 }} />
-            </button>
-
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.5px' }}>
-              {pathname.replace('/admin', '').replace(/\//g, ' / ').replace(/^\s*\/?\s*/, 'Admin / ').trim() || 'Admin / Dashboard'}
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>
-              Bonjour, <span style={{ color: '#E8B96A', fontWeight: 500 }}>{user?.first_name}</span>
-            </span>
-            <div style={{
-              width: 34, height: 34, borderRadius: '50%',
-              background: 'rgba(232,185,106,0.18)',
-              border: '1.5px solid rgba(232,185,106,0.4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, fontWeight: 600, color: '#E8B96A',
-            }}>
-              {initials}
-            </div>
-          </div>
+      )}
+      <div className="flex-1 min-w-0 lg:ml-[240px]">
+        <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between" style={{ padding: '12px 16px', background: '#1c2310', borderBottom: `1px solid ${A.border}` }}>
+          <button onClick={() => setOpen(true)} aria-label="Menu" style={{ color: A.text, fontSize: 20 }}>☰</button>
+          <Image src="/images/noBack.png" alt="La Catena" width={96} height={42} style={{ objectFit: 'contain' }} />
+          <Link href="/admin/commandes?statut=PENDING" style={{ fontSize: 12, color: A.gold }}>{pending > 0 ? `${pending} à confirmer` : ''}</Link>
         </header>
-
-        {/* Contenu */}
-        <main style={{ flex: 1, padding: '32px', overflowX: 'hidden' }}>
-          {children}
-        </main>
+        <main style={{ padding: 'clamp(16px, 3vw, 32px)', maxWidth: 1400 }}>{children}</main>
       </div>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <Toaster />
     </div>
   );
 }
