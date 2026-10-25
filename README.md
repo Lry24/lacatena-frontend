@@ -10,6 +10,9 @@ npm run dev -- -p 3001        # http://localhost:3001
 
 L'adresse de l'API se règle avec `NEXT_PUBLIC_API_URL` (par défaut `http://localhost:8000`).
 
+En ligne : projet Vercel `lacatena` → https://lacatena.vercel.app, avec `NEXT_PUBLIC_API_URL=https://lacatena-api.vercel.app`.
+Redéployer : `npx vercel deploy --prod` depuis ce dossier.
+
 ## Boutique
 
 | Page | Rôle |
