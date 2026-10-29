@@ -73,8 +73,34 @@
 /* Barre de progression des diapositives */
 @keyframes slideProgress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
+/* ── Fluidité ─────────────────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+/* Apparition au défilement (composant Reveal) */
+.reveal { opacity: 0; transform: translateY(var(--reveal-y, 28px)); transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); will-change: opacity, transform; }
+.reveal.is-shown { opacity: 1; transform: none; }
+
+/* Arrivée de chaque page */
+@keyframes pageEnter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.page-enter { animation: pageEnter .55s cubic-bezier(.16,1,.3,1) both; }
+
+/* Photos : fondu à la fin du chargement plutôt qu'un affichage brutal */
+.img-fade { opacity: 0; transform: scale(1.02); transition: opacity .7s ease, transform 1.2s cubic-bezier(.16,1,.3,1); }
+.img-fade.is-loaded { opacity: 1; transform: none; }
+
+/* Pastille du panier qui rebondit quand on ajoute une pièce */
+@keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.45); } 100% { transform: scale(1); } }
+.bump { animation: bump .45s cubic-bezier(.34,1.56,.64,1); }
+
+/* Soulignement animé des liens de navigation */
+.nav-link { position: relative; }
+.nav-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: -6px; height: 1px; background: #E8B96A; transform: scaleX(0); transform-origin: right; transition: transform .35s cubic-bezier(.16,1,.3,1); }
+.nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track, .kenburns { animation: none; }
+  html { scroll-behavior: auto; }
+  .marquee-track, .kenburns, .page-enter, .bump { animation: none; }
+  .reveal, .img-fade { opacity: 1; transform: none; transition: none; }
 }
 
 /* Textes globaux plus nets */

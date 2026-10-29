@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import ShopShell from '@/components/layout/ShopShell';
 import { HeroCarousel, Marquee, ProductRail, QuoteCarousel, type Slide } from '@/components/shop/Carousels';
 import ProductImg from '@/components/shop/ProductImg';
+import Reveal from '@/components/shop/Reveal';
 import { api } from '@/lib/api';
 import type { Category, Page, ProductCard as Card } from '@/lib/types';
 
@@ -48,7 +49,8 @@ export default function HomePage() {
 
   const [femme, homme, enfant, accessoires] = ['femme', 'homme', 'enfant', 'accessoires'].map((s) => categories.find((c) => c.slug === s));
   const tile = (c: Category | undefined, n: string, className: string, sizes: string) => c && (
-    <Link href={`/boutique?categorie=${c.slug}`} className={`group relative overflow-hidden block ${className}`}>
+    <Reveal className={className} delay={(Number(n) - 1) * 110} y={40}>
+    <Link href={`/boutique?categorie=${c.slug}`} className="group relative overflow-hidden block h-full w-full">
       <div className="absolute inset-0 transition-transform duration-[1200ms] group-hover:scale-[1.06]"><ProductImg src={c.image_url} alt={c.name} sizes={sizes} className="object-cover object-[center_25%]" /></div>
       <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(26,31,14,0.82) 0%, rgba(26,31,14,0) 55%)' }} />
       <span className="absolute top-5 left-6 font-serif" style={{ fontSize: 15, color: '#F5EDD8', opacity: 0.85 }}>{n}</span>
@@ -61,6 +63,7 @@ export default function HomePage() {
           style={{ width: 52, height: 52, borderRadius: '50%', border: '0.5px solid rgba(245,237,216,0.55)', color: '#F5EDD8' }}>→</span>
       </div>
     </Link>
+    </Reveal>
   );
 
   return (
@@ -100,7 +103,7 @@ export default function HomePage() {
       {/* ── Lookbook vert ────────────────────────────────────── */}
       <section className="shop-dark relative overflow-hidden" style={{ background: '#1A1F0E' }}>
         <div className="grid lg:grid-cols-2 gap-16 items-center px-4 md:px-10" style={{ maxWidth: 1440, margin: '0 auto', paddingTop: 112, paddingBottom: 112 }}>
-          <div className="relative" style={{ height: 'clamp(460px, 62vw, 680px)' }}>
+          <Reveal className="relative" y={48} style={{ height: 'clamp(460px, 62vw, 680px)' }}>
             <div className="absolute overflow-hidden" style={{ left: 0, top: 0, width: '64%', height: '82%' }}>
               <Image src="/images/products/1773304264476.png" alt="Ensemble gilet en lin ivoire" fill className="object-cover object-top" sizes="(max-width: 1024px) 64vw, 32vw" />
             </div>
@@ -108,8 +111,8 @@ export default function HomePage() {
               <Image src="/images/products/IMG_5380.JPG" alt="Robe wax soleil" fill className="object-cover object-top" sizes="(max-width: 1024px) 50vw, 25vw" />
             </div>
             <span className="absolute font-serif italic hidden md:block" style={{ right: '6%', top: '8%', fontSize: 120, lineHeight: 1, color: '#E8B96A', opacity: 0.18 }}>Lookbook</span>
-          </div>
-          <div>
+          </Reveal>
+          <Reveal delay={150}>
             <p style={{ fontSize: 10, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 20 }}>Le lookbook de la saison</p>
             <h2 className="font-serif" style={{ fontSize: 'clamp(36px, 4.5vw, 64px)', lineHeight: 1, color: 'var(--cream)', letterSpacing: '-1px', marginBottom: 24 }}>
               Lin ivoire, wax soleil<br /><em style={{ color: 'var(--gold)' }}>et lumière de Lomé.</em>
@@ -121,7 +124,7 @@ export default function HomePage() {
               <Link href="/boutique?categorie=ensembles-femme" className="btn-gold hover:brightness-110" style={{ background: '#E8B96A', color: '#2D3A0F', padding: '15px 32px', fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', fontWeight: 600 }}>Shopper le look</Link>
               <Link href="/boutique?categorie=robes" className="btn-outline hover:border-[#E8B96A] hover:text-[#E8B96A]" style={{ border: '0.5px solid rgba(245,237,216,0.4)', color: '#F5EDD8', padding: '15px 32px', fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase' }}>Toutes les robes</Link>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -139,13 +142,15 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-3 gap-3 md:gap-5">
             {promos.map((p, i) => (
-              <Link key={p.id} href={`/produits/${p.slug}`} className="group block" style={{ marginTop: i === 1 ? 48 : 0 }}>
+              <Reveal key={p.id} delay={i * 120} y={40} style={{ marginTop: i === 1 ? 48 : 0 }}>
+              <Link href={`/produits/${p.slug}`} className="group block">
                 <div className="relative overflow-hidden" style={{ aspectRatio: '3/4' }}>
                   <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"><ProductImg src={p.image} alt={p.name} sizes="20vw" /></div>
                   {p.compare_at_price && <span className="absolute top-3 left-3" style={{ background: '#E8B96A', color: '#2D3A0F', fontSize: 9, fontWeight: 600, letterSpacing: '1px', padding: '4px 9px', borderRadius: 20 }}>−{Math.round((1 - p.price / p.compare_at_price) * 100)} %</span>}
                 </div>
                 <p className="truncate mt-3" style={{ fontSize: 13, color: '#F5EDD8' }}>{p.name}</p>
               </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -171,9 +176,11 @@ export default function HomePage() {
         <div className="grid grid-cols-2 lg:grid-cols-4" style={{ maxWidth: 1440, margin: '0 auto' }}>
           {PROMISES.map((p, i) => (
             <div key={p.n} style={{ padding: '40px 24px', borderLeft: i % 2 === 1 ? '0.5px solid var(--border)' : undefined }} className={i === 2 ? 'lg:border-l lg:border-[var(--border)]' : ''}>
-              <p className="font-serif" style={{ fontSize: 28, color: 'var(--gold)', marginBottom: 12 }}>{p.n}</p>
-              <p style={{ fontSize: 14, color: 'var(--cream)', fontWeight: 500, marginBottom: 6 }}>{p.title}</p>
-              <p style={{ fontSize: 13, color: 'var(--cream-muted)', lineHeight: 1.6 }}>{p.text}</p>
+              <Reveal delay={i * 90}>
+                <p className="font-serif" style={{ fontSize: 28, color: 'var(--gold)', marginBottom: 12 }}>{p.n}</p>
+                <p style={{ fontSize: 14, color: 'var(--cream)', fontWeight: 500, marginBottom: 6 }}>{p.title}</p>
+                <p style={{ fontSize: 13, color: 'var(--cream-muted)', lineHeight: 1.6 }}>{p.text}</p>
+              </Reveal>
             </div>
           ))}
         </div>

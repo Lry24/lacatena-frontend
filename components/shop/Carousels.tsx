@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { ProductCard as Card } from '@/lib/types';
 import ProductCard from './ProductCard';
 import ProductImg from './ProductImg';
+import Reveal from './Reveal';
 
 // ── Diaporama d'accueil ───────────────────────────────────
 
@@ -126,10 +127,10 @@ export function ProductRail({ title, eyebrow, products, href, badge, numbered }:
   return (
     <section style={{ paddingTop: 96, paddingBottom: 32 }}>
       <div className="px-4 md:px-10 flex items-end justify-between gap-6 mb-10" style={{ maxWidth: 1440, margin: '0 auto' }}>
-        <div>
+        <Reveal>
           <p style={{ fontSize: 10, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>{eyebrow}</p>
           <h2 className="font-serif" style={{ fontSize: 'clamp(34px, 4.5vw, 60px)', lineHeight: 1, color: 'var(--cream)', letterSpacing: '-1px' }}>{title}</h2>
-        </div>
+        </Reveal>
         <div className="flex items-center gap-3">
           <Link href={href} className="hidden sm:inline hover:text-[var(--gold)]" style={{ fontSize: 10, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginRight: 8 }}>Tout voir</Link>
           {[-1, 1].map((d) => (
@@ -145,7 +146,7 @@ export function ProductRail({ title, eyebrow, products, href, badge, numbered }:
         {(products || Array.from({ length: 6 }, () => null)).map((p, i) => (
           <div key={p?.id ?? i} className="flex-shrink-0 relative" style={{ width: 'clamp(220px, 23vw, 320px)' }}>
             {numbered && p && <span className="font-serif absolute z-10 pointer-events-none" style={{ top: 8, left: 12, fontSize: 64, lineHeight: 1, color: '#F5EDD8', textShadow: '0 2px 12px rgba(26,31,14,0.5)' }}>{i + 1}</span>}
-            {p ? <ProductCard product={p} badge={numbered ? undefined : badge} /> : <div className="shimmer" style={{ aspectRatio: '3/4' }} />}
+            {p ? <Reveal delay={Math.min(i, 5) * 80} y={36}><ProductCard product={p} badge={numbered ? undefined : badge} /></Reveal> : <div className="shimmer" style={{ aspectRatio: '3/4' }} />}
           </div>
         ))}
         <Link href={href} className="flex-shrink-0 flex flex-col items-center justify-center gap-3 group" style={{ width: 'clamp(180px, 16vw, 240px)', aspectRatio: '3/4', border: '0.5px solid var(--border)' }}>

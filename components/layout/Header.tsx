@@ -33,12 +33,24 @@ export default function Header({ transparent = false }: { transparent?: boolean 
   const pathname = usePathname();
   const searchRef = useRef<HTMLInputElement>(null);
 
+  // En descendant, le header s'efface pour laisser place aux pièces ; il revient dès qu'on remonte
+  const [hidden, setHidden] = useState(false);
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 40);
+      if (Math.abs(y - last) > 6) { setHidden(y > 320 && y > last); last = y; }
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // La pastille du panier rebondit quand le nombre de pièces augmente
+  const [bumpKey, setBumpKey] = useState(0);
+  const [lastCount, setLastCount] = useState(count);
+  if (count !== lastCount) { if (count > lastCount) setBumpKey((k) => k + 1); setLastCount(count); }
 
   // Changement de page : menus refermés
   const [path, setPath] = useState(pathname);
@@ -55,17 +67,24 @@ export default function Header({ transparent = false }: { transparent?: boolean 
     setSearchOpen(false);
   };
 
-  const badge = (n: number) => mounted && n > 0 ? (
-    <span className="absolute -top-1.5 -right-2 flex items-center justify-center" style={{ minWidth: 15, height: 15, padding: '0 3px', borderRadius: 8, background: 'var(--gold)', color: '#2D3A0F', fontSize: 9, fontWeight: 600 }}>{n}</span>
+  const badge = (n: number, key?: number) => mounted && n > 0 ? (
+    <span key={key} className={`absolute -top-1.5 -right-2 flex items-center justify-center ${key ? 'bump' : ''}`} style={{ minWidth: 15, height: 15, padding: '0 3px', borderRadius: 8, background: 'var(--gold)', color: '#2D3A0F', fontSize: 9, fontWeight: 600 }}>{n}</span>
   ) : null;
 
+  const retracted = hidden && !menuOpen && !searchOpen;
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
-      style={{ background: solid ? 'rgba(26,31,14,0.97)' : 'transparent', backdropFilter: solid ? 'blur(14px)' : 'none', borderBottom: solid ? '0.5px solid rgba(240,234,210,0.08)' : '0.5px solid transparent' }}>
+    <header className="fixed top-0 left-0 right-0 z-50"
+      style={{
+        background: solid ? 'rgba(26,31,14,0.97)' : 'transparent', backdropFilter: solid ? 'blur(14px)' : 'none',
+        borderBottom: solid ? '0.5px solid rgba(240,234,210,0.08)' : '0.5px solid transparent',
+        transform: retracted ? 'translateY(-100%)' : 'none',
+        transition: 'transform .45s cubic-bezier(.16,1,.3,1), background .5s ease, border-color .5s ease',
+      }}>
       <div className="flex items-center px-4 md:px-10" style={{ height: 68, maxWidth: 1440, margin: '0 auto' }}>
         <nav className="hidden lg:flex items-center gap-8 flex-1" aria-label="Univers">
           {NAV_LEFT.map((item) => (
-            <Link key={item.href} href={item.href} style={linkStyle} className="hover:!text-[#E8B96A] transition-colors">{item.label}</Link>
+            <Link key={item.href} href={item.href} style={linkStyle} className="nav-link hover:!text-[#E8B96A] transition-colors">{item.label}</Link>
           ))}
         </nav>
 
@@ -92,7 +111,7 @@ export default function Header({ transparent = false }: { transparent?: boolean 
         <div className="flex items-center gap-5 md:gap-7 flex-1 justify-end">
           <nav className="hidden lg:flex items-center gap-8" aria-label="Sélections">
             {NAV_RIGHT.map((item) => (
-              <Link key={item.href} href={item.href} style={linkStyle} className="hover:!text-[#E8B96A] transition-colors">{item.label}</Link>
+              <Link key={item.href} href={item.href} style={linkStyle} className="nav-link hover:!text-[#E8B96A] transition-colors">{item.label}</Link>
             ))}
           </nav>
           <div className="hidden lg:block" style={{ width: '0.5px', height: 14, background: 'rgba(240,234,210,0.2)' }} />
@@ -110,7 +129,7 @@ export default function Header({ transparent = false }: { transparent?: boolean 
           </Link>
           <Link href="/panier" aria-label="Panier" className="relative transition-opacity hover:opacity-60">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={icon} strokeWidth="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
-            {badge(count)}
+            {badge(count, bumpKey)}
           </Link>
         </div>
       </div>

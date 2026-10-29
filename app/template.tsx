@@ -1,0 +1,4 @@
+/** Rejoué à chaque changement de page : la nouvelle page arrive en fondu, sans à-coup. */
+export default function Template({ children }: { children: React.ReactNode }) {
+  return <div className="page-enter flex-1 flex flex-col">{children}</div>;
+}

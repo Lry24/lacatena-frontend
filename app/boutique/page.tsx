@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import ShopShell from '@/components/layout/ShopShell';
 import ProductCard, { ProductGridSkeleton } from '@/components/shop/ProductCard';
+import Reveal from '@/components/shop/Reveal';
 import { Button, EmptyState, ErrorNote, label } from '@/components/ui';
 import { api } from '@/lib/api';
 import type { Category, Page, ProductCard as Card } from '@/lib/types';
@@ -206,7 +207,7 @@ function Catalogue() {
             <>
               <p style={{ ...label, marginBottom: 24 }}>{data.total} pièce{data.total > 1 ? 's' : ''}</p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-12 md:gap-x-6">
-                {data.items.map((p) => <ProductCard key={p.id} product={p} />)}
+                {data.items.map((p, i) => <Reveal key={p.id} delay={(i % 3) * 90} y={32}><ProductCard product={p} /></Reveal>)}
               </div>
               {data.pages > 1 && (
                 <div className="flex flex-wrap justify-center items-center gap-2 mt-16">
