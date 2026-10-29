@@ -88,8 +88,8 @@ function Catalogue() {
 
   const chip = (active: boolean): React.CSSProperties => ({
     fontSize: 11, letterSpacing: '1px', padding: '7px 12px', borderRadius: 2, cursor: 'pointer', transition: 'all .2s',
-    border: active ? '0.5px solid var(--gold)' : '0.5px solid rgba(240,234,210,0.15)',
-    color: active ? 'var(--gold)' : 'var(--cream-muted)', background: active ? 'rgba(232,185,106,0.08)' : 'transparent',
+    border: active ? '0.5px solid var(--gold)' : '0.5px solid rgba(var(--fg-rgb),0.15)',
+    color: active ? 'var(--gold)' : 'var(--cream-muted)', background: active ? 'rgba(var(--accent-rgb),0.08)' : 'transparent',
   });
 
   const filters = (
@@ -97,19 +97,19 @@ function Catalogue() {
       <div>
         <p style={{ ...label, marginBottom: 16 }}>Univers</p>
         <div className="flex flex-col gap-1">
-          <button onClick={() => set({ categorie: null })} className="text-left hover:text-[#E8B96A] transition-colors" style={{ fontSize: 14, color: !categorie ? 'var(--gold)' : 'var(--cream)', padding: '4px 0' }}>Tout voir</button>
+          <button onClick={() => set({ categorie: null })} className="text-left hover:text-[var(--gold)] transition-colors" style={{ fontSize: 14, color: !categorie ? 'var(--gold)' : 'var(--cream)', padding: '4px 0' }}>Tout voir</button>
           {categories.map((c) => (
             <div key={c.id}>
-              <button onClick={() => set({ categorie: c.slug })} className="text-left hover:text-[#E8B96A] transition-colors w-full flex justify-between"
+              <button onClick={() => set({ categorie: c.slug })} className="text-left hover:text-[var(--gold)] transition-colors w-full flex justify-between"
                 style={{ fontSize: 14, color: root?.id === c.id ? 'var(--gold)' : 'var(--cream)', padding: '4px 0' }}>
-                <span>{c.name}</span><span style={{ fontSize: 11, color: 'rgba(248,242,228,0.4)' }}>{c.product_count}</span>
+                <span>{c.name}</span><span style={{ fontSize: 11, color: 'rgba(var(--fg-rgb),0.4)' }}>{c.product_count}</span>
               </button>
               {root?.id === c.id && (
                 <div className="flex flex-col gap-1 animate-fade-up" style={{ borderLeft: '0.5px solid var(--border)', paddingLeft: 14, margin: '4px 0 8px' }}>
                   {c.children.map((ch) => (
-                    <button key={ch.id} onClick={() => set({ categorie: ch.slug })} className="text-left hover:text-[#E8B96A] transition-colors flex justify-between"
+                    <button key={ch.id} onClick={() => set({ categorie: ch.slug })} className="text-left hover:text-[var(--gold)] transition-colors flex justify-between"
                       style={{ fontSize: 13, color: current?.id === ch.id ? 'var(--gold)' : 'var(--cream-muted)', padding: '3px 0' }}>
-                      <span>{ch.name}</span><span style={{ fontSize: 11, color: 'rgba(248,242,228,0.4)' }}>{ch.product_count}</span>
+                      <span>{ch.name}</span><span style={{ fontSize: 11, color: 'rgba(var(--fg-rgb),0.4)' }}>{ch.product_count}</span>
                     </button>
                   ))}
                 </div>
@@ -141,7 +141,7 @@ function Catalogue() {
         <div className="flex flex-col gap-2">
           {PRICES.map((p) => (
             <button key={p.value} onClick={() => set({ prix: p.value || null })} className="text-left flex items-center gap-3" style={{ fontSize: 13, color: prix === p.value ? 'var(--gold)' : 'var(--cream-muted)' }}>
-              <span style={{ width: 12, height: 12, borderRadius: '50%', border: `0.5px solid ${prix === p.value ? 'var(--gold)' : 'rgba(240,234,210,0.3)'}`, background: prix === p.value ? 'var(--gold)' : 'transparent' }} />
+              <span style={{ width: 12, height: 12, borderRadius: '50%', border: `0.5px solid ${prix === p.value ? 'var(--gold)' : 'rgba(var(--fg-rgb),0.3)'}`, background: prix === p.value ? 'var(--gold)' : 'transparent' }} />
               {p.label}
             </button>
           ))}
@@ -153,7 +153,7 @@ function Catalogue() {
           <p style={{ ...label, marginBottom: 16 }}>Marques</p>
           <div className="flex flex-col gap-2">
             {facets.brands.map((b) => (
-              <button key={b} onClick={() => set({ marque: marque === b ? null : b })} className="text-left font-serif transition-colors hover:text-[#E8B96A]"
+              <button key={b} onClick={() => set({ marque: marque === b ? null : b })} className="text-left font-serif transition-colors hover:text-[var(--gold)]"
                 style={{ fontSize: 16, color: marque === b ? 'var(--gold)' : 'var(--cream-muted)' }}>{b}</button>
             ))}
           </div>
@@ -171,10 +171,10 @@ function Catalogue() {
 
   return (
     <>
-      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-2 mb-6" style={{ fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(248,242,228,0.45)' }}>
-        <Link href="/" className="hover:text-[#E8B96A]">Accueil</Link><span>/</span>
-        <Link href="/boutique" className="hover:text-[#E8B96A]">Boutique</Link>
-        {trail.map((c) => <span key={c.id} className="flex gap-2"><span>/</span><Link href={`/boutique?categorie=${c.slug}`} className="hover:text-[#E8B96A]" style={{ color: c === current ? 'var(--gold)' : undefined }}>{c.name}</Link></span>)}
+      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-2 mb-6" style={{ fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(var(--fg-rgb),0.45)' }}>
+        <Link href="/" className="hover:text-[var(--gold)]">Accueil</Link><span>/</span>
+        <Link href="/boutique" className="hover:text-[var(--gold)]">Boutique</Link>
+        {trail.map((c) => <span key={c.id} className="flex gap-2"><span>/</span><Link href={`/boutique?categorie=${c.slug}`} className="hover:text-[var(--gold)]" style={{ color: c === current ? 'var(--gold)' : undefined }}>{c.name}</Link></span>)}
       </nav>
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
@@ -189,7 +189,7 @@ function Catalogue() {
             Filtres{activeCount ? ` (${activeCount})` : ''}
           </button>
           <select value={tri} onChange={(e) => set({ tri: e.target.value })} aria-label="Trier"
-            style={{ background: '#1A1F0E', border: '0.5px solid rgba(240,234,210,0.15)', color: 'var(--cream)', fontSize: 12, padding: '11px 14px', borderRadius: 2 }}>
+            style={{ background: 'var(--bg)', border: '0.5px solid rgba(var(--fg-rgb),0.15)', color: 'var(--cream)', fontSize: 12, padding: '11px 14px', borderRadius: 2 }}>
             {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
         </div>
@@ -225,7 +225,7 @@ function Catalogue() {
       {filtersOpen && (
         <div className="fixed inset-0 z-[90] lg:hidden" role="dialog" aria-modal="true" aria-label="Filtres">
           <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={() => setFiltersOpen(false)} />
-          <div className="absolute right-0 top-0 bottom-0 overflow-y-auto" style={{ width: 'min(360px, 88vw)', background: '#1A1F0E', borderLeft: '0.5px solid var(--border)', padding: '28px 24px 40px' }}>
+          <div className="absolute right-0 top-0 bottom-0 overflow-y-auto" style={{ width: 'min(360px, 88vw)', background: 'var(--bg)', borderLeft: '0.5px solid var(--border)', padding: '28px 24px 40px' }}>
             <div className="flex justify-between items-center mb-8">
               <p className="font-serif" style={{ fontSize: 24, color: 'var(--cream)' }}>Filtres</p>
               <button onClick={() => setFiltersOpen(false)} aria-label="Fermer" style={{ color: 'var(--cream-muted)', fontSize: 20 }}>✕</button>

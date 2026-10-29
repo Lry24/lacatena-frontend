@@ -40,16 +40,16 @@ export default function CartPage() {
           <ul className="flex flex-col" style={{ borderTop: '0.5px solid var(--border)' }}>
             {lines.map((l) => (
               <li key={l.variantId} className="flex gap-4 md:gap-6 py-6" style={{ borderBottom: '0.5px solid var(--border)' }}>
-                <Link href={`/produits/${l.slug}`} className="relative overflow-hidden flex-shrink-0" style={{ width: 96, height: 128, background: 'rgba(255,255,255,0.03)' }}>
+                <Link href={`/produits/${l.slug}`} className="relative overflow-hidden flex-shrink-0" style={{ width: 96, height: 128, background: 'rgba(var(--fg-rgb),0.03)' }}>
                   <ProductImg src={l.image} alt={l.name} sizes="96px" />
                 </Link>
                 <div className="flex-1 flex flex-col min-w-0">
                   {l.brand && <p style={{ fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)', marginBottom: 4 }}>{l.brand}</p>}
-                  <Link href={`/produits/${l.slug}`} className="hover:text-[#E8B96A]" style={{ fontSize: 15, color: 'var(--cream)', lineHeight: 1.3 }}>{l.name}</Link>
+                  <Link href={`/produits/${l.slug}`} className="hover:text-[var(--gold)]" style={{ fontSize: 15, color: 'var(--cream)', lineHeight: 1.3 }}>{l.name}</Link>
                   {l.size !== 'Taille unique' && <p style={{ fontSize: 12, color: 'var(--cream-muted)', marginTop: 4 }}>Taille {l.size}</p>}
                   <div className="mt-2"><Price price={l.price} /></div>
                   <div className="flex items-center justify-between mt-auto pt-4 gap-4">
-                    <div className="flex items-center" style={{ border: '0.5px solid rgba(240,234,210,0.18)', borderRadius: 2 }}>
+                    <div className="flex items-center" style={{ border: '0.5px solid rgba(var(--fg-rgb),0.18)', borderRadius: 2 }}>
                       <button onClick={() => setQty(l.variantId, l.qty - 1)} aria-label="Moins" style={{ width: 36, height: 36, color: 'var(--cream-muted)' }}>−</button>
                       <span style={{ width: 28, textAlign: 'center', fontSize: 13 }}>{l.qty}</span>
                       <button onClick={() => setQty(l.variantId, l.qty + 1)} disabled={l.qty >= l.maxStock} aria-label="Plus" style={{ width: 36, height: 36, color: 'var(--cream-muted)', opacity: l.qty >= l.maxStock ? 0.3 : 1 }}>+</button>
@@ -62,7 +62,7 @@ export default function CartPage() {
             ))}
           </ul>
 
-          <aside style={{ position: 'sticky', top: 128, alignSelf: 'start', background: 'rgba(255,255,255,0.025)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: 28 }}>
+          <aside style={{ position: 'sticky', top: 128, alignSelf: 'start', background: 'rgba(var(--fg-rgb),0.025)', border: '0.5px solid rgba(var(--fg-rgb),0.07)', borderRadius: 8, padding: 28 }}>
             <p style={{ ...label, marginBottom: 20 }}>Récapitulatif</p>
             <div className="flex justify-between mb-3" style={{ fontSize: 14 }}>
               <span style={{ color: 'var(--cream-muted)' }}>Sous-total</span><span>{fcfa(subtotal)}</span>
@@ -88,10 +88,10 @@ export default function CartPage() {
               <span className="font-serif" style={{ fontSize: 26, color: 'var(--gold)' }}>{fcfa(subtotal)}</span>
             </div>
             <Button href="/commande" full>Passer commande</Button>
-            <p style={{ fontSize: 11, color: 'rgba(248,242,228,0.45)', textAlign: 'center', marginTop: 14, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 11, color: 'rgba(var(--fg-rgb),0.45)', textAlign: 'center', marginTop: 14, lineHeight: 1.6 }}>
               Sans compte · Paiement à la livraison ou Mobile Money
             </p>
-            <Link href="/boutique" className="block text-center mt-4 hover:text-[#E8B96A]" style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}>← Continuer mes achats</Link>
+            <Link href="/boutique" className="block text-center mt-4 hover:text-[var(--gold)]" style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--cream-muted)' }}>← Continuer mes achats</Link>
           </aside>
         </div>
       )}

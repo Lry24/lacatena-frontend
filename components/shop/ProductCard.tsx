@@ -16,7 +16,7 @@ export default function ProductCard({ product, badge }: { product: Card; badge?:
 
   return (
     <Link href={`/produits/${product.slug}`} className="group flex flex-col gap-3">
-      <div className="relative overflow-hidden" style={{ aspectRatio: '3/4', background: 'rgba(255,255,255,0.025)', border: '0.5px solid rgba(240,234,210,0.07)' }}>
+      <div className="relative overflow-hidden" style={{ aspectRatio: '3/4', background: 'rgba(var(--fg-rgb),0.05)' }}>
         <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105" style={{ opacity: soldOut ? 0.55 : 1 }}>
           <ProductImg src={product.image} alt={product.name} sizes="(max-width: 768px) 50vw, 25vw" />
         </div>
@@ -27,8 +27,9 @@ export default function ProductCard({ product, badge }: { product: Card; badge?:
         )}
         {tag && (
           <span className="absolute top-3 left-3 z-10" style={{
-            background: soldOut ? 'rgba(26,31,14,0.85)' : badge === 'best' && !product.is_promo ? '#4A6020' : 'var(--gold)',
-            color: soldOut ? 'var(--cream)' : badge === 'best' && !product.is_promo ? 'var(--gold)' : '#2D3A0F',
+            // Pastilles posées sur la photo : couleurs fixes, lisibles quel que soit le thème de la page
+            background: soldOut ? 'rgba(26,31,14,0.85)' : badge === 'best' && !product.is_promo ? '#4A6020' : '#E8B96A',
+            color: soldOut ? '#F5EDD8' : badge === 'best' && !product.is_promo ? '#E8B96A' : '#2D3A0F',
             fontSize: 8, letterSpacing: '2px', textTransform: 'uppercase', padding: '4px 10px', borderRadius: 20, fontWeight: 600,
           }}>{tag}</span>
         )}
@@ -37,7 +38,7 @@ export default function ProductCard({ product, badge }: { product: Card; badge?:
           onClick={(e) => { e.preventDefault(); toggle(product); toast(wished ? 'Retiré de vos favoris' : 'Ajouté à vos favoris'); }}
           className="absolute top-3 right-3 z-10 flex items-center justify-center transition-all hover:scale-110"
           style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(26,31,14,0.65)', backdropFilter: 'blur(6px)' }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill={mounted && wished ? 'var(--gold)' : 'none'} stroke="var(--gold)" strokeWidth="1.6">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill={mounted && wished ? '#E8B96A' : 'none'} stroke="#E8B96A" strokeWidth="1.6">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
         </button>
@@ -45,14 +46,14 @@ export default function ProductCard({ product, badge }: { product: Card; badge?:
           <div className="absolute inset-x-0 bottom-0 z-10 hidden md:flex flex-wrap justify-center gap-1 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
             style={{ padding: '24px 8px 12px', background: 'linear-gradient(to top, rgba(26,31,14,0.88), transparent)' }}>
             {product.sizes.slice(0, 6).map((s) => (
-              <span key={s} style={{ fontSize: 9, letterSpacing: '1px', color: 'var(--cream)', border: '0.5px solid rgba(240,234,210,0.3)', padding: '3px 7px' }}>{s}</span>
+              <span key={s} style={{ fontSize: 9, letterSpacing: '1px', color: '#F5EDD8', border: '0.5px solid rgba(245,237,216,0.4)', padding: '3px 7px' }}>{s}</span>
             ))}
           </div>
         )}
       </div>
       <div>
         {product.brand && <p style={{ fontSize: 9, letterSpacing: '2px', color: 'var(--cream-muted)', textTransform: 'uppercase', marginBottom: 4 }}>{product.brand}</p>}
-        <p className="transition-colors group-hover:text-[#E8B96A]" style={{ fontSize: 14, color: 'var(--cream)', marginBottom: 6, lineHeight: 1.3 }}>{product.name}</p>
+        <p className="transition-colors group-hover:text-[var(--gold)]" style={{ fontSize: 14, color: 'var(--cream)', marginBottom: 6, lineHeight: 1.3 }}>{product.name}</p>
         <Price price={product.price} compare={product.compare_at_price} />
       </div>
     </Link>

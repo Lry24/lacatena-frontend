@@ -3,7 +3,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { api } from '@/lib/api';
 import { cartCount, useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { useMounted } from '@/components/ui';
@@ -27,17 +26,12 @@ export default function Header({ transparent = false }: { transparent?: boolean 
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
-  const [announcement, setAnnouncement] = useState<string | null>(null);
   const mounted = useMounted();
   const count = cartCount(useCart((s) => s.lines));
   const wished = useWishlist((s) => s.items.length);
   const router = useRouter();
   const pathname = usePathname();
   const searchRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    api<{ announcement: string | null }>('/api/v1/store').then((s) => setAnnouncement(s.announcement)).catch(() => {});
-  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -68,11 +62,6 @@ export default function Header({ transparent = false }: { transparent?: boolean 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
       style={{ background: solid ? 'rgba(26,31,14,0.97)' : 'transparent', backdropFilter: solid ? 'blur(14px)' : 'none', borderBottom: solid ? '0.5px solid rgba(240,234,210,0.08)' : '0.5px solid transparent' }}>
-      {announcement && (
-        <div className="text-center truncate" style={{ background: '#4A6020', color: 'var(--gold)', fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', padding: '8px 16px', height: 32 }}>
-          {announcement}
-        </div>
-      )}
       <div className="flex items-center px-4 md:px-10" style={{ height: 68, maxWidth: 1440, margin: '0 auto' }}>
         <nav className="hidden lg:flex items-center gap-8 flex-1" aria-label="Univers">
           {NAV_LEFT.map((item) => (

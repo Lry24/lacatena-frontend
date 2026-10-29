@@ -13,6 +13,68 @@
   --border: rgba(248, 242, 228, 0.14);
   --surface: rgba(255, 255, 255, 0.055);     /* cartes légèrement plus claires */
   --surface-hover: rgba(255, 255, 255, 0.09);
+  /* Couleurs de thème : les pages boutique les utilisent pour basculer entre vert et blanc */
+  --fg-rgb: 248, 242, 228;
+  --accent-rgb: 232, 185, 106;
+  --on-accent: #2D3A0F;
+  --bg: #1A1F0E;
+}
+
+/* ── Thème clair de la boutique : blanc ivoire, encre forêt, accent olive (l'or reste réservé aux fonds verts) ── */
+.shop-light {
+  --fg-rgb: 26, 31, 14;
+  --accent-rgb: 74, 96, 32;
+  --cream: #1A1F0E;
+  --cream-muted: rgba(26, 31, 14, 0.64);
+  --cream-subtle: rgba(26, 31, 14, 0.22);
+  --border: rgba(26, 31, 14, 0.12);
+  --gold: #4A6020;
+  --gold-dim: rgba(74, 96, 32, 0.35);
+  --gold-faint: rgba(74, 96, 32, 0.12);
+  --on-accent: #F5EDD8;
+  --bg: #FBF9F4;
+  background: var(--bg);
+  color: var(--cream);
+}
+
+/* Section verte à l'intérieur d'une page claire */
+.shop-dark {
+  --fg-rgb: 248, 242, 228;
+  --accent-rgb: 232, 185, 106;
+  --cream: #f8f2e4;
+  --cream-muted: rgba(248, 242, 228, 0.72);
+  --cream-subtle: rgba(248, 242, 228, 0.22);
+  --border: rgba(248, 242, 228, 0.14);
+  --gold: #E8B96A;
+  --gold-dim: rgba(232, 185, 106, 0.35);
+  --gold-faint: rgba(232, 185, 106, 0.12);
+  --on-accent: #2D3A0F;
+  --bg: #1A1F0E;
+  color: var(--cream);
+}
+
+.lc-input:focus { border-color: var(--gold) !important; }
+.shop-light .lc-input { background: #fff !important; }
+
+/* Défilement horizontal des carrousels sans barre visible */
+.rail { scrollbar-width: none; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+.rail::-webkit-scrollbar { display: none; }
+.rail > * { scroll-snap-align: start; }
+
+/* Bandeau défilant (marques, collections) */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.marquee-track { display: flex; width: max-content; animation: marquee 38s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+/* Effet Ken Burns du carrousel d'accueil */
+@keyframes kenburns { from { transform: scale(1.02); } to { transform: scale(1.12); } }
+.kenburns { animation: kenburns 7s ease-out forwards; }
+
+/* Barre de progression des diapositives */
+@keyframes slideProgress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track, .kenburns { animation: none; }
 }
 
 /* Textes globaux plus nets */
@@ -148,7 +210,7 @@ main > div label {
   100% { background-position: 200% 0; }
 }
 .shimmer {
-  background: linear-gradient(90deg, rgba(240,234,210,0.04) 25%, rgba(240,234,210,0.09) 50%, rgba(240,234,210,0.04) 75%);
+  background: linear-gradient(90deg, rgba(var(--fg-rgb),0.04) 25%, rgba(var(--fg-rgb),0.09) 50%, rgba(var(--fg-rgb),0.04) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.6s ease-in-out infinite;
 }

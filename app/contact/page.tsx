@@ -25,7 +25,7 @@ export default function ContactPage() {
       </PageHeading>
       <div className="grid md:grid-cols-3 gap-6 mb-20">
         {CARDS.map((c) => (
-          <div key={c.title} style={{ background: 'rgba(255,255,255,0.025)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: 28 }}>
+          <div key={c.title} style={{ background: 'rgba(var(--fg-rgb),0.025)', border: '0.5px solid rgba(var(--fg-rgb),0.07)', borderRadius: 8, padding: 28 }}>
             <p style={{ fontSize: 10, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16 }}>{c.title}</p>
             {c.lines.map((l, i) => <p key={l} style={{ fontSize: i === 0 ? 17 : 13, color: i === 0 ? 'var(--cream)' : 'var(--cream-muted)', lineHeight: 1.7 }} className={i === 0 ? 'font-serif' : ''}>{l}</p>)}
           </div>

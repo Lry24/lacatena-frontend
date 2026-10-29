@@ -35,15 +35,15 @@ function Progress({ order }: { order: TrackedOrder }) {
             <div className="flex md:items-center flex-col md:flex-row">
               <span className="flex items-center justify-center flex-shrink-0 transition-all" style={{
                 width: 28, height: 28, borderRadius: '50%', fontSize: 11, zIndex: 1,
-                background: done ? 'var(--gold)' : '#1A1F0E', color: done ? '#2D3A0F' : 'var(--cream-muted)',
-                border: done ? 'none' : '0.5px solid rgba(240,234,210,0.25)', boxShadow: current ? '0 0 0 6px rgba(232,185,106,0.15)' : 'none',
+                background: done ? 'var(--gold)' : 'var(--bg)', color: done ? 'var(--on-accent)' : 'var(--cream-muted)',
+                border: done ? 'none' : '0.5px solid rgba(var(--fg-rgb),0.25)', boxShadow: current ? '0 0 0 6px rgba(var(--accent-rgb),0.15)' : 'none',
               }}>{done && !current ? '✓' : i + 1}</span>
               {i < steps.length - 1 && <span className="hidden md:block flex-1" style={{ height: 1, background: i < currentIndex ? 'var(--gold)' : 'var(--border)' }} />}
               {i < steps.length - 1 && <span className="md:hidden absolute" style={{ left: 13.5, top: 28, bottom: 0, width: 1, background: i < currentIndex ? 'var(--gold)' : 'var(--border)' }} />}
             </div>
             <div className="md:pr-4">
               <p style={{ fontSize: 13, color: done ? 'var(--cream)' : 'var(--cream-muted)', fontWeight: current ? 500 : 400 }}>{s.label}</p>
-              <p style={{ fontSize: 11, color: 'rgba(248,242,228,0.45)', marginTop: 2, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 11, color: 'rgba(var(--fg-rgb),0.45)', marginTop: 2, lineHeight: 1.5 }}>
                 {reached.get(s.status) ? formatDate(reached.get(s.status)!, true) : s.hint}
               </p>
             </div>
@@ -109,12 +109,12 @@ function Tracking() {
               <p className="font-serif" style={{ fontSize: 34, color: 'var(--gold)', marginTop: 6 }}>{order.number}</p>
               <p style={{ fontSize: 14, color: 'var(--cream-muted)', marginTop: 6 }}>Bonjour {order.first_name}, voici où en est votre commande.</p>
             </div>
-            <a href={invoiceUrl(order.number, phone)} className="hover:text-[#f5cb85]" style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', border: '0.5px solid rgba(232,185,106,0.4)', padding: '11px 20px' }}>
+            <a href={invoiceUrl(order.number, phone)} className="hover:text-[var(--gold)]" style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', border: '0.5px solid rgba(var(--accent-rgb),0.4)', padding: '11px 20px' }}>
               Facture PDF ↓
             </a>
           </div>
 
-          <div style={{ background: 'rgba(255,255,255,0.025)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '32px 28px' }}>
+          <div style={{ background: 'rgba(var(--fg-rgb),0.025)', border: '0.5px solid rgba(var(--fg-rgb),0.07)', borderRadius: 8, padding: '32px 28px' }}>
             <Progress order={order} />
           </div>
 
@@ -122,16 +122,16 @@ function Tracking() {
             <ul className="flex flex-col" style={{ borderTop: '0.5px solid var(--border)' }}>
               {order.items.map((i) => (
                 <li key={i.id} className="flex gap-4 py-5 items-center" style={{ borderBottom: '0.5px solid var(--border)' }}>
-                  <div className="relative overflow-hidden flex-shrink-0" style={{ width: 60, height: 80, background: 'rgba(255,255,255,0.03)' }}><ProductImg src={i.image_url} alt={i.product_name} sizes="60px" /></div>
+                  <div className="relative overflow-hidden flex-shrink-0" style={{ width: 60, height: 80, background: 'rgba(var(--fg-rgb),0.03)' }}><ProductImg src={i.image_url} alt={i.product_name} sizes="60px" /></div>
                   <div className="flex-1 min-w-0">
-                    {i.product_slug ? <Link href={`/produits/${i.product_slug}`} className="hover:text-[#E8B96A]" style={{ fontSize: 14 }}>{i.product_name}</Link> : <p style={{ fontSize: 14 }}>{i.product_name}</p>}
+                    {i.product_slug ? <Link href={`/produits/${i.product_slug}`} className="hover:text-[var(--gold)]" style={{ fontSize: 14 }}>{i.product_name}</Link> : <p style={{ fontSize: 14 }}>{i.product_name}</p>}
                     <p style={{ fontSize: 12, color: 'var(--cream-muted)', marginTop: 2 }}>{i.variant_label !== 'Taille unique' ? `Taille ${i.variant_label} · ` : ''}Qté {i.quantity}</p>
                   </div>
                   <span style={{ fontSize: 14, whiteSpace: 'nowrap' }}>{fcfa(i.subtotal)}</span>
                 </li>
               ))}
             </ul>
-            <div style={{ background: 'rgba(240,234,210,0.04)', border: '0.5px solid rgba(240,234,210,0.1)', borderRadius: 8, padding: 24, alignSelf: 'start' }}>
+            <div style={{ background: 'rgba(var(--fg-rgb),0.04)', border: '0.5px solid rgba(var(--fg-rgb),0.1)', borderRadius: 8, padding: 24, alignSelf: 'start' }}>
               <div className="flex justify-between mb-2" style={{ fontSize: 13 }}><span style={{ color: 'var(--cream-muted)' }}>Sous-total</span><span>{fcfa(order.subtotal)}</span></div>
               <div className="flex justify-between mb-4" style={{ fontSize: 13 }}><span style={{ color: 'var(--cream-muted)' }}>Livraison</span><span>{order.shipping_cost ? fcfa(order.shipping_cost) : 'Offerte'}</span></div>
               <div className="flex justify-between items-baseline mb-5"><span>Total</span><span className="font-serif" style={{ fontSize: 24, color: 'var(--gold)' }}>{fcfa(order.total)}</span></div>
@@ -151,7 +151,7 @@ function Tracking() {
           <div className="flex flex-wrap gap-3">
             {saved.slice(0, 6).map((o) => (
               <button key={o.number} onClick={() => { setNumber(o.number); setPhone(o.phone); lookup(o.number, o.phone); }}
-                className="hover:border-[#E8B96A]" style={{ border: '0.5px solid var(--border)', padding: '12px 16px', textAlign: 'left', borderRadius: 4 }}>
+                className="hover:border-[var(--gold)]" style={{ border: '0.5px solid var(--border)', padding: '12px 16px', textAlign: 'left', borderRadius: 4 }}>
                 <span style={{ display: 'block', fontSize: 13, color: 'var(--gold)' }}>{o.number}</span>
                 <span style={{ display: 'block', fontSize: 11, color: 'var(--cream-muted)', marginTop: 2 }}>{formatDate(o.createdAt)} · {fcfa(o.total)}</span>
               </button>

@@ -110,11 +110,11 @@ export default function CheckoutPage() {
   };
 
   const radio = (on: boolean): React.CSSProperties => ({
-    border: on ? '0.5px solid var(--gold)' : '0.5px solid rgba(240,234,210,0.14)', background: on ? 'rgba(232,185,106,0.06)' : 'transparent',
+    border: on ? '0.5px solid var(--gold)' : '0.5px solid rgba(var(--fg-rgb),0.14)', background: on ? 'rgba(var(--accent-rgb),0.06)' : 'transparent',
     borderRadius: 4, padding: '16px 18px', cursor: 'pointer', transition: 'all .2s', display: 'flex', gap: 14, alignItems: 'flex-start', textAlign: 'left', width: '100%',
   });
   const dot = (on: boolean) => (
-    <span style={{ width: 14, height: 14, borderRadius: '50%', flexShrink: 0, marginTop: 3, border: `0.5px solid ${on ? 'var(--gold)' : 'rgba(240,234,210,0.35)'}`, background: on ? 'radial-gradient(var(--gold) 45%, transparent 50%)' : 'transparent' }} />
+    <span style={{ width: 14, height: 14, borderRadius: '50%', flexShrink: 0, marginTop: 3, border: `0.5px solid ${on ? 'var(--gold)' : 'rgba(var(--fg-rgb),0.35)'}`, background: on ? 'radial-gradient(var(--gold) 45%, transparent 50%)' : 'transparent' }} />
   );
 
   return (
@@ -196,7 +196,7 @@ export default function CheckoutPage() {
           </section>
         </div>
 
-        <aside style={{ position: 'sticky', top: 128, alignSelf: 'start', background: 'rgba(255,255,255,0.025)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: 28 }}>
+        <aside style={{ position: 'sticky', top: 128, alignSelf: 'start', background: 'rgba(var(--fg-rgb),0.025)', border: '0.5px solid rgba(var(--fg-rgb),0.07)', borderRadius: 8, padding: 28 }}>
           <div className="flex justify-between items-center mb-5">
             <p style={label}>Récapitulatif</p>
             <Link href="/panier" style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)' }}>Modifier</Link>
@@ -204,9 +204,9 @@ export default function CheckoutPage() {
           <ul className="flex flex-col gap-4 mb-6" style={{ maxHeight: 320, overflowY: 'auto' }}>
             {lines.map((l) => (
               <li key={l.variantId} className="flex gap-3 items-center">
-                <div className="relative overflow-hidden flex-shrink-0" style={{ width: 52, height: 68, background: 'rgba(255,255,255,0.03)' }}>
+                <div className="relative overflow-hidden flex-shrink-0" style={{ width: 52, height: 68, background: 'rgba(var(--fg-rgb),0.03)' }}>
                   <ProductImg src={l.image} alt={l.name} sizes="52px" />
-                  <span className="absolute -top-0 -right-0 flex items-center justify-center" style={{ minWidth: 18, height: 18, background: 'var(--gold)', color: '#2D3A0F', fontSize: 10, fontWeight: 600 }}>{l.qty}</span>
+                  <span className="absolute -top-0 -right-0 flex items-center justify-center" style={{ minWidth: 18, height: 18, background: 'var(--gold)', color: 'var(--on-accent)', fontSize: 10, fontWeight: 600 }}>{l.qty}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="truncate" style={{ fontSize: 13, color: 'var(--cream)' }}>{l.name}</p>
@@ -225,7 +225,7 @@ export default function CheckoutPage() {
           </div>
           {error && <div className="mb-4"><ErrorNote>{error}</ErrorNote></div>}
           <Button type="submit" full disabled={sending}>{sending ? 'Envoi en cours…' : 'Confirmer la commande'}</Button>
-          <p style={{ fontSize: 11, color: 'rgba(248,242,228,0.45)', textAlign: 'center', marginTop: 14, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 11, color: 'rgba(var(--fg-rgb),0.45)', textAlign: 'center', marginTop: 14, lineHeight: 1.6 }}>
             Rien n&apos;est débité maintenant : vous payez à la livraison ou après notre appel.
           </p>
         </aside>
